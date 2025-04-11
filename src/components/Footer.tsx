@@ -8,8 +8,8 @@ const Footer = () => {
       {/* Newsletter */}
       <MaxWidthWrapper className="bg-gradient-to-l from-[#0A5DC2] to-[#052C5C] text-white p-6 md:p-10 rounded-lg max-w-6xl mx-auto text-center md:text-right">
         <div className="flex flex-col md:flex-row md:justify-between items-center gap-6 md:gap-4">
-          <div className="flex flex-col items-center md:items-start gap-2 w-full md:w-auto">
-            <div className="relative flex items-center gap-1 w-full justify-center md:justify-end">
+          <div className="flex flex-col items-stretch md:items-start gap-2 w-full md:w-auto">
+            <div className="relative flex items-center   gap-1 w-full justify-center md:justify-end">
               <input
                 type="email"
                 placeholder="اكتب بريدك الالكتروني"
@@ -17,7 +17,7 @@ const Footer = () => {
               />
               <Mail className="absolute right-4 text-black w-5 h-5" />
             </div>
-            <div className="bg-white rounded-full px-4 py-2 text-center">
+            <div className="bg-white w-full rounded-full px-4 py-2 text-center">
               <button className="bg-gradient-to-r from-blue-500 to-cyan-500 text-transparent bg-clip-text font-bold text-lg hover:opacity-80 transition">
                 اشترك الآن
               </button>
@@ -70,8 +70,8 @@ const Footer = () => {
         </div>
         {/* Logo and social */}
         <div className="flex flex-col col-span-2 sm:col-span-3 md:col-span-2 w-full justify-between items-center md:items-end gap-4 mb-4 text-center md:text-right">
-          <div className="w-full">
-            <img src="/logo.svg" alt="A'atene" className="w-full max-w-[160px] mx-auto md:mx-0" />
+          <div className="w-full flex flex-col gap-1">
+            <img src="/logo.svg" alt="A'atene" className="w-[80%]     ml-auto" />
             <p className="text-sm mt-1">
               أفضل معلومات حول الشركة gies هنا ولكن <br className="hidden md:block" /> lorem ipsum الأن
             </p>
