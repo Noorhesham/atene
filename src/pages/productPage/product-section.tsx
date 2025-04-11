@@ -11,6 +11,7 @@ import { TabsProduct } from "@/components/TabsProduct";
 import SimilarProducts from "@/components/SimilarProducts";
 import CategoryScroll from "@/components/CategoryScroll";
 import { ProductSectionProps } from "@/types";
+import ProductCard from "@/components/ProductCard";
 
 /**
  * ProductSection - Main product display section
@@ -90,6 +91,41 @@ const ProductSection = ({ product }: { product: ProductSectionProps }) => {
         <TabsProduct product={product} />
         <SimilarProducts />
         <CategoryScroll />
+        <MaxWidthWrapper noPaddingX className=" my-5 grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <ProductCard
+            product={{
+              price: 100,
+              images: [
+                { src: "/unsplash_Zf80cYcxSFA.png", alt: "Product 1" },
+                { src: "/unsplash_oIlix2slmsI.png", alt: "Product 2" },
+                { src: "/unsplash_em37kS8WJJQ.png", alt: "Product 3" },
+                { src: "/unsplash_9Huby3g9fN0.png", alt: "Product 4" },
+              ],
+            }}
+          />
+          <ProductCard
+            product={{
+              price: 100,
+              images: [
+                { src: "/unsplash_em37kS8WJJQ (1).png", alt: "Product 1" },
+                { src: "/unsplash_9Huby3g9fN0 (1).png", alt: "Product 2" },
+                { src: "/unsplash_Zf80cYcxSFA (1).png", alt: "Product 3" },
+                { src: "/unsplash_Zf80cYcxSFA (1).png", alt: "Product 3" },
+              ],
+            }}
+          />
+          <ProductCard
+            product={{
+              price: 100,
+              images: [
+                { src: "/unsplash_oIlix2slmsI (1).png", alt: "Product 1" },
+                { src: "/unsplash_em37kS8WJJQ (2).png", alt: "Product 2" },
+                { src: "/unsplash_9Huby3g9fN0 (2).png", alt: "Product 3" },
+                { src: "/unsplash_Zf80cYcxSFA (2).png", alt: "Product 4" },
+              ],
+            }}
+          />
+        </MaxWidthWrapper>
       </MaxWidthWrapper>
     </section>
   );
