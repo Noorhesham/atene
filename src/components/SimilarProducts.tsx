@@ -6,8 +6,8 @@ const SimilarProducts = () => {
     <MaxWidthWrapper noPaddingX className="flex flex-col gap-3">
       <div className="flex flex-col gap-5 lg:mb-10">
         <h2 className=" font-semibold  text-3xl"> استكشف المزيد من عمليات البحث ذات الصلة</h2>
-        <div className=" flex gap-2">
-          {Array.from({ length: 8 }).map((_, i) => (
+        <div className="  flex-wrap lg:flex-nowrap flex gap-2">
+          {Array.from({ length: 9 }).map((_, i) => (
             <div key={i} className="   bg-gray-200 rounded-full px-4 py-1">
               tag1
             </div>
