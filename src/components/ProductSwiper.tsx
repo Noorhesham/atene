@@ -26,7 +26,16 @@ const ProductSwiper = ({ images, rtl = true, className }: ProductSwiperProps) =>
   const [activeIndex, setActiveIndex] = useState(0);
   const [zoomOpen, setZoomOpen] = useState(false);
   const [zoomImage, setZoomImage] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
 
+    handleResize(); // Set initial value
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   useEffect(() => {
     if (!mainSwiper) return;
 
@@ -77,7 +86,7 @@ const ProductSwiper = ({ images, rtl = true, className }: ProductSwiperProps) =>
               "transition-opacity hover:opacity-100",
               rtl ? "right-4" : "left-4"
             )}
-            onClick={() => mainSwiper?.slideNext()}
+            onClick={() => (isMobile ? mainSwiper?.slidePrev() : mainSwiper?.slideNext())}
           >
             <span className="text-gray-600 ">
               <ChevronRight />
@@ -90,7 +99,7 @@ const ProductSwiper = ({ images, rtl = true, className }: ProductSwiperProps) =>
               "transition-opacity hover:opacity-100",
               rtl ? "left-4" : "right-4"
             )}
-            onClick={() => mainSwiper?.slidePrev()}
+            onClick={() => (isMobile ? mainSwiper?.slideNext() : mainSwiper?.slidePrev())}
           >
             <span className="text-gray-600  ">
               <ChevronLeft />
