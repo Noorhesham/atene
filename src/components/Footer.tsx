@@ -71,7 +71,7 @@ const Footer = () => {
         {/* Logo and social */}
         <div className="flex flex-col col-span-2 sm:col-span-3 md:col-span-2 w-full justify-between items-center md:items-end gap-4 mb-4 text-center md:text-right">
           <div className="w-full flex flex-col gap-1">
-            <img src="/logo.svg" alt="A'atene" className="w-[80%]     ml-auto" />
+            <img src="/logo.svg" alt="A'atene" className="w-[80%]  mx-auto    lg:ml-auto" />
             <p className="text-sm mt-1">
               أفضل معلومات حول الشركة gies هنا ولكن <br className="hidden md:block" /> lorem ipsum الأن
             </p>

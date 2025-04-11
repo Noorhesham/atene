@@ -45,7 +45,7 @@ const ProductSwiper = ({ images, rtl = true, className }: ProductSwiperProps) =>
   };
 
   return (
-    <div className={cn("relative w-full flex flex-row-reverse gap-3", className)}>
+    <div className={cn("relative w-full flex flex-col lg:flex-row-reverse gap-3", className)}>
       {" "}
       {/* Main Swiper */}
       <div className="relative flex-1 aspect-square rounded-xl overflow-hidden">
@@ -62,7 +62,7 @@ const ProductSwiper = ({ images, rtl = true, className }: ProductSwiperProps) =>
                 <img
                   src={image.src || "/placeholder.png"}
                   alt={image.alt}
-                  className="object-cover w-full h-full cursor-zoom-in"
+                  className="object-cover absolute inset-0 w-full object-cover h-full cursor-zoom-in"
                   onClick={() => handleZoomClick(image.src)}
                 />
               </div>
@@ -99,7 +99,7 @@ const ProductSwiper = ({ images, rtl = true, className }: ProductSwiperProps) =>
         </Swiper>
       </div>
       {/* Desktop Vertical Thumbnails */}
-      <div className="hidden md:flex flex-col gap-3 w-20">
+      <div className="flex w-full lg:flex-col gap-3 lg:w-20">
         {images.map((image, index) => (
           <button
             key={index}
@@ -117,35 +117,6 @@ const ProductSwiper = ({ images, rtl = true, className }: ProductSwiperProps) =>
             />
           </button>
         ))}
-      </div>
-      {/* Mobile Thumbnails */}
-      <div className="md:hidden w-full mt-3">
-        <Swiper
-          dir={rtl ? "rtl" : "ltr"}
-          onSwiper={setThumbsSwiper}
-          spaceBetween={8}
-          slidesPerView="auto"
-          centeredSlides={true}
-          watchSlidesProgress={true}
-          className="mobile-thumbs"
-        >
-          {images.map((image, index) => (
-            <SwiperSlide
-              key={index}
-              className={cn(
-                "w-16 h-16 cursor-pointer rounded-lg overflow-hidden",
-                "transition-opacity duration-200",
-                activeIndex === index ? "ring-2 ring-primary" : "opacity-75"
-              )}
-            >
-              <img
-                src={image.src || "/placeholder.png"}
-                alt={`Thumbnail ${index + 1}`}
-                className="object-cover w-full h-full"
-              />
-            </SwiperSlide>
-          ))}
-        </Swiper>
       </div>
       {/* Zoom Dialog */}
       <Dialog open={zoomOpen} onOpenChange={setZoomOpen}>
