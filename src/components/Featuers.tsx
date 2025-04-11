@@ -26,12 +26,12 @@ interface FeaturesProps {
 const Features: React.FC<FeaturesProps> = () => {
   return (
     <div className="bg-white ">
-      <div className="  ml-auto mt-3">
+      <div className="  ml-auto my-3">
         <div className="grid grid-cols-1 md:grid-cols-2 ">
           {features.map((feature, index) => (
             <div
               key={index}
-              className="flex items-center gap-4 p-6 rounded-xl hover:bg-gray-50 transition-colors duration-200"
+              className="flex items-center gap-4 p-3 lg:p-6 rounded-xl hover:bg-gray-50 transition-colors duration-200"
             >
               <div className="  bg-[#F5F5F5] p-2 rounded-xl">
                 <img className=" w-8" src={feature.icon} alt="" />

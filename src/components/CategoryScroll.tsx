@@ -13,7 +13,7 @@ const CategoryScroll = () => {
       <h2 className="font-bold my-4 t  text-xl lg:text-3xl">استكشاف الفئات</h2>
       <div className="flex flex-wrap gap-4 max-w-full justify-start">
         {categories.map((cat) => (
-          <div key={cat.id} className="flex flex-col items-center w-[80px]">
+          <div key={cat.id} className="flex flex-col items-center w-[60px] lg:w-[80px]">
             <img
               src={cat.image}
               alt={cat.name}

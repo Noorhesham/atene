@@ -110,7 +110,7 @@ const ProductSection = ({ product }: { product: ProductSectionProps }) => {
                 { src: "/unsplash_em37kS8WJJQ (1).png", alt: "Product 1" },
                 { src: "/unsplash_9Huby3g9fN0 (1).png", alt: "Product 2" },
                 { src: "/unsplash_Zf80cYcxSFA (1).png", alt: "Product 3" },
-                { src: "/unsplash_Zf80cYcxSFA (1).png", alt: "Product 3" },
+                { src: "/unsplash_oIlix2slmsI (2).png", alt: "Product 3" },
               ],
             }}
           />
