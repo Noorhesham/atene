@@ -2,10 +2,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChevronLeft, Medal } from "lucide-react";
 import Card from "./Card";
 import { AnimatePresence, motion } from "framer-motion";
-import ReviewSummary from "./ReviewSummary";
-import ReviewForm from "./ReviewForm";
-
-export function TabsProduct() {
+import ReviewSummary from "./reviews/ReviewSummary";
+import ReviewForm from "./reviews/ReviewForm";
+import { Bell } from "lucide-react";
+import ReviewCard from "./reviews/ReviewCard";
+import { ProductSectionProps } from "@/types";
+export function TabsProduct({ product }: { product: ProductSectionProps }) {
+  console.log(product);
   return (
     <Tabs defaultValue="product" className="w-full mt-5" dir="rtl">
       <TabsList className="grid w-full grid-cols-3 gap-4 md:grid-cols-3 sm:grid-cols-2">
@@ -67,13 +70,23 @@ export function TabsProduct() {
                     </div>
                   </div>
                 </div>
-                <div className="col-span-1 md:col-span-2 lg:col-span-2">
+                <div className="col-span-1 flex flex-col gap-4 md:col-span-2 lg:col-span-2">
                   <Card className="bg-[#EFF2F4]">
                     <h2 className="font-bold my-2 text-xl">هل تريد مشاهدات أكثر لاعلانك ؟</h2>
                     <div className="flex bg-white px-4 py-2 rounded-xl justify-between items-center my-5">
                       <div className="flex gap-1 items-center">
-                        <Medal className="w-5 h-5" />
+                        <Medal className="w-5 text-yellow-400 h-5" />
                         ميز وأعد نشر إعلانك
+                      </div>
+                      <ChevronLeft />
+                    </div>
+                  </Card>
+                  <Card className="bg-[#EFF2F4]">
+                    <h2 className="font-bold my-2 text-xl">هل تود اضافة اعلان مماثل ؟</h2>
+                    <div className="flex bg-white px-4 py-2 rounded-xl justify-between items-center my-5">
+                      <div className="flex gap-1 items-center">
+                        <Bell className="w-5 text-rose-400 h-5" />
+                        أضف إعلانك الآن{" "}
                       </div>
                       <ChevronLeft />
                     </div>
@@ -115,40 +128,13 @@ export function TabsProduct() {
               />
 
               {/* Reviews */}
-              {[1, 2].map((r) => (
-                <Card key={r} className="p-4 my-4 shadow-sm">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <img src="https://via.placeholder.com/40" alt="User avatar" className="w-10 h-10 rounded-full" />
-                      <h5 className="text-sm">مايك جونسون</h5>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <span key={i}>⭐</span>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="mr-12">
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      لوريم إيبسوم ألم سيت أميت، كونسيكتيور أديبي سكينج إليت، سيد ديام نونومي نيبه إيسمود تينسيدونت أوت
-                      لاوريت دولور ماجن.
-                    </p>
-                    <div className="flex gap-2 mt-2">
-                      <div className="w-12 h-12 bg-gray-300 rounded-xl" />
-                      <div className="w-12 h-12 bg-gray-300 rounded-xl" />
-                      <div className="w-12 h-12 bg-gray-300 rounded-xl" />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="text-sm text-gray-500 mt-2">5M</div>
-                      <div className="text-sm text-gray-500 mt-2">يحب</div>
-                      <div className="text-sm text-gray-500 mt-2">يرد</div>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-
+              <div className="my-6">
+                {product.reviews?.map((review, index) => (
+                  <ReviewCard key={index} {...review} />
+                ))}
+              </div>
               {/* Write a review */}
-              {/* <ReviewForm /> */}
+              <ReviewForm />
             </motion.div>
           </AnimatePresence>
         </div>

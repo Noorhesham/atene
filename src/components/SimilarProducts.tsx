@@ -15,9 +15,20 @@ const SimilarProducts = () => {
         </div>
       </div>
       <div className=" grid grid-cols-2 lg:grid-cols-4 gap-8">
-        {Array.from({ length: 8 }).map((_, i) => (
+        {[
+          "/Frame 1000005447 (1).png",
+          "/Frame 1000005447 (2).png",
+          "/Frame 1000005447 (4).png",
+          "/Frame 1000005447 (5).png",
+          "/Frame 1000005447 (6).png",
+          "/Frame 1000005447 (7).png",
+          "/Frame 1000005447 (9).png",
+          "/Frame 1000005447 (8).png",
+        ].map((src, i) => (
           <div key={i} className="  flex-col flex items-start justify-center rounded-lg">
-            <div className="bg-[#A6A6A6] rounded-2xl w-full h-80 "></div>
+            <div className=" relative overflow-hidden rounded-2xl w-full h-80 ">
+              <img src={src} alt="" className="w-full h-full absolute object-cover inset-0" />
+            </div>
             <p className="text-gray-700 text-lg font-bold">منتج مشابه {i + 1}</p>
             <span className=" font-semibold">100$</span>
           </div>

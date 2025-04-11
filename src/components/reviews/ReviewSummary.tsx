@@ -1,5 +1,6 @@
-import MotionItem from "./MotionItem";
-import { Progress } from "./ui/progress";
+import MotionItem from "../MotionItem";
+import Starrating from "./Rate";
+import { Progress } from "../ui/progress";
 
 type ReviewSummaryProps = {
   reviews_counts: Record<string, number>;
@@ -14,11 +15,7 @@ const ReviewSummary = ({ reviews_counts, review_count, review_rate }: ReviewSumm
       <div className="flex flex-col w-full lg:w-auto items-center bg-gray-100  rounded-xl p-4 justify-center min-w-[120px]">
         <span className="text-6xl ">{review_rate.toFixed(1)}</span>
         <span className="text-sm text-muted-foreground">من {review_count} مراجعة</span>
-        <div className="flex mt-1 text-xl text-yellow-500">
-          {[...Array(5)].map((_, i) => (
-            <span key={i}>★</span>
-          ))}
-        </div>
+        <Starrating className="mt-2" MaxRating={5} defaultRating={4} change={false} size={30} />
       </div>
 
       {/* Star distribution */}

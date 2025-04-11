@@ -9,43 +9,27 @@ import Features from "@/components/Featuers";
 import Seller from "@/components/Seller";
 import { TabsProduct } from "@/components/TabsProduct";
 import SimilarProducts from "@/components/SimilarProducts";
-
-interface ProductSectionProps {
-  product: {
-    id: string;
-    title: string;
-    price: number;
-    originalPrice?: number;
-    discount?: number;
-    rating: number;
-    reviewCount: number;
-    description: string;
-    images: { src: string; alt: string }[];
-    sizes: string[];
-    weights: string[];
-  };
-  rtl?: boolean;
-}
+import CategoryScroll from "@/components/CategoryScroll";
+import { ProductSectionProps } from "@/types";
 
 /**
  * ProductSection - Main product display section
  * Combines gallery, options, and product information
  *
  * @param product - Product data object
- * @param rtl - Whether to use RTL layout (for Arabic)
- */
-const ProductSection = ({ product, rtl = true }: ProductSectionProps) => {
+\ */
+const ProductSection = ({ product }: { product: ProductSectionProps }) => {
   // Breadcrumb items - would typically come from navigation context
   const breadcrumbItems = [
-    { label: rtl ? "قائمة المنتجات" : "Products", href: "/products" },
+    { label: "قائمة المنتجات", href: "/products" },
     { label: product.title, href: `/products/${product.id}` },
   ];
 
   return (
-    <section dir={rtl ? "rtl" : "ltr"}>
+    <section dir="rtl">
       {/* Breadcrumb */}
       <MaxWidthWrapper className="mb-4">
-        <CustomBreadcrumb items={breadcrumbItems} rtl={rtl} />
+        <CustomBreadcrumb items={breadcrumbItems} />
       </MaxWidthWrapper>
 
       {/* Product Content */}
@@ -53,27 +37,22 @@ const ProductSection = ({ product, rtl = true }: ProductSectionProps) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Product Gallery */}
           <div className="w-full">
-            <ProductSwiper images={product.images} rtl={rtl} />
+            <ProductSwiper images={product.images} />
           </div>
 
           {/* Product Info and Options */}
-          <div className={`flex flex-col ${rtl ? "text-right" : "text-left"}`}>
+          <div className={`flex flex-col text-right`}>
             <div className="flex lg:flex-row flex-col w-full items-center mb-6 gap-2">
               {/* Price */}
-              <Price
-                price={product.price}
-                originalPrice={product.originalPrice}
-                discount={product.discount}
-                rtl={rtl}
-              />
+              <Price price={product.price} originalPrice={product.originalPrice} discount={product.discount} />
               <div className="flex mr-auto items-center">
                 {/* Stars */}
                 <div className="flex items-center gap-1 lg:border-r-2 border-gray-800 p-2  my-auto">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star
                       key={i}
-                      className="h-4 w-4 text-[#A6A6A6]"
-                      fill={i < product.rating ? "currentColor" : "none"}
+                      className={`h-4 w-4  ${i < product.rating ? "text-yellow-500" : "text-gray-300"}`}
+                      fill={i < product.rating ? "oklch(79.5% 0.184 86.047)" : "#d1d5dc "}
                     />
                   ))}
                 </div>
@@ -93,7 +72,7 @@ const ProductSection = ({ product, rtl = true }: ProductSectionProps) => {
             {/* Description */}
             <p className="text-muted-foreground mt-5 mb-6">{product.description}</p>
             {/* Product Options */}
-            <ProductOptions sizes={product.sizes} weights={product.weights} rtl={rtl} className="mb-6" />
+            <ProductOptions sizes={product.sizes} weights={product.weights} className="mb-6" />
             {/* Add to Cart Button */}
             <Button size="lg" className="w-full  flex items-center gap-2 text-lg rounded-full  text-white mb-4">
               {" "}
@@ -108,8 +87,9 @@ const ProductSection = ({ product, rtl = true }: ProductSectionProps) => {
           </div>
         </div>
         <Seller />
-        <TabsProduct />
+        <TabsProduct product={product} />
         <SimilarProducts />
+        <CategoryScroll />
       </MaxWidthWrapper>
     </section>
   );

@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import ProductPage from "./pages/productPage/ProductPage";
 import NavbarWithState from "./components/NavBar";
+import Footer from "./components/Footer";
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
         <Route path="/" element={<ProductPage />} />
         <Route path="/products/:id" element={<ProductPage />} />
       </Routes>
+      <Footer />
     </main>
   );
 }

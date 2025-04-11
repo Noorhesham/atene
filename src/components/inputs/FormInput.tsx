@@ -10,6 +10,7 @@ import { useFormContext } from "react-hook-form";
 import RichText from "./RichText";
 import { PhotoInput } from "./PhotoInput";
 import { Textarea } from "../ui/textarea";
+import Starrating from "../reviews/Rate";
 interface FormInputProps {
   control?: any;
   name: string;
@@ -79,6 +80,7 @@ const FormInput = ({
   width,
   check = false,
   mediaType,
+  rate,
 }: FormInputProps) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -110,9 +112,12 @@ const FormInput = ({
           <div className={`relative  w-full inline-flex items-center justify-center ${className}`}>
             <FormControl className={`  ${switchToggle ? "" : "   duration-200"} `}>
               {area ? (
-                <Textarea {...field} />
+                <Textarea className=" bg-white !w-full  rounded-3xl" {...field} />
               ) : photo ? (
-                <PhotoInput single={single} mediaType={mediaType} name={field.name} />
+                <div className=" w-fit ml-auto">
+                  {" "}
+                  <PhotoInput single={single} mediaType={mediaType} name={field.name} />
+                </div>
               ) : switchToggle ? (
                 <div className="flex mx-auto   mt-3 gap-2 items-center ">
                   <Label className=" uppercase md:text-sm  text-xs text-muted-foreground" htmlFor="sale">
@@ -122,6 +127,11 @@ const FormInput = ({
                   <Label className="md:text-sm uppercase flex-grow  text-xs  text-muted-foreground" htmlFor="sale">
                     {label || ""}
                   </Label>
+                </div>
+              ) : rate ? (
+                <div className=" ml-auto">
+                  <Label>تقييمك</Label>
+                  <Starrating OnSetRating={field.onChange} MaxRating={5} />
                 </div>
               ) : (
                 <div className=" flex flex-col gap-2 w-full items-start">
@@ -149,7 +159,7 @@ const FormInput = ({
                         : type || "text"
                     }
                     accept={type === "file" ? "image/*, application/pdf" : undefined}
-                    className={`${!phone && ""} mt-auto shadow-sm w-full ${
+                    className={`${!phone && ""} bg-white  rounded-3xl  mt-auto shadow-sm w-full ${
                       password && form.getValues(name) && "pl-8"
                     } `}
                     placeholder={placeholder}

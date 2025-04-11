@@ -1,19 +1,8 @@
 "use client";
 import { useState } from "react";
-
 //STYLES
 const containerStyle = { display: "flex", alignItems: "center", gap: "16px" };
 const StarStyle = { display: "flex" };
-
-Starrating.propTypes = {
-  MaxRating: PropTypes.number,
-  color: PropTypes.string,
-  size: PropTypes.number,
-  defaultRating: PropTypes.number,
-  messages: PropTypes.array,
-  className: PropTypes.string,
-  OnSetRating: PropTypes.func,
-};
 
 export default function Starrating({
   MaxRating = 10,
