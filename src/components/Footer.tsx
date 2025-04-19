@@ -1,10 +1,10 @@
-import { FaApple, FaGooglePlay, FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram, FaYoutube } from "react-icons/fa";
+import { FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram, FaYoutube } from "react-icons/fa";
 import MaxWidthWrapper from "./MaxwidthWrapper";
 import { Mail } from "lucide-react";
 
 const Footer = () => {
   return (
-    <footer className="bg-white text-right text-gray-700 mt-12">
+    <footer dir="ltr" className="bg-white text-right text-gray-700 mt-12">
       {/* Newsletter */}
       <MaxWidthWrapper className="bg-gradient-to-l from-[#0A5DC2] to-[#052C5C] text-white p-6 md:p-10 rounded-lg max-w-6xl mx-auto text-center md:text-right">
         <div className="flex flex-col md:flex-row md:justify-between items-center gap-6 md:gap-4">
@@ -70,9 +70,13 @@ const Footer = () => {
         </div>
         {/* Logo and social */}
         <div className="flex flex-col col-span-2 sm:col-span-3 md:col-span-2 w-full justify-between items-center md:items-end gap-4 mb-4 text-center md:text-right">
-          <div className="w-full flex flex-col gap-1">
-            <img src="/logo.svg" alt="A'atene" className="w-[80%]  mx-auto    lg:ml-auto" />
-            <p className="text-sm mt-1">
+          <div className="w-full flex flex-col items-start gap-1">
+            <img
+              src="/logoblack.svg"
+              alt="A'atene"
+              className=" w-fit object-cover  ml-[100px] object-right mx-auto   "
+            />
+            <p className="text-sm ml-auto mt-1">
               أفضل معلومات حول الشركة gies هنا ولكن <br className="hidden md:block" /> lorem ipsum الأن
             </p>
           </div>

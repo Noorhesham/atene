@@ -179,7 +179,7 @@ const FormInput = ({
             </FormControl>
             {password && field.value && (
               <span
-                className=" absolute left-2 top-[13px]  cursor-pointer hover:text-gray-900 text-gray-800"
+                className=" absolute left-4 top-1/2 -translate-y-1/2  cursor-pointer hover:text-gray-900 text-gray-800"
                 onClick={togglePasswordVisibility}
               >
                 {showPassword ? <EyeIcon className="w-4 h-4" /> : <EyeOffIcon className="w-4 h-4" />}

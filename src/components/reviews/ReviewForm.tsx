@@ -5,9 +5,8 @@ import { z } from "zod";
 import FormInput from "../inputs/FormInput"; // Assuming you have this component
 import { Form } from "../ui/form";
 import Card from "../Card";
-import Starrating from "./Rate";
 import { Button } from "../ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft,  } from "lucide-react";
 
 // Define the schema for validation using Zod
 const reviewSchema = z.object({
