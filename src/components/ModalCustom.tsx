@@ -22,6 +22,7 @@ const ModalCustom = ({
   span,
   cancelBtn = false,
   isOpen,
+  onOpenChange,
 }: {
   btn: React.ReactNode;
   content: React.ReactNode;
@@ -35,11 +36,12 @@ const ModalCustom = ({
   isPending?: boolean;
   btnStyles?: boolean;
   form?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) => {
   const [open, setOpen] = React.useState(isOpen || false);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={isOpen || open} onOpenChange={onOpenChange || setOpen}>
       <DialogTrigger asChild>{btn}</DialogTrigger>
       <DialogContent
         aria-describedby={desc ? "modal-description" : undefined}

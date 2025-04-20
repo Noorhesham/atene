@@ -4,6 +4,7 @@ import NavbarWithState from "./components/NavBar";
 import Footer from "./components/Footer";
 import Login from "./pages/login/Login";
 import Signup from "./pages/signup/signup";
+import Report from "./pages/report/Report";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/products/:id" element={<ProductPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/report" element={<Report />} />
       </Routes>
       <Footer />
     </main>

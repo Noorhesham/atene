@@ -8,8 +8,7 @@ import "swiper/css";
 
 import { cn } from "./lib/utils";
 import { Dialog, DialogContent } from "./ui/dialog";
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "./ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface ProductSwiperProps {
   images: {
@@ -22,7 +21,6 @@ interface ProductSwiperProps {
 
 const ProductSwiper = ({ images, rtl = true, className }: ProductSwiperProps) => {
   const [mainSwiper, setMainSwiper] = useState<SwiperType | null>(null);
-  const [thumbsSwiper, setThumbsSwiper] = useState<SwiperType | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [zoomOpen, setZoomOpen] = useState(false);
   const [zoomImage, setZoomImage] = useState<string | null>(null);
@@ -58,13 +56,7 @@ const ProductSwiper = ({ images, rtl = true, className }: ProductSwiperProps) =>
       {" "}
       {/* Main Swiper */}
       <div className="relative flex-1 aspect-square rounded-xl overflow-hidden">
-        <Swiper
-          dir={rtl ? "rtl" : "ltr"}
-          modules={[Navigation, Thumbs]}
-          thumbs={{ swiper: thumbsSwiper }}
-          onSwiper={setMainSwiper}
-          className="h-full"
-        >
+        <Swiper dir={rtl ? "rtl" : "ltr"} modules={[Navigation, Thumbs]} onSwiper={setMainSwiper} className="h-full">
           {images.map((image, index) => (
             <SwiperSlide key={index} className="relative">
               <div className="absolute inset-0 bg-gray-100">

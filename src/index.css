@@ -7,7 +7,7 @@
 
 @theme inline {
   --font-oxygen: "Cairo", sans-serif;
-
+  --color-gray: #666666;
   --color-light: #8d8d8d;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

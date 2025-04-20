@@ -1,14 +1,12 @@
 "use client";
 
-import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
-import { Input } from "@/components/ui/input";
+
 import FormInput from "../inputs/FormInput";
+import MainButton from "../MainButton";
 
 const loginSchema = z.object({
   email: z.string().email("البريد الإلكتروني غير صالح"),
@@ -77,13 +75,7 @@ const LoginForm = () => {
                   />
                 </div>
               </div>
-              <Button
-                type="submit"
-                className="w-full bg-gradient-to-b from-[#5B89BA] to-[#5B89BA]
-    rounded-full hover:bg-[#3e5d89] text-white py-5 transition-colors"
-              >
-                تسجيل الدخول
-              </Button>{" "}
+              <MainButton text="تسجيل الدخول" />
               <div className="text-center">
                 <a href="#" className="text-sm text-gray-600 hover:underline">
                   نسيت كلمة السر

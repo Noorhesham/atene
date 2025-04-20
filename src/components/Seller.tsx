@@ -1,7 +1,11 @@
+import { useState } from "react";
+import AbuseReport from "./forms/AbuseRebort";
+import ModalCustom from "./ModalCustom";
 import { Button } from "./ui/button";
 import { Star, ShoppingBag, Clock, ShieldCheckIcon, Flag } from "lucide-react";
 
 const Seller = () => {
+  const [open, setOpen] = useState(false);
   return (
     <div className="border border-gray-200 rounded-lg p-4 space-y-4">
       <div className="flex justify-between items-center">
@@ -13,19 +17,23 @@ const Seller = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            className="text-sm py-1 px-3 h-8 bg-gradient-to-b from-gray-500 to-[#282828]  rounded-full text-white border-0"
-          >
+          <Button variant="default" className="text-sm py-1 px-3 h-8 rounded-full text-white border-0">
             + تابع
           </Button>
-          <Button
-            variant="outline"
-            className="text-sm bg-gradient-to-b flex items-center from-gray-500 rounded-full to-[#282828] py-1 px-3 h-8  text-white"
-          >
-            <Flag />
-            بلاغ عن البائع
-          </Button>
+          <ModalCustom
+            onOpenChange={setOpen}  
+            isOpen={open}
+            btn={
+              <Button
+                variant="destructive"
+                className="text-sm  !rounded-full flex items-center py-1 px-3 h-8  text-white"
+              >
+                <Flag />
+                بلاغ عن البائع
+              </Button>
+            }
+            content={<AbuseReport closeModal={() => setOpen(false)} />}
+          />
         </div>
       </div>
 

@@ -1,13 +1,10 @@
-"use client";
-
-import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
 import FormInput from "../inputs/FormInput";
-import MaxWidthWrapper from "../MaxwidthWrapper";
+
+import MainButton from "../MainButton";
 
 const signupSchema = z
   .object({
@@ -77,22 +74,13 @@ const SignupForm = () => {
                   name="confirmPassword"
                 />
               </div>
-
               <div className="flex items-center gap-2 text-right">
                 <input type="checkbox" id="terms" className="rounded border-gray-300" />
                 <label htmlFor="terms" className="text-sm text-gray-600">
                   لقد قرأت ووافقت على شروط الخدمة وسياسة الخصوصية
                 </label>
               </div>
-
-              <Button
-                size={"lg"}
-                type="submit"
-                className="w-full bg-gradient-to-b from-[#5B89BA] to-[#5B89BA]
-    rounded-full hover:bg-[#3e5d89] text-white py-5 transition-colors"
-              >
-                إنشاء حساب جديد
-              </Button>
+              <MainButton text="إنشاء حساب جديد" />
             </form>
           </Form>
         </div>
