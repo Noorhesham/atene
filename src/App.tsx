@@ -5,6 +5,7 @@ import Footer from "./components/Footer";
 import Login from "./pages/login/Login";
 import Signup from "./pages/signup/signup";
 import Report from "./pages/report/Report";
+import Favourites from "./pages/favourites/Favourites";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/report" element={<Report />} />
+        <Route path="/favourites" element={<Favourites />} />
       </Routes>
       <Footer />
     </main>
