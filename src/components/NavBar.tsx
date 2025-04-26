@@ -24,7 +24,7 @@ const NavbarWithState = () => {
           {/* Right section with cart and logo */}
           <div className="flex items-center gap-4">
             {/* Logo */}
-            <img src="/logoblack.svg" className="  h-10" alt="logo" />
+            <img src="/black.svg" className="  h-10" alt="logo" />
           </div>
           {/* Center search bar */}
           <div className="flex-1 max-w-2xl mx-4">
