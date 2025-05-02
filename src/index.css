@@ -8,6 +8,7 @@
 @theme inline {
   --font-oxygen: "Cairo", sans-serif;
   --color-gray: #666666;
+  --color-primary: #287CDA;
   --color-light: #8d8d8d;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -113,6 +114,11 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.488 0.243 264.376);
+}
+
+/* RTL Support */
+.dir-rtl {
+  direction: rtl;
 }
 
 /* @layer base {

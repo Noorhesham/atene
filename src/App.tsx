@@ -6,6 +6,8 @@ import Login from "./pages/login/Login";
 import Signup from "./pages/signup/signup";
 import Report from "./pages/report/Report";
 import Favourites from "./pages/favourites/Favourites";
+import MessagePage from "./pages/messages/MessagePage";
+import StorePage from "./pages/store/StorePage";
 
 function App() {
   return (
@@ -18,6 +20,8 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/report" element={<Report />} />
         <Route path="/favourites" element={<Favourites />} />
+        <Route path="/chat" element={<MessagePage />} />
+        <Route path="/store/:id" element={<StorePage />} />
       </Routes>
       <Footer />
     </main>

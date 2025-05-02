@@ -8,6 +8,7 @@ const MainButton = ({
   type,
   onClick,
   disabled,
+  bg,
 }: {
   children?: React.ReactNode;
   className?: string;
@@ -15,13 +16,14 @@ const MainButton = ({
   type?: "submit" | "reset" | "button";
   onClick?: React.MouseEventHandler;
   disabled?: boolean;
+  bg?: string;
 }) => {
   return (
     <Button
       onClick={onClick}
       type={type}
       disabled={disabled}
-      className={` ${className || ""} w-full bg-gradient-to-b from-[#5B89BA] to-[#5B89BA]
+      className={` ${className || ""} w-full ${bg || "bg-gradient-to-b from-[#5B89BA] to-[#5B89BA]"}
 rounded-full hover:bg-[#3e5d89] text-white py-5 transition-colors`}
     >
       {text || children}

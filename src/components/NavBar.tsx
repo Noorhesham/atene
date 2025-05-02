@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ChevronDown, Heart, Grid3X3, MessageSquare, ShoppingCart } from "lucide-react";
 import MaxWidthWrapper from "./MaxwidthWrapper";
+import { Link } from "react-router-dom";
 
 /**
  * Navbar component with interactive state
@@ -22,10 +23,10 @@ const NavbarWithState = () => {
       <MaxWidthWrapper className="bg-white border-b border-gray-200 !py-5">
         <div className="max-w-screen-xl mx-auto flex items-center justify-between px-4">
           {/* Right section with cart and logo */}
-          <div className="flex items-center gap-4">
+          <Link to="/" className="flex items-center gap-4">
             {/* Logo */}
             <img src="/black.svg" className="  h-10" alt="logo" />
-          </div>
+          </Link>
           {/* Center search bar */}
           <div className="flex-1 max-w-2xl mx-4">
             <div className="relative flex">
@@ -39,7 +40,7 @@ const NavbarWithState = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               {/* Search button */}
-              <button className="absolute left-0 top-0 h-full bg-light  text-white px-4 rounded-l-md flex items-center">
+              <button className="absolute left-0 top-0 h-full bg-primary  text-white px-4 rounded-l-md flex items-center">
                 البحث
               </button>
               {/* Categories dropdown */}
@@ -92,7 +93,7 @@ const NavbarWithState = () => {
                 <span className="sr-only">الفئات</span>
               </button>
             </div>{" "}
-            <div className="w-10 h-10 rounded-full bg-[#6c7a89] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
               <span className="sr-only">الملف الشخصي</span>
             </div>
           </div>

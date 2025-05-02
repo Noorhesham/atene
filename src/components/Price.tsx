@@ -5,15 +5,17 @@ const Price = ({
   originalPrice,
   discount,
   rtl,
+  className,
 }: {
   price: number;
   originalPrice?: number;
   discount?: number;
   rtl?: boolean;
+  className?: string;
 }) => {
   return (
-    <div className="flex ml-auto items-center gap-3">
-      <span className="text-2xl text-nowrap text-[#414141] flex items-start ">
+    <div className={`flex ml-auto items-center gap-3  text-[#414141] ${className}`}>
+      <span className="text-2xl text-nowrap  flex items-start ">
         ₪ {price.toFixed(2)}
         {originalPrice && (
           <span className=" text-red-500 p-2 text-xs line-through">₪{originalPrice.toFixed(2)}</span>
