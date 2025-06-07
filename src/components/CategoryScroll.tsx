@@ -1,28 +1,31 @@
 // components/CategoryScroll.tsx
 import React from "react";
+import { Categories } from "@/types/product";
+import { Link } from "react-router-dom";
 
-const categories = Array.from({ length: 21 }, (_, i) => ({
-  id: i + 1,
-  name: "الخواتم",
-  image: `/il_100x100.3400269364_k196.jpg (${i + 1}).png`, // Make sure images are named 1.png to 12.png
-}));
+interface CategoryScrollProps {
+  categories: Categories;
+}
 
-const CategoryScroll = () => {
+const CategoryScroll = ({ categories }: CategoryScrollProps) => {
+  if (!categories?.length) {
+    return null;
+  }
+
   return (
-    <div className=" rounded-md p-4">
-      <h2 className="font-bold my-4 t  text-xl lg:text-3xl">استكشاف الفئات</h2>
-      <div className="flex flex-wrap gap-4 max-w-full justify-start">
-        {categories.map((cat) => (
-          <div key={cat.id} className="flex flex-col items-center w-[60px] lg:w-[80px]">
-            <img
-              src={cat.image}
-              alt={cat.name}
-              className="w-[60px] h-[60px] object-cover rounded-2xl border-input border hover:scale-105 transition"
-            />
-            <span className="mt-1 text-sm text-center">{cat.name}</span>
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-12 gap-1 py-4">
+      {categories.map((category) => (
+        <Link
+          key={category.id}
+          to={`/category/${category.slug}`}
+          className="flex flex-col items-center gap-2 p-4 rounded-lg hover:bg-gray-50 transition-colors text-center"
+        >
+          <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center p-2">
+            <img src={category.image} alt={category.name} className="w-full h-full object-cover" />
           </div>
-        ))}
-      </div>
+          <span className="text-sm font-medium text-gray-700">{category.name}</span>
+        </Link>
+      ))}
     </div>
   );
 };

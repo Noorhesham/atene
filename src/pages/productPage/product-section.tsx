@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { HeartIcon, PhoneIcon, SendHorizonalIcon, Star } from "lucide-react";
 import CustomBreadcrumb from "../../components/CustomBreadcrumb";
 import MaxWidthWrapper from "../../components/MaxwidthWrapper";
@@ -10,8 +11,7 @@ import Seller from "@/components/Seller";
 import { TabsProduct } from "@/components/TabsProduct";
 import SimilarProducts from "@/components/SimilarProducts";
 import CategoryScroll from "@/components/CategoryScroll";
-import { ProductSectionProps } from "@/types";
-import ProductCard from "@/components/ProductCard";
+import { ProductSectionProps, Variation } from "@/types/product";
 
 /**
  * ProductSection - Main product display section
@@ -20,9 +20,20 @@ import ProductCard from "@/components/ProductCard";
  * @param product - Product data object
 \ */
 const ProductSection = ({ product }: { product: ProductSectionProps }) => {
-  // Breadcrumb items - would typically come from navigation context
+  const [selectedVariation, setSelectedVariation] = useState<Variation | null>(null);
+
+  // Get the current price based on selected variation
+  const currentPrice = selectedVariation?.price || product.price;
+  const currentOriginalPrice = product.originalPrice;
+  const currentDiscount =
+    currentOriginalPrice > currentPrice
+      ? Math.round(((currentOriginalPrice - currentPrice) / currentOriginalPrice) * 100)
+      : 0;
+
+  // Breadcrumb items based on category hierarchy
   const breadcrumbItems = [
-    { label: "قائمة المنتجات", href: "/products" },
+    { label: "الرئيسية", href: "/" },
+    { label: product.category.name, href: `/category/${product.category.id}` },
     { label: product.title, href: `/products/${product.id}` },
   ];
 
@@ -42,90 +53,77 @@ const ProductSection = ({ product }: { product: ProductSectionProps }) => {
           </div>
 
           {/* Product Info and Options */}
-          <div className={`flex flex-col text-right`}>
+          <div className="flex flex-col text-right">
             <div className="flex lg:flex-row flex-col w-full items-center mb-6 gap-2">
               {/* Price */}
-              <Price price={product.price} originalPrice={product.originalPrice} discount={product.discount} />
+              <Price price={currentPrice} originalPrice={currentOriginalPrice} discount={currentDiscount} />
               <div className="flex mr-auto items-center">
                 {/* Stars */}
-                <div className="flex items-center gap-1 lg:border-r-2 border-gray-800 p-2  my-auto">
+                <div className="flex items-center gap-1 lg:border-r-2 border-gray-800 p-2 my-auto">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star
                       key={i}
-                      className={`h-4 w-4  ${i < product.rating ? "text-yellow-500" : "text-gray-300"}`}
-                      fill={i < product.rating ? "oklch(79.5% 0.184 86.047)" : "#d1d5dc "}
+                      className={`h-4 w-4 ${i < product.rating ? "text-yellow-500" : "text-gray-300"}`}
+                      fill={i < product.rating ? "oklch(79.5% 0.184 86.047)" : "#d1d5dc"}
                     />
                   ))}
                 </div>
                 {/* Review count */}
                 {product.reviewCount > 0 ? (
-                  <div>{`(  ${product.reviewCount} مراجعة  )`}</div>
+                  <div>{`(${product.reviewCount} مراجعة)`}</div>
                 ) : (
                   <div>لا مراجعات حتي الان</div>
                 )}
               </div>
             </div>
+
             {/* Title and Rating */}
-            <div className="flex justify-between pb-6   border-b border-[#AEAEAE] items-start">
-              <h1 className="text-3xl font-bold  mb-2">{product.title}</h1>
-              <HeartIcon className=" text-[#AEAEAE] mt-3  w-8  h-8  font-normal" />
+            <div className="flex justify-between pb-6 border-b border-[#AEAEAE] items-start">
+              <h1 className="text-3xl font-bold mb-2">{product.title}</h1>
+              <HeartIcon className="text-[#AEAEAE] mt-3 w-8 h-8 font-normal" />
             </div>
+
             {/* Description */}
-            <p className="text-muted-foreground mt-5 mb-6">{product.description}</p>
+            <p className="text-muted-foreground mt-5 mb-6" dangerouslySetInnerHTML={{ __html: product.description }} />
+
             {/* Product Options */}
-            <ProductOptions sizes={product.sizes} weights={product.weights} className="mb-6" />
-            {/* Add to Cart Button */}
-            <Button size="lg" className="w-full  flex items-center gap-2 text-lg rounded-full  text-white mb-4">
-              {" "}
-              <span className=" text-right"> *** *** *** 912+</span>
+            <ProductOptions
+              attributes={product.attributes}
+              variations={product.variations}
+              className="mb-6"
+              onVariationChange={setSelectedVariation}
+            />
+
+            {/* Contact Buttons */}
+            <Button size="lg" className="w-full flex items-center gap-2 text-lg rounded-full text-white mb-4">
+              <span className="text-right">{product.store.phone}</span>
               <PhoneIcon />
             </Button>
-            {/* Call Button */}
-            <Button variant="outline" size="lg" className="w-full text-lg rounded-full ">
+
+            {/* Chat Button */}
+            <Button variant="outline" size="lg" className="w-full text-lg rounded-full">
               <span>دردش</span> <SendHorizonalIcon />
             </Button>
-            <Features />
+
+            {/* Features */}
+            <Features specifications={product.specifications} />
           </div>
         </div>
-        <Seller />
+
+        {/* Seller Info */}
+        <Seller store={product.store} />
+
+        {/* Product Tabs */}
         <TabsProduct product={product} />
-        <SimilarProducts />
-        <CategoryScroll />
-        <MaxWidthWrapper noPaddingX className=" my-5 grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <ProductCard
-            product={{
-              price: 100,
-              images: [
-                { src: "/unsplash_Zf80cYcxSFA.png", alt: "Product 1" },
-                { src: "/unsplash_oIlix2slmsI.png", alt: "Product 2" },
-                { src: "/unsplash_em37kS8WJJQ.png", alt: "Product 3" },
-                { src: "/unsplash_9Huby3g9fN0.png", alt: "Product 4" },
-              ],
-            }}
-          />
-          <ProductCard
-            product={{
-              price: 100,
-              images: [
-                { src: "/unsplash_em37kS8WJJQ (1).png", alt: "Product 1" },
-                { src: "/unsplash_9Huby3g9fN0 (1).png", alt: "Product 2" },
-                { src: "/unsplash_Zf80cYcxSFA (1).png", alt: "Product 3" },
-                { src: "/unsplash_oIlix2slmsI (2).png", alt: "Product 3" },
-              ],
-            }}
-          />
-          <ProductCard
-            product={{
-              price: 100,
-              images: [
-                { src: "/unsplash_oIlix2slmsI (1).png", alt: "Product 1" },
-                { src: "/unsplash_em37kS8WJJQ (2).png", alt: "Product 2" },
-                { src: "/unsplash_9Huby3g9fN0 (2).png", alt: "Product 3" },
-                { src: "/unsplash_Zf80cYcxSFA (2).png", alt: "Product 4" },
-              ],
-            }}
-          />
-        </MaxWidthWrapper>
+
+        {/* Similar Products */}
+        <SimilarProducts products={product.similar} />
+
+        {/* Category Scroll */}
+        <div className="flex flex-col gap-2 mt-5">
+          <h2 className="text-2xl font-bold text-right">استكشاف الفئات</h2>
+          <CategoryScroll categories={product.categories} />
+        </div>
       </MaxWidthWrapper>
     </section>
   );

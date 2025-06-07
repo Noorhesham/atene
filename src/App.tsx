@@ -8,6 +8,7 @@ import Report from "./pages/report/Report";
 import Favourites from "./pages/favourites/Favourites";
 import MessagePage from "./pages/messages/MessagePage";
 import StorePage from "./pages/store/StorePage";
+import SingleProduct from "./pages/singleProduct/Product";
 
 function App() {
   return (
@@ -15,7 +16,8 @@ function App() {
       <NavbarWithState />
       <Routes>
         <Route path="/" element={<ProductPage />} />
-        <Route path="/products/:id" element={<ProductPage />} />
+        <Route path="/products" element={<ProductPage />} />
+        <Route path="/products/:slug" element={<SingleProduct />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/report" element={<Report />} />

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, Heart, Grid3X3, MessageSquare, ShoppingCart } from "lucide-react";
+import { ChevronDown, Heart, Grid3X3, MessageSquare } from "lucide-react";
 import MaxWidthWrapper from "./MaxwidthWrapper";
 import { Link } from "react-router-dom";
+import UserMenu from "./UserMenu";
 
 /**
  * Navbar component with interactive state
@@ -25,12 +26,11 @@ const NavbarWithState = () => {
           {/* Right section with cart and logo */}
           <Link to="/" className="flex items-center gap-4">
             {/* Logo */}
-            <img src="/black.svg" className="  h-10" alt="logo" />
+            <img src="/black.svg" className="h-10" alt="logo" />
           </Link>
           {/* Center search bar */}
           <div className="flex-1 max-w-2xl mx-4">
             <div className="relative flex">
-              {" "}
               {/* Search input */}
               <input
                 type="text"
@@ -77,7 +77,6 @@ const NavbarWithState = () => {
           </div>
           {/* Left section with profile and icons */}
           <div className="flex items-center gap-5">
-            {/* Profile circle */}
             {/* Navigation icons */}
             <div className="flex items-center gap-5 text-gray-500">
               <button className="hover:text-gray-700">
@@ -92,10 +91,8 @@ const NavbarWithState = () => {
                 <Grid3X3 size={20} />
                 <span className="sr-only">الفئات</span>
               </button>
-            </div>{" "}
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-              <span className="sr-only">الملف الشخصي</span>
             </div>
+            <UserMenu />
           </div>
         </div>
       </MaxWidthWrapper>

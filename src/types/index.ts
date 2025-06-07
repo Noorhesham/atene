@@ -17,6 +17,12 @@ export interface ProductSectionProps {
     images?: string[];
     rating?: number;
   }[];
+  similarProducts: {
+    id: string;
+    title: string;
+    price: number;
+    image: string;
+  }[];
 }
 interface Message {
   id: string;

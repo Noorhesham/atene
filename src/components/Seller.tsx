@@ -1,60 +1,57 @@
-import { useState } from "react";
-import AbuseReport from "./forms/AbuseRebort";
-import ModalCustom from "./ModalCustom";
+import { Store } from "@/types/product";
 import { Button } from "./ui/button";
-import { Star, ShoppingBag, Clock, ShieldCheckIcon, Flag } from "lucide-react";
+import { Star } from "lucide-react";
 
-const Seller = () => {
-  const [open, setOpen] = useState(false);
+interface SellerProps {
+  store: Store;
+}
+
+const Seller = ({ store }: SellerProps) => {
   return (
-    <div className="border border-gray-200 rounded-lg p-4 space-y-4">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <img className="w-12 h-12 rounded-full object-cover" src="/Rectangle 4172.png" alt="D-Jewellry" />
-          <div className="flex flex-col">
-            <h3 className="font-semibold text-gray-900">d-jewellry</h3>
-            <span className="text-sm text-gray-500">عمان</span>
+    <div className="bg-white p-6 rounded-lg shadow-sm border mt-8">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          {store.logo && <img src={store.logo} alt={store.name} className="w-16 h-16 rounded-full object-cover" />}
+          <div>
+            <h3 className="text-lg font-semibold">{store.name}</h3>
+            <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`h-4 w-4 ${i < (store.review_rate || 0) ? "text-yellow-500" : "text-gray-300"}`}
+                    fill={i < (store.review_rate || 0) ? "oklch(79.5% 0.184 86.047)" : "#d1d5dc"}
+                  />
+                ))}
+              </div>
+              <span className="text-sm text-gray-600">({store.review_count || 0} تقييم)</span>
+            </div>
+            {store.address && <p className="text-sm text-gray-600 mt-1">{store.address}</p>}
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="default" className="text-sm py-1 px-3 h-8 rounded-full text-white border-0">
-            + تابع
+        <div className="flex flex-col gap-2">
+          <Button variant="outline" className="w-full">
+            زيارة المتجر
           </Button>
-          <ModalCustom
-            onOpenChange={setOpen}  
-            isOpen={open}
-            btn={
-              <Button
-                variant="destructive"
-                className="text-sm  !rounded-full flex items-center py-1 px-3 h-8  text-white"
-              >
-                <Flag />
-                بلاغ عن البائع
-              </Button>
-            }
-            content={<AbuseReport closeModal={() => setOpen(false)} />}
-          />
+          {store.whats_app && (
+            <Button variant="outline" className="w-full">
+              واتساب
+            </Button>
+          )}
         </div>
       </div>
-
-      <div className="flex items-center justify-between text-sm text-gray-600 border-t border-gray-100 pt-4">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1">
-            <Clock className="w-4 h-4" />
-            <span>عضو منذ 19-03-2023</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <ShieldCheckIcon className="w-4 h-4" />
-            <span> تاجر معتمد</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Star className="w-4 h-4 text-yellow-400" />
-            <span>التقييم العام 5.0</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <ShoppingBag className="w-4 h-4" />
-            <span>عدد الطلبات المنفذة 27</span>
-          </div>
+      <div className="mt-4 grid grid-cols-3 gap-4 text-center">
+        <div className="p-3 bg-gray-50 rounded-lg">
+          <div className="text-lg font-semibold">{store.orders_count || 0}</div>
+          <div className="text-sm text-gray-600">الطلبات</div>
+        </div>
+        <div className="p-3 bg-gray-50 rounded-lg">
+          <div className="text-lg font-semibold">{store.review_count || 0}</div>
+          <div className="text-sm text-gray-600">التقييمات</div>
+        </div>
+        <div className="p-3 bg-gray-50 rounded-lg">
+          <div className="text-lg font-semibold">{store.review_rate?.toFixed(1) || 0}</div>
+          <div className="text-sm text-gray-600">متوسط التقييم</div>
         </div>
       </div>
     </div>

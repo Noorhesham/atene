@@ -1,53 +1,56 @@
-import { ProductSectionProps } from "@/types";
-import { Heart, Share2Icon } from "lucide-react";
-import React from "react";
-import { FaCommentAlt } from "react-icons/fa";
-import Starrating from "./reviews/Rate";
+import { Link } from "react-router-dom";
+import { ProductSectionProps } from "@/types/product";
+import { Star } from "lucide-react";
+import { DefaultProductImage } from "./ui/default-product-image";
 
-const ProductCard = ({ product }: { product: ProductSectionProps }) => {
-  console.log(product);
+interface ProductCardProps {
+  product: Partial<ProductSectionProps>;
+}
+
+const ProductCard = ({ product }: ProductCardProps) => {
+  if (!product) {
+    return null;
+  }
+
   return (
-    <div className="relative h-full">
-      <div className=" w-full    grid grid-cols-2 relative">
-        <div className="flex flex-col gap-4 absolute top-4 left-4">
-          <div className=" p-2 bg-white">
-            <Heart />
-          </div>{" "}
-          <div className=" p-2 bg-white">
-            <Share2Icon />
+    <Link to={`/products/${product.id}`} className="group">
+      <div className="relative overflow-hidden rounded-lg aspect-square">
+        {product.images && product.images.length > 0 ? (
+          <img
+            src={product.images[0].src}
+            alt={product.images[0].alt}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <DefaultProductImage />
+        )}
+        {product.discount && product.discount > 0 && (
+          <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-sm">
+            {product.discount}% خصم
+          </div>
+        )}
+      </div>
+      <div className="mt-4">
+        <h3 className="text-lg font-semibold line-clamp-2 text-right">{product.title}</h3>
+        {product.shortDescription && (
+          <p className="text-sm text-gray-600 mt-1 line-clamp-2 text-right">{product.shortDescription}</p>
+        )}
+        <div className="flex items-center justify-between mt-2">
+          <div className="flex items-center gap-1">
+            <Star className="h-4 w-4 text-yellow-500" fill="oklch(79.5% 0.184 86.047)" />
+            <span className="text-sm text-gray-600">
+              {product.rating || 0} ({product.reviewCount || 0})
+            </span>
+          </div>
+          <div className="text-right">
+            <div className="text-lg font-bold">{product.price ? `${product.price} جنيه` : "السعر غير متوفر"}</div>
+            {product.originalPrice && product.price && product.originalPrice > product.price && (
+              <div className="text-sm text-gray-500 line-through">{product.originalPrice} جنيه</div>
+            )}
           </div>
         </div>
-        {product.images.map((image, index) => (
-          <img
-            key={index}
-            src={image.src}
-            alt={`Product ${index + 1}`}
-            className=" h-32 w-full object-top aspect-square  object-cover"
-          />
-        ))}
       </div>
-      <div className="flex items-center justify-between">
-        <h2 className="text-gray-700 text-2xl font-bold">اسم المنتج</h2>
-        <Starrating change={false} MaxRating={5} defaultRating={2} />
-      </div>
-      <p>
-        لوريم إيبسوم ألم سيت أميت، كونسيكتيور أديبي لوريم إيبسوم ألم سيت أميت، كونسيكتيور أديبي لوريم إيبسوم لوريم
-        إيبسوم ألم سيت أميت،
-      </p>
-      <div className="flex items-center justify-between">
-        <span className=" text-2xl text-gray-700 my-2">59₪</span>
-        <div className="flex items-center justify-between gap-4">
-          <span className="flex items-center gap-1 justify-between">
-            217
-            <Heart className=" w-4 h-4" />
-          </span>
-          <span className="flex items-center gap-1 justify-between">
-            45
-            <FaCommentAlt className=" w-4 h-4" />
-          </span>
-        </div>
-      </div>
-    </div>
+    </Link>
   );
 };
 

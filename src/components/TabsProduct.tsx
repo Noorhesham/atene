@@ -11,15 +11,15 @@ export function TabsProduct({ product }: { product: ProductSectionProps }) {
   console.log(product);
   return (
     <Tabs defaultValue="product" className="w-full mt-5" dir="rtl">
-      <TabsList className="grid w-full grid-cols-3 gap-4 md:grid-cols-3 sm:grid-cols-2">
+      <TabsList className="grid w-full grid-cols-2 gap-4 md:grid-cols-2 sm:grid-cols-2">
         <TabsTrigger className="" value="product">
           وصف المنتج
         </TabsTrigger>
         <TabsTrigger value="reviews">تفيم و مراجعات</TabsTrigger>
-        <TabsTrigger value="shipping"> سياسة المتجر</TabsTrigger>
+        {/* <TabsTrigger value="shipping"> سياسة المتجر</TabsTrigger> */}
       </TabsList>
       <TabsContent value="product">
-        <div className="overflow-hidden h-full min-h-[20vh] lg:min-h-[40vh] mt-8">
+        <div className="overflow-hidden h-full min-h-[20vh] lg:min-h-[30vh] mt-8">
           <AnimatePresence mode="wait">
             <motion.div
               initial={{ opacity: 0 }}
@@ -34,39 +34,40 @@ export function TabsProduct({ product }: { product: ProductSectionProps }) {
                     <div className="flex flex-col">
                       <Card className="justify-between flex items-center">
                         <span className="font-bold">إعلان /نموذج رقم</span>
-                        <span># 8786867</span>
+                        <span># {product.sku || "لا يوجد"}</span>
                       </Card>
                       <Card className="bg-[#DEE2E7] justify-between flex items-center">
                         <span className="font-bold">القسم الرئيسي</span>
-                        <span>ازياء - موضة نسائية</span>
+                        <span>{product.category.name}</span>
                       </Card>
-                      <Card className="justify-between flex items-center">
-                        <span className="font-bold">الحالة </span>
-                        <span>جديد</span>
-                      </Card>
-                      <Card className="bg-[#DEE2E7] justify-between flex items-center">
+
+                      {/* <Card className="bg-[#DEE2E7] justify-between flex items-center">
                         <span className="font-bold">المدينة</span>
                         <span>القاهرة </span>
-                      </Card>
+                      </Card> */}
                     </div>
 
                     <div className="flex flex-col">
                       <Card className="justify-between flex items-center">
+                        <span className="font-bold">الحالة </span>
+                        <span>{product.condition === "new" ? "جديد" : "مستعمل"}</span>
+                      </Card>
+                      {/* <Card className="justify-between flex items-center">
                         <span className="font-bold">النوع:</span>
                         <span>خواتم</span>
                       </Card>
                       <Card className="bg-[#DEE2E7] justify-between flex items-center">
                         <span className="font-bold">القسم الفرعي :</span>
                         <span>اكسسوارات - مجوهرات</span>
-                      </Card>
-                      <Card className="justify-between flex items-center">
+                      </Card> */}
+                      {/* <Card className="justify-between flex items-center">
                         <span className="font-bold">هل لديك خدمة توصيل؟ </span>
                         <span>لا</span>
                       </Card>
                       <Card className="bg-[#DEE2E7] justify-between flex items-center">
                         <span className="font-bold">الحي / المنطقة:</span>
                         <span>التجمع الخامس </span>
-                      </Card>
+                      </Card> */}
                     </div>
                   </div>
                 </div>
@@ -93,12 +94,12 @@ export function TabsProduct({ product }: { product: ProductSectionProps }) {
                   </Card>
                 </div>
               </div>
-              <p className="text-base text-muted-foreground my-4">
+              {/* <p className="text-base text-muted-foreground my-4">
                 لوريم إيبسوم ألم سيت أميت، كونسيكتيور أديبي سكينج إليت، سيد ديام نونومي نيبه إيسمود تينسيدونت أوت لاوريت
                 دولور ماجن. لوريم إيبسوم ألم سيت أميت، كونسيكتيور أديبي سكينج إليت، سيد ديام نونومي نيبه إيسمود
                 تينسيدونت أوت لاوريت دولور ماجن. لوريم إيبسوم ألم سيت أميت، أديبي سكينج إليت لوريم إيبسوم ألم سيت أميت،
                 كونسيكتيتور أديبي سكينج إليت لوريم إيبسوم ألم سيت أميت، كونسيكتيتور أديبي سكينج إليت
-              </p>
+              </p> */}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -140,7 +141,7 @@ export function TabsProduct({ product }: { product: ProductSectionProps }) {
         </div>
       </TabsContent>
 
-      <TabsContent value="shipping"></TabsContent>
+      {/* <TabsContent value="shipping"></TabsContent> */}
     </Tabs>
   );
 }
