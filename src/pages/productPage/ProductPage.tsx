@@ -165,7 +165,6 @@ export default function ProductsPage() {
                   />
                 </SheetContent>
               </Sheet>
-              <List className="h-6 w-6 text-gray-500 cursor-pointer" />
             </div>
           </div>
 
@@ -202,7 +201,7 @@ export default function ProductsPage() {
               {!isLoading && !productsError && (
                 <div className="space-y-4">
                   <header className="space-y-4 w-full">
-                    <h1 className="text-3xl font-bold text-gray-800">استكشف المزيد من عمليات البحث ذات الصلة</h1>
+                    <h1 className="text-lg lg:text-3xl font-bold text-gray-800">استكشف المزيد من عمليات البحث ذات الصلة</h1>
                     {searchData?.tags && (
                       <ProductTags
                         tags={searchData.tags}
@@ -215,11 +214,11 @@ export default function ProductsPage() {
                         <Input
                           type="search"
                           placeholder="ابحث..."
-                          className="rounded-full w-full pl-12 pr-4 h-12"
+                          className="rounded-full w-full pl-12 pr-4 h-10 lg:h-12"
                           value={searchQuery}
                           onChange={(e) => handleSearch(e.target.value)}
                         />
-                        <div className="absolute bg-primary rounded-full p-2 left-4 top-1/2 -translate-y-1/2">
+                        <div className="absolute bg-primary rounded-full p-1 lg:p-2 left-1 lg:left-4 top-1/2 -translate-y-1/2">
                           <Search className="h-5 w-5 text-white" />
                         </div>
                       </div>
@@ -235,7 +234,7 @@ export default function ProductsPage() {
                       </p>
                     </div>
                   </header>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-6">
                     {productsData?.products.map((product: Product) => (
                       <ProductCard
                         key={product.id}
