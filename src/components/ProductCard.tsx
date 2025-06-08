@@ -44,9 +44,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </div>
           <div className="flex items-center gap-1">
             <Star className="h-4 w-4 text-yellow-500" fill="oklch(79.5% 0.184 86.047)" />
-            <span className="text-sm text-gray-600">
-              {product.review_rate || 0} ({product.review_count || 0})
-            </span>
+            <span className="text-sm text-gray-600">{product.review_rate || 0}</span>
           </div>
         </div>
       </div>
