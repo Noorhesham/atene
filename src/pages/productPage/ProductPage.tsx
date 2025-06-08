@@ -1,97 +1,262 @@
+"use client";
+
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { searchProducts } from "@/utils/api/product";
-import MaxWidthWrapper from "@/components/MaxwidthWrapper";
-import { Input } from "@/components/ui/input";
-import { Product } from "@/types/product";
+import { useState, useEffect } from "react";
+import { Filter, List, Loader2, Search, ServerCrash } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+
+import type { Product } from "@/types/product";
 import { useDebounce } from "@/hooks/use-debounce";
-import { Link } from "react-router-dom";
+import { searchProducts, getSearchPageData } from "@/utils/api/product";
 
-// Sample product data - in a real app, this would come from an API or database
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import FilterSidebar from "@/components/FilterSidebar";
+import MaxWidthWrapper from "@/components/MaxwidthWrapper";
+import ProductCard from "@/components/ProductCard";
+import ProductTags from "@/components/ProductTags";
 
-/**
- * Product Detail Page
- * Displays a single product with all its details
- */
-const ProductPage = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+export default function ProductsPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Initialize state from URL params
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
+  const [selectedCategories, setSelectedCategories] = useState<number[]>(
+    searchParams.get("category_id")?.split(",").map(Number).filter(Boolean) || []
+  );
+  const [selectedSections, setSelectedSections] = useState<number[]>(
+    searchParams.get("section_id")?.split(",").map(Number).filter(Boolean) || []
+  );
+  const [selectedTags, setSelectedTags] = useState<string[]>(
+    searchParams.get("tags")?.split(",").filter(Boolean) || []
+  );
+  const [priceRange, setPriceRange] = useState<[number, number]>([
+    Number(searchParams.get("min_price")) || 0,
+    Number(searchParams.get("max_price")) || 1000,
+  ]);
+
+  // Debounce inputs to prevent excessive API calls
   const debouncedSearch = useDebounce(searchQuery, 500);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["products", debouncedSearch],
-    queryFn: () => searchProducts({ query: debouncedSearch }),
+  // Update URL params when filters change
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+
+    if (debouncedSearch) {
+      params.set("search", debouncedSearch);
+    } else {
+      params.delete("search");
+    }
+
+    if (selectedCategories.length > 0) {
+      params.set("category_id", selectedCategories.join(","));
+    } else {
+      params.delete("category_id");
+    }
+
+    if (selectedSections.length > 0) {
+      params.set("section_id", selectedSections.join(","));
+    } else {
+      params.delete("section_id");
+    }
+
+    if (selectedTags.length > 0) {
+      params.set("tags", selectedTags.join(","));
+    } else {
+      params.delete("tags");
+    }
+
+    if (priceRange[0] > 0) {
+      params.set("min_price", priceRange[0].toString());
+    } else {
+      params.delete("min_price");
+    }
+
+    if (priceRange[1] < 1000) {
+      params.set("max_price", priceRange[1].toString());
+    } else {
+      params.delete("max_price");
+    }
+
+    setSearchParams(params);
+  }, [debouncedSearch, selectedCategories, selectedSections, selectedTags, priceRange, setSearchParams]);
+
+  // Query for filter data (categories, tags, price range) - fetches once
+  const { data: searchData, isLoading: isLoadingSearchData } = useQuery({
+    queryKey: ["searchPageData"],
+    queryFn: getSearchPageData,
+    staleTime: Number.POSITIVE_INFINITY, // This data is considered static
   });
 
+  // Query for products - refetches when filters change
+  const {
+    data: productsData,
+    isLoading: isLoadingProducts,
+    error: productsError,
+  } = useQuery({
+    queryKey: ["products", debouncedSearch, selectedCategories, selectedSections, selectedTags, priceRange],
+    queryFn: () =>
+      searchProducts({
+        query: debouncedSearch || undefined,
+        category_id: selectedCategories.length ? selectedCategories[0] : undefined,
+        section_id: selectedSections.length ? selectedSections[0] : undefined,
+        tags: selectedTags.length ? selectedTags : undefined,
+        min_price: priceRange[0],
+        max_price: priceRange[1],
+      }),
+    enabled: !!searchData, // Only run this query after filter data is available
+  });
+
+  const handlePriceChange = (value: [number, number]) => {
+    setPriceRange(value);
+  };
+
+  const handleCategoryChange = (categoryId: number) => {
+    setSelectedCategories((prev) =>
+      prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId]
+    );
+  };
+
+  const handleSectionChange = (sectionId: number) => {
+    setSelectedSections((prev) =>
+      prev.includes(sectionId) ? prev.filter((id) => id !== sectionId) : [...prev, sectionId]
+    );
+  };
+
+  const handleTagChange = (tagTitle: string) => {
+    setSelectedTags((prev) => (prev.includes(tagTitle) ? prev.filter((t) => t !== tagTitle) : [...prev, tagTitle]));
+  };
+
+  const handleSearch = (value: string) => {
+    setSearchQuery(value);
+  };
+
+  const isLoading = isLoadingSearchData || isLoadingProducts;
+
   return (
-    <MaxWidthWrapper>
-      <div className="py-8 space-y-8">
-        {/* Search Input */}
-        <div className="flex justify-center">
-          <Input
-            type="search"
-            placeholder="Search products..."
-            className="max-w-xl"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-
-        {/* Loading State */}
-        {isLoading && (
-          <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    <div dir="rtl" className="bg-white min-h-screen">
+      <MaxWidthWrapper>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-gray-600">
+              إظهار {productsData?.products.length || 0} من {productsData?.products.length || 0} عنصر
+            </p>
+            <div className="flex items-center gap-4">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" className="gap-2 lg:hidden">
+                    <Filter className="h-4 w-4" />
+                    <span>فلتر</span>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="p-0">
+                  <FilterSidebar
+                    data={searchData}
+                    selectedCategories={selectedCategories}
+                    selectedSections={selectedSections}
+                    onCategoryChange={handleCategoryChange}
+                    onSectionChange={handleSectionChange}
+                    selectedTags={selectedTags}
+                    onTagChange={handleTagChange}
+                    priceRange={priceRange}
+                    onPriceChange={handlePriceChange}
+                    isLoading={isLoadingSearchData}
+                  />
+                </SheetContent>
+              </Sheet>
+              <List className="h-6 w-6 text-gray-500 cursor-pointer" />
+            </div>
           </div>
-        )}
 
-        {/* Error State */}
-        {error && <div className="text-center text-red-500">Failed to load products. Please try again.</div>}
+          <main className="grid grid-cols-12 gap-8">
+            <aside className="hidden lg:block lg:col-span-3">
+              <FilterSidebar
+                data={searchData}
+                selectedCategories={selectedCategories}
+                selectedSections={selectedSections}
+                onCategoryChange={handleCategoryChange}
+                onSectionChange={handleSectionChange}
+                selectedTags={selectedTags}
+                onTagChange={handleTagChange}
+                priceRange={priceRange}
+                onPriceChange={handlePriceChange}
+                isLoading={isLoadingSearchData}
+              />
+            </aside>
 
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {data?.products.map((product: Product) => (
-            <Link
-              to={`/products/${product.slug}`}
-              key={product.id}
-              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-            >
-              <div className="aspect-square relative">
-                {product.cover ? (
-                  <img src={product.cover} alt={product.name} className="object-cover w-full h-full" />
-                ) : (
-                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-400">No image</span>
-                  </div>
-                )}
-                {product.discount_present > 0 && (
-                  <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-sm">
-                    {product.discount_present}% OFF
-                  </div>
-                )}
-              </div>
-              <div className="p-4">
-                <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
-                <div className="flex justify-between items-center">
-                  <div>
-                    {product.price_after_discount < product.price ? (
-                      <>
-                        <span className="text-red-500 font-bold">${product.price_after_discount}</span>
-                        <span className="text-gray-400 line-through ml-2">${product.price}</span>
-                      </>
-                    ) : (
-                      <span className="font-bold">${product.price}</span>
-                    )}
-                  </div>
+            <div className="col-span-12 lg:col-span-9">
+              {isLoading && (
+                <div className="flex justify-center items-center h-96">
+                  <Loader2 className="h-12 w-12 animate-spin text-primary" />
                 </div>
-              </div>
-            </Link>
-          ))}
+              )}
+
+              {productsError && (
+                <div className="text-center text-red-500 bg-red-50 p-4 rounded-lg flex flex-col items-center gap-4">
+                  <ServerCrash className="h-10 w-10" />
+                  <p>فشل تحميل المنتجات. يرجى المحاولة مرة أخرى.</p>
+                </div>
+              )}
+
+              {!isLoading && !productsError && (
+                <div className="space-y-4">
+                  <header className="space-y-4 w-full">
+                    <h1 className="text-3xl font-bold text-gray-800">استكشف المزيد من عمليات البحث ذات الصلة</h1>
+                    {searchData?.tags && (
+                      <ProductTags
+                        tags={searchData.tags}
+                        selectedTags={selectedTags}
+                        handleTagChange={handleTagChange}
+                      />
+                    )}
+                    <div className="flex w-full">
+                      <div className="relative border-1 border-primary rounded-full w-full">
+                        <Input
+                          type="search"
+                          placeholder="ابحث..."
+                          className="rounded-full w-full pl-12 pr-4 h-12"
+                          value={searchQuery}
+                          onChange={(e) => handleSearch(e.target.value)}
+                        />
+                        <div className="absolute bg-primary rounded-full p-2 left-4 top-1/2 -translate-y-1/2">
+                          <Search className="h-5 w-5 text-white" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col text-base gap-2 mb-8">
+                      <p className="font-bold">
+                        إظهار 1- {productsData?.products.length} من {productsData?.products.length} عنصر (عدد النتائج)
+                      </p>
+                      <p className="text-[#949494]">
+                        يمكن للبائعين الذين يتطلعون إلى تنمية أعمالهم والوصول إلى المزيد من المشترين المهتمين استخدام
+                        منصة A'atene الإعلانية لتسليط الضوء على منتجاتهم إلى جانب نتائج البحث العضوية. ستظهر نتائج البحث
+                        النهائية بناءً على مدى الصلة، ومبلغ الدفع لكل نقرة.
+                      </p>
+                    </div>
+                  </header>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+                    {productsData?.products.map((product: Product) => (
+                      <ProductCard
+                        key={product.id}
+                        product={{
+                          ...product,
+                          id: String(product.id), // Convert number to string for ProductCard
+                        }}
+                      />
+                    ))}
+                  </div>
+                  {productsData?.products.length === 0 && (
+                    <div className="text-center text-gray-500 py-20">
+                      <p>لم يتم العثور على منتجات تطابق بحثك.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </main>
         </div>
-
-        {/* No Results */}
-        {data?.products.length === 0 && <div className="text-center text-gray-500">No products found</div>}
-      </div>
-    </MaxWidthWrapper>
+      </MaxWidthWrapper>
+    </div>
   );
-};
-
-export default ProductPage;
+}

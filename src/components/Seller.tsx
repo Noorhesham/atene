@@ -1,61 +1,73 @@
-import { Store } from "@/types/product";
-import { Button } from "./ui/button";
-import { Star } from "lucide-react";
+"use client";
 
-interface SellerProps {
+import type { Store } from "@/types/product";
+import { Button } from "./ui/button";
+import { Star, Clock, ShieldCheck, ShoppingCart, Flag, Plus } from "lucide-react";
+import type React from "react";
+import { formatDate } from "@/utils/cn";
+
+interface SellerCardProps {
   store: Store;
 }
 
-const Seller = ({ store }: SellerProps) => {
+const InfoItem: React.FC<{ icon: React.ElementType; text: string | number }> = ({ icon: Icon, text }) => (
+  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+    <Icon className="h-4 w-4 text-gray-500 dark:text-gray-500" />
+    <span>{text}</span>
+  </div>
+);
+
+export default function SellerCard({ store }: SellerCardProps) {
+  console.log(store);
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border mt-8">
-      <div className="flex items-center justify-between">
+    <div
+      dir="rtl"
+      className="bg-white w-full dark:bg-gray-900 p-4 sm:p-6 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm w-full  mx-auto"
+    >
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        {/* Seller Info */}
         <div className="flex items-center gap-4">
-          {store.logo && <img src={store.logo} alt={store.name} className="w-16 h-16 rounded-full object-cover" />}
+          <img
+            src={store.logo || "/placeholder.svg?width=56&height=56&query=store+logo"}
+            alt={`${store.name} logo`}
+            className="w-14 h-14 rounded-full object-cover border-2 border-gray-100 dark:border-gray-800"
+          />
           <div>
-            <h3 className="text-lg font-semibold">{store.name}</h3>
-            <div className="flex items-center gap-2 mt-1">
-              <div className="flex items-center">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-4 w-4 ${i < (store.review_rate || 0) ? "text-yellow-500" : "text-gray-300"}`}
-                    fill={i < (store.review_rate || 0) ? "oklch(79.5% 0.184 86.047)" : "#d1d5dc"}
-                  />
-                ))}
-              </div>
-              <span className="text-sm text-gray-600">({store.review_count || 0} تقييم)</span>
-            </div>
-            {store.address && <p className="text-sm text-gray-600 mt-1">{store.address}</p>}
+            <h3 className="text-base font-bold text-gray-800 dark:text-gray-100">{store.name}</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{store.address}</p>
           </div>
         </div>
-        <div className="flex flex-col gap-2">
-          <Button variant="outline" className="w-full">
-            زيارة المتجر
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2 self-start sm:self-center">
+          <Button
+            variant="default"
+            size="sm"
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-1.5 h-auto text-sm"
+          >
+            <Plus className="w-4 h-4 ml-1" />
+            تابع
           </Button>
-          {store.whats_app && (
-            <Button variant="outline" className="w-full">
-              واتساب
-            </Button>
-          )}
+          <Button
+            variant="destructive"
+            size="sm"
+            className="bg-red-600 hover:bg-red-700 text-white rounded-full px-4 py-1.5 h-auto text-sm"
+          >
+            <Flag className="w-4 h-4 ml-1" />
+            بلغ عن إساءة
+          </Button>
         </div>
       </div>
-      <div className="mt-4 grid grid-cols-3 gap-4 text-center">
-        <div className="p-3 bg-gray-50 rounded-lg">
-          <div className="text-lg font-semibold">{store.orders_count || 0}</div>
-          <div className="text-sm text-gray-600">الطلبات</div>
-        </div>
-        <div className="p-3 bg-gray-50 rounded-lg">
-          <div className="text-lg font-semibold">{store.review_count || 0}</div>
-          <div className="text-sm text-gray-600">التقييمات</div>
-        </div>
-        <div className="p-3 bg-gray-50 rounded-lg">
-          <div className="text-lg font-semibold">{store.review_rate?.toFixed(1) || 0}</div>
-          <div className="text-sm text-gray-600">متوسط التقييم</div>
-        </div>
+
+      <hr className="my-4 border-gray-200 dark:border-gray-700" />
+
+      {/* Store Stats */}
+      <div className="flex flex-wrap max-w-4xl items-center justify-start sm:justify-between gap-x-5 w-fit ml-auto gap-y-3">
+        <InfoItem icon={Clock} text={`عضو منذ ${formatDate(store.created_at)}`} />
+        <InfoItem icon={ShieldCheck} text="تاجر معتمد" />
+        <InfoItem icon={Star} text={`تقييم التاجر ${store.review_rate.toFixed(1)}`} />
+        <InfoItem icon={ShoppingCart} text={`عدد الطلبات المباعة ${store.orders_count}`} />
       </div>
     </div>
   );
-};
-
-export default Seller;
+}

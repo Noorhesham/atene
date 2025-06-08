@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
-import { getProduct } from "@/utils/api/product";
+import { getProduct, getProductReviews } from "@/utils/api/product";
 import ProductSection from "../productPage/product-section";
 import MaxWidthWrapper from "@/components/MaxwidthWrapper";
 
@@ -10,6 +10,12 @@ const SingleProduct = () => {
   const { data, isLoading, error } = useQuery({
     queryKey: ["product", slug],
     queryFn: () => getProduct(slug!),
+    enabled: !!slug,
+  });
+
+  const { data: reviewsData } = useQuery({
+    queryKey: ["productReviews", slug],
+    queryFn: () => getProductReviews(slug!),
     enabled: !!slug,
   });
 
@@ -50,7 +56,19 @@ const SingleProduct = () => {
   // Get color and storage attributes
   const colorAttribute = data.attributes.find((attr) => attr.title === "اللون");
   const storageAttribute = data.attributes.find((attr) => attr.title === "مساحة التخزين");
-  console.log(data);
+
+  // Map reviews to the expected format
+  const mappedReviews =
+    reviewsData?.reviews.map((review) => ({
+      id: review.id,
+      name: review.user.name,
+      avatar: review.user.avatar,
+      review: review.content,
+      rating: review.rate,
+      images: review.images || [],
+      date: new Date().toISOString(), // You might want to add a date field in your API
+    })) || [];
+  console.log(reviewsData, "reviews");
   return (
     <div className="font-display">
       <ProductSection
@@ -67,12 +85,13 @@ const SingleProduct = () => {
                   ((data.product.cross_sells_price - data.product.price) / data.product.cross_sells_price) * 100
                 )
               : 0,
-          rating: data.product.review_rate || 0,
-          reviewCount: data.product.review_count || 0,
+          rating: reviewsData?.avg_rate ? Number(reviewsData.avg_rate) : data.product.review_rate || 0,
+          reviewCount: reviewsData?.total || data.product.review_count || 0,
           images,
           sizes: colorAttribute?.options.map((opt) => opt.title) || [],
           weights: storageAttribute?.options.map((opt) => opt.title) || [],
-          reviews: [],
+          reviews: mappedReviews,
+          rate_stats: reviewsData.rate_stats,
           specifications: data.product.specifications,
           store: data.store,
           similar: data.similar,
@@ -82,6 +101,18 @@ const SingleProduct = () => {
           sku: data.product.sku,
           condition: data.product.condition,
           status: data.product.status,
+          cross_sells: data.product.cross_sells.map((p) => ({
+            id: p.id.toString(),
+            title: p.name,
+            images: [
+              { src: p.cover || "", alt: p.name },
+              ...(p.gallery?.map((url) => ({ src: url, alt: p.name })) || []),
+            ].filter((img) => img.src),
+            price: p.price,
+          })),
+          cross_sells_price: data.product.cross_sells_price,
+          final_price: data.product.price,
+          tags: data.product.tags,
           categories: data.categories,
         }}
       />

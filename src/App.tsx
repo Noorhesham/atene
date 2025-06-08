@@ -9,10 +9,12 @@ import Favourites from "./pages/favourites/Favourites";
 import MessagePage from "./pages/messages/MessagePage";
 import StorePage from "./pages/store/StorePage";
 import SingleProduct from "./pages/singleProduct/Product";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   return (
-    <main className=" bg-gray-50 font-oxygen  ">
+    <main className="  font-oxygen  ">
+      <Toaster position="top-center" reverseOrder={false} />
       <NavbarWithState />
       <Routes>
         <Route path="/" element={<ProductPage />} />

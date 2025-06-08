@@ -5,6 +5,17 @@ import { ChevronDown, Heart, Grid3X3, MessageSquare } from "lucide-react";
 import MaxWidthWrapper from "./MaxwidthWrapper";
 import { Link } from "react-router-dom";
 import UserMenu from "./UserMenu";
+import MobileNav from "./MobileNav";
+
+interface SearchBarProps {
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  selectedCategory: string;
+  setSelectedCategory: (category: string) => void;
+  categoryOpen: boolean;
+  setCategoryOpen: (open: boolean) => void;
+  categories: string[];
+}
 
 /**
  * Navbar component with interactive state
@@ -19,83 +30,122 @@ const NavbarWithState = () => {
   const categories = ["جميع الفئات", "الإلكترونيات", "الملابس", "المنزل والحديقة", "الجمال والعناية الشخصية"];
 
   return (
-    <div className="w-full shadow-sm " dir="rtl">
-      {/* Main navbar */}
-      <MaxWidthWrapper className="bg-white border-b border-gray-200 !py-5">
-        <div className="max-w-screen-xl mx-auto flex items-center justify-between px-4">
-          {/* Right section with cart and logo */}
-          <Link to="/" className="flex items-center gap-4">
-            {/* Logo */}
-            <img src="/black.svg" className="h-10" alt="logo" />
-          </Link>
-          {/* Center search bar */}
-          <div className="flex-1 max-w-2xl mx-4">
-            <div className="relative flex">
-              {/* Search input */}
-              <input
-                type="text"
-                className="w-full border border-gray-700 rounded-md py-2 pr-3  focus:outline-none"
-                placeholder="البحث"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              {/* Search button */}
-              <button className="absolute left-0 top-0 h-full bg-primary  text-white px-4 rounded-l-md flex items-center">
-                البحث
-              </button>
-              {/* Categories dropdown */}
-              <div className="absolute left-20 top-0 h-full flex items-center">
-                <div className="relative">
-                  <button
-                    className="flex items-center gap-1 px-3 text-gray-600 text-sm h-full"
-                    onClick={() => setCategoryOpen(!categoryOpen)}
-                  >
-                    <span>{selectedCategory}</span>
-                    <ChevronDown size={16} />
-                  </button>
+    <div className="w-full shadow-sm" dir="rtl">
+      {/* Mobile Navigation */}
+      <MobileNav
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        categories={categories}
+      />
 
-                  {/* Dropdown menu */}
-                  {categoryOpen && (
-                    <div className="absolute left-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
-                      {categories.map((category) => (
-                        <button
-                          key={category}
-                          className="block w-full text-right px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => {
-                            setSelectedCategory(category);
-                            setCategoryOpen(false);
-                          }}
-                        >
-                          {category}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
+      {/* Desktop Navigation */}
+      <div className="hidden md:block">
+        <MaxWidthWrapper className="bg-white border-b border-gray-200 !py-5">
+          <div className="max-w-screen-xl mx-auto flex items-center justify-between px-4">
+            <Link to="/" className="flex items-center gap-4">
+              <img src="/black.svg" className="h-10" alt="logo" />
+            </Link>
+
+            <div className="flex-1 max-w-2xl mx-4">
+              <SearchBar
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+                categoryOpen={categoryOpen}
+                setCategoryOpen={setCategoryOpen}
+                categories={categories}
+              />
+            </div>
+
+            <div className="flex items-center gap-5">
+              <NavIcons />
+              <UserMenu />
             </div>
           </div>
-          {/* Left section with profile and icons */}
-          <div className="flex items-center gap-5">
-            {/* Navigation icons */}
-            <div className="flex items-center gap-5 text-gray-500">
-              <button className="hover:text-gray-700">
-                <MessageSquare size={20} />
-                <span className="sr-only">الرسائل</span>
-              </button>
-              <button className="hover:text-gray-700">
-                <Heart size={20} />
-                <span className="sr-only">المفضلة</span>
-              </button>
-              <button className="hover:text-gray-700">
-                <Grid3X3 size={20} />
-                <span className="sr-only">الفئات</span>
-              </button>
+        </MaxWidthWrapper>
+      </div>
+    </div>
+  );
+};
+
+// Extracted SearchBar component
+const SearchBar = ({
+  searchQuery,
+  setSearchQuery,
+  selectedCategory,
+  setSelectedCategory,
+  categoryOpen,
+  setCategoryOpen,
+  categories,
+}: SearchBarProps) => {
+  return (
+    <div className="relative flex">
+      <input
+        type="text"
+        className="w-full border border-gray-700 rounded-md py-2 pr-3 focus:outline-none"
+        placeholder="البحث"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+      <button
+        className="absolute left-0 top-0 bg-primary text-white px-4 rounded-l-md flex items-center"
+        aria-label="بحث"
+      >
+        البحث
+      </button>
+      <div className="absolute left-20 top-0 h-full flex items-center">
+        <div className="relative">
+          <button
+            className="flex items-center gap-1 px-3 text-gray-600 text-sm h-full"
+            onClick={() => setCategoryOpen(!categoryOpen)}
+            aria-label={categoryOpen ? "إغلاق قائمة الفئات" : "فتح قائمة الفئات"}
+          >
+            <span>{selectedCategory}</span>
+            <ChevronDown size={16} />
+          </button>
+
+          {categoryOpen && (
+            <div
+              className="absolute left-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
+              role="listbox"
+            >
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  className="block w-full text-right px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={() => {
+                    setSelectedCategory(category);
+                    setCategoryOpen(false);
+                  }}
+                  role="option"
+                >
+                  {category}
+                </button>
+              ))}
             </div>
-            <UserMenu />
-          </div>
+          )}
         </div>
-      </MaxWidthWrapper>
+      </div>
+    </div>
+  );
+};
+
+// Extracted NavIcons component
+const NavIcons = () => {
+  return (
+    <div className="flex items-center gap-5 text-gray-500">
+      <button className="hover:text-gray-700" aria-label="الرسائل">
+        <MessageSquare size={20} />
+      </button>
+      <button className="hover:text-gray-700" aria-label="المفضلة">
+        <Heart size={20} />
+      </button>
+      <button className="hover:text-gray-700" aria-label="الفئات">
+        <Grid3X3 size={20} />
+      </button>
     </div>
   );
 };

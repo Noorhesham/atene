@@ -50,6 +50,8 @@ export interface Variation {
   price: number;
   stock: number | null;
   status: string | null;
+  image: string | null;
+  gallery: string[] | null;
   attribute_options: VariationAttributeOption[];
   created_at: string;
   updated_at: string;
@@ -66,8 +68,34 @@ export interface VariationAttributeOption {
 export interface Category {
   id: number;
   name: string;
-  icon: string;
-  slug: string;
+  parent_id: number | null;
+  products_count: number;
+  image: string;
+}
+
+export interface Section {
+  id: number;
+  name: string;
+  description: string | null;
+  image: string | null;
+  products_count: number;
+}
+
+export interface Tag {
+  id: number;
+  title: string;
+}
+
+export interface PriceRange {
+  min: number;
+  max: number;
+}
+
+export interface SearchPageData {
+  categories: Category[];
+  sections: Section[];
+  tags: Tag[];
+  price_range: PriceRange;
 }
 
 export type Categories = Category[];
@@ -145,7 +173,15 @@ export interface ProductSectionProps {
   images: { src: string; alt: string }[];
   sizes: string[];
   weights: string[];
-  reviews: any[];
+  reviews: {
+    id: number;
+    name: string;
+    avatar: string;
+    review: string;
+    rating: number | null;
+    images: string[] | null;
+    date: string;
+  }[];
   specifications: Specification[];
   store: Store;
   similar: Product[];
@@ -155,4 +191,53 @@ export interface ProductSectionProps {
   sku: string;
   condition: string;
   status: string;
+  cross_sells: {
+    id: string;
+    title: string;
+    images: { src: string; alt: string }[];
+    price: number;
+  }[];
+  cross_sells_price: number;
+  final_price: number;
+  rate_stats: Record<string, number>;
+}
+
+export interface CrossSellProduct {
+  id: number;
+  name: string;
+  cover: string | null;
+  price: number;
+  price_after_discount: number;
+  slug: string;
+  // Add other fields from your data if needed
+}
+
+export interface CrossSellBundleData {
+  cross_sells: CrossSellProduct[];
+  cross_sells_price: number; // The original total price
+  final_price: number; // The discounted final price
+}
+
+export interface ReviewUser {
+  name: string;
+  email: string;
+  avatar: string;
+}
+
+export interface Review {
+  id: number;
+  content: string;
+  parent_id: number | null;
+  rate: number | null;
+  images: string[] | null;
+  user: ReviewUser;
+}
+
+export interface ReviewsResponse {
+  status: boolean;
+  message: string;
+  total: number;
+  reviews: Review[];
+  avg_rate: string;
+  rate_stats: Record<string, number>; // e.g. { "1": 5, "2": 10, "3": 15, "4": 20, "5": 50 }
 }

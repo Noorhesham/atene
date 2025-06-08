@@ -6,9 +6,10 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --color-main: #395a7d;
   --font-oxygen: "Cairo", sans-serif;
   --color-gray: #666666;
-  --color-primary: #287CDA;
+  --color-primary: #287cda;
   --color-light: #8d8d8d;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -119,6 +120,9 @@
 /* RTL Support */
 .dir-rtl {
   direction: rtl;
+}
+body {
+  background-color: white !important;
 }
 
 /* @layer base {

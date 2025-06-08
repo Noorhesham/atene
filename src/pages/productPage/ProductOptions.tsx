@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Attribute, Variation } from "@/types/product";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ProductOptionsProps {
   attributes: Attribute[];
@@ -50,10 +51,10 @@ const ProductOptions = ({ attributes, variations, className, onVariationChange }
     });
   };
 
-  const handleOptionSelect = (attributeId: number, optionId: number) => {
+  const handleOptionSelect = (attributeId: number, optionId: string) => {
     setSelectedOptions((prev) => ({
       ...prev,
-      [attributeId]: optionId,
+      [attributeId]: Number(optionId),
     }));
   };
 
@@ -80,29 +81,31 @@ const ProductOptions = ({ attributes, variations, className, onVariationChange }
     <div className={cn("space-y-4", className)}>
       {attributes.map((attribute) => (
         <div key={attribute.id} className="space-y-2">
-          <label className="text-sm font-medium text-gray-700 block text-right">{attribute.title}</label>
-          <div className="flex flex-wrap gap-2">
-            {attribute.options.map((option) => {
-              const isAvailable = isOptionAvailable(attribute.id, option.id);
-              return (
-                <button
-                  key={option.id}
-                  onClick={() => isAvailable && handleOptionSelect(attribute.id, option.id)}
-                  disabled={!isAvailable}
-                  className={cn(
-                    "px-4 py-2 rounded-full border text-sm font-medium transition-colors",
-                    selectedOptions[attribute.id] === option.id
-                      ? "bg-primary text-white border-primary"
-                      : isAvailable
-                      ? "border-gray-300 hover:border-primary"
-                      : "border-gray-200 text-gray-400 cursor-not-allowed"
-                  )}
-                >
-                  {option.title}
-                </button>
-              );
-            })}
-          </div>
+          <Select
+            value={selectedOptions[attribute.id]?.toString()}
+            onValueChange={(value) => handleOptionSelect(attribute.id, value)}
+          >
+            <SelectTrigger className="w-full border-gray-200 bg-white">
+              <div className="flex placeholder:text-right text-right  justify-between items-center w-fit">
+                <SelectValue placeholder={attribute.title} />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              {attribute.options.map((option) => {
+                const isAvailable = isOptionAvailable(attribute.id, option.id);
+                return (
+                  <SelectItem
+                    key={option.id}
+                    value={option.id.toString()}
+                    disabled={!isAvailable}
+                    className={cn("cursor-pointer", !isAvailable && "text-gray-400 cursor-not-allowed")}
+                  >
+                    {option.title}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
         </div>
       ))}
     </div>

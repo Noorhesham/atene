@@ -31,7 +31,7 @@ const StorePage = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen pb-16">
+    <div className=" min-h-screen pb-16">
       <StoreProfile {...storeData} />
 
       <MaxWidthWrapper className="mt-8">

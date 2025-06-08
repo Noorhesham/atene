@@ -5,4 +5,6 @@ export const API_ENDPOINTS = {
   REGISTER: `${API_BASE_URL}/auth/register`,
   PRODUCTS_SEARCH: `${API_BASE_URL}/products/search`,
   ACCOUNT: `${API_BASE_URL}/auth/account`,
+  PRODUCTS_SEARCH_PAGE: `${API_BASE_URL}/products/search-page`,
+  
 } as const;
