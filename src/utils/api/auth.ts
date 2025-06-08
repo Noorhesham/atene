@@ -16,9 +16,10 @@ export const loginUser = async (credentials: LoginCredentials): Promise<AuthResp
     if (!response.ok) {
       // If we have validation errors (422)
       if (response.status === 422) {
+        console.log(data, "data");
         throw {
           status: response.status,
-          message: "Validation failed",
+          message: data.message,
           errors: data.errors || data.message,
         };
       }
@@ -63,7 +64,7 @@ export const registerUser = async (credentials: RegisterCredentials): Promise<Au
       if (response.status === 422) {
         throw {
           status: response.status,
-          message: "Validation failed",
+          message: data.message,
           errors: data.errors || data.message,
         };
       }

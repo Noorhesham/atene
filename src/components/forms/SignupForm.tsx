@@ -9,18 +9,19 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { registerUser } from "@/utils/api/auth";
 import type { RegisterCredentials } from "@/types/auth";
+import { useAuth } from "@/context/AuthContext";
 
 // Define error types
 interface ValidationError {
-  status: number;
+  status: boolean | number;
   message: string;
-  errors?: Record<string, string | string[]>;
+  errors?: Record<string, string[]>;
 }
 
 const signupSchema = z
   .object({
     fullname: z.string().min(1, "الاسم الكامل مطلوب"),
-    email: z.string().email("البريد الإلكتروني غير صالح"),
+    email: z.string().min(1, "البريد الإلكتروني مطلوب"),
     password: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
     confirmPassword: z.string().min(6, "تأكيد كلمة المرور مطلوب"),
     phone: z.string().min(1, "رقم الهاتف مطلوب"),
@@ -37,6 +38,8 @@ type SignupFormData = z.infer<typeof signupSchema>;
 
 const SignupForm = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
+
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -50,31 +53,46 @@ const SignupForm = () => {
   });
 
   const { mutate: signup, isPending } = useMutation({
-    mutationFn: (credentials: RegisterCredentials) => registerUser(credentials),
-    onSuccess: (data) => {
-      localStorage.setItem("token", data.token);
+    mutationFn: async (credentials: RegisterCredentials) => {
+      const response = await registerUser(credentials);
+      await login(response.token); // Use the auth context login function
+      return response;
+    },
+    onSuccess: () => {
       toast.success("تم إنشاء الحساب بنجاح!");
       navigate("/");
     },
     onError: (error: ValidationError) => {
-      // Handle validation errors (422)
-      if (error.status === 422) {
-        // If errors is an object with field names as keys
-        if (error.errors && typeof error.errors === "object") {
-          Object.entries(error.errors).forEach(([field, message]) => {
+      // Clear any existing errors first
+      form.clearErrors();
+
+      if (error.errors && Object.keys(error.errors).length > 0) {
+        // Handle field-specific errors
+        Object.entries(error.errors).forEach(([field, messages]) => {
+          if (Array.isArray(messages) && messages.length > 0) {
             form.setError(field as keyof SignupFormData, {
               type: "manual",
-              message: Array.isArray(message) ? message[0] : (message as string),
+              message: messages[0],
             });
+            toast.error(messages[0]);
+          }
+        });
+      } else if (error.message) {
+        // Handle general error message
+        toast.error(error.message);
+        // Set error for critical fields to show the message
+        ["email", "password"].forEach((field) => {
+          form.setError(field as keyof SignupFormData, {
+            type: "manual",
+            message: error.message,
           });
-        } else {
-          // If it's a general validation message
-          toast.error(error.message || "فشل التحقق من البيانات");
-        }
-      } else {
-        // For other types of errors
-        toast.error(error.message || "فشل إنشاء الحساب");
+        });
       }
+
+      // Clear form errors after 5 seconds
+      setTimeout(() => {
+        form.clearErrors();
+      }, 5000);
     },
   });
 
@@ -114,7 +132,7 @@ const SignupForm = () => {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="flex flex-col gap-2">
                 <FormInput type="text" placeholder="الاسم الكامل" label="الاسم الكامل" name="fullname" />
-                <FormInput type="email" placeholder="بريد إلكتروني" label="بريد إلكتروني" name="email" />
+                <FormInput type="text" placeholder="بريد إلكتروني" label="بريد إلكتروني" name="email" />
                 <FormInput type="tel" placeholder="رقم الهاتف" label="رقم الهاتف" name="phone" />
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-gray-700 block text-right">الجنس</label>

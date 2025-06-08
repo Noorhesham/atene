@@ -125,11 +125,17 @@ export function TabsProduct({ product }: { product: ProductSectionProps }) {
         <div className="mt-6">
           <Tabs defaultValue="product-reviews">
             <TabsList className="w-full max-w-2xl ml-auto mb-6">
-              <TabsTrigger value="product-reviews" className="bg-none flex-1">
-                مراجعات المنتج (<span className="text-primary">{product.reviewCount}</span>)
-              </TabsTrigger>
               <TabsTrigger value="store-reviews" className="bg-none flex-1">
-                مراجعات المتجر (<span className="text-primary">{product.store.review_count || 0}</span>)
+                مراجعات المتجر{" "}
+                <span className="bg-[#FF00E5] text-white rounded-full px-3 py-0.5 text-sm mr-1">
+                  {product.store.review_count || 0}
+                </span>
+              </TabsTrigger>
+              <TabsTrigger value="product-reviews" className="bg-none flex-1">
+                مراجعات المنتج{" "}
+                <span className="bg-[#3B82F6] text-white rounded-full px-3 py-0.5 text-sm mr-1">
+                  {product.reviewCount}
+                </span>
               </TabsTrigger>
             </TabsList>
 
@@ -153,14 +159,13 @@ export function TabsProduct({ product }: { product: ProductSectionProps }) {
                   <div className="my-6">
                     {product.reviews?.map((review) => (
                       <ReviewCard
-                        key={review.id}
                         name={review.name}
                         avatar={review.avatar}
                         review={review.review}
-                        rating={review.rating || undefined}
-                        images={review.images || undefined}
-                        store_id={product.store.id}
+                        images={review.images}
+                        rating={review.rating}
                         date={review.date}
+                        id={review.id.toString()}
                       />
                     ))}
                   </div>

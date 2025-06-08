@@ -23,21 +23,15 @@ interface ProductOptionsProps {
  */
 const ProductOptions = ({ attributes, variations, className, onVariationChange }: ProductOptionsProps) => {
   const [selectedOptions, setSelectedOptions] = useState<Record<number, number>>({});
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
 
-  // Initialize with first option of the first attribute only
+  // Find matching variation only after user interaction
   useEffect(() => {
-    if (attributes.length > 0 && attributes[0].options.length > 0) {
-      setSelectedOptions({
-        [attributes[0].id]: attributes[0].options[0].id,
-      });
-    }
-  }, [attributes]);
+    if (!hasUserInteracted) return;
 
-  // Find matching variation whenever selected options change
-  useEffect(() => {
     const matchingVariation = findMatchingVariation();
     onVariationChange?.(matchingVariation || null);
-  }, [selectedOptions]);
+  }, [selectedOptions, hasUserInteracted]);
 
   const findMatchingVariation = () => {
     return variations.find((variation) => {
@@ -49,6 +43,8 @@ const ProductOptions = ({ attributes, variations, className, onVariationChange }
   };
 
   const handleOptionSelect = (attributeId: number, optionId: string) => {
+    setHasUserInteracted(true);
+
     // When selecting first attribute, clear second attribute selection
     if (attributes[0].id === attributeId) {
       setSelectedOptions({
@@ -64,6 +60,7 @@ const ProductOptions = ({ attributes, variations, className, onVariationChange }
 
   const getAvailableOptionsForSecondAttribute = (attributeId: number): number[] => {
     const firstAttributeSelection = selectedOptions[attributes[0].id];
+    if (!firstAttributeSelection) return [];
 
     return variations
       .filter((variation) => {

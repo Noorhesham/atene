@@ -51,9 +51,10 @@ export default function SellerCard({ store }: SellerCardProps) {
           <Button
             variant="destructive"
             size="sm"
-            className="bg-red-600 hover:bg-red-700 text-white rounded-full px-4 py-1.5 h-auto text-sm"
+            className="bg-gradient-to-b from-[#FF0000] to-[#CC0000] hover:from-[#E60000] hover:to-[#B30000]
+             text-white rounded-full px-4 py-1.5  h-auto text-sm  font-medium transition-all duration-200 flex items-center gap-2"
           >
-            <Flag className="w-4 h-4 ml-1" />
+            <Flag className="w-5 h-5" />
             بلغ عن إساءة
           </Button>
         </div>

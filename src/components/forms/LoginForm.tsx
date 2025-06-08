@@ -11,22 +11,18 @@ import toast from "react-hot-toast";
 import FormInput from "../inputs/FormInput";
 import LoadingButton from "../ui/loading-button";
 import { loginUser } from "@/utils/api/auth";
-import type { LoginCredentials } from "@/types/auth";
+import { useAuth } from "@/context/AuthContext";
+import { Link } from "react-router-dom";
 
 // Define error types
 interface ValidationError {
-  status: number;
+  status: boolean | number;
   message: string;
-  errors?: {
-    login?: string[];
-    email?: string[];
-    password?: string[];
-    [key: string]: string[] | undefined;
-  };
+  errors: string[];
 }
 
 const loginSchema = z.object({
-  login: z.string().email("البريد الإلكتروني غير صالح"),
+  login: z.string().min(1, "البريد الإلكتروني مطلوب"),
   password: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
 });
 
@@ -34,6 +30,8 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 const LoginForm = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
+
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -42,59 +40,32 @@ const LoginForm = () => {
     },
   });
 
-  const { mutate: login, isPending } = useMutation({
-    mutationFn: (credentials: LoginCredentials) => loginUser(credentials),
-    onSuccess: (data) => {
-      console.log(data);
-      localStorage.setItem("token", data.token);
+  const { mutate: loginMutation, isPending } = useMutation({
+    mutationFn: async (credentials: LoginFormData) => {
+      const response = await loginUser({ login: credentials.login, password: credentials.password });
+      await login(response.token); // Use the auth context login function
+      return response;
+    },
+    onSuccess: () => {
       toast.success("تم تسجيل الدخول بنجاح!");
       navigate("/");
     },
     onError: (error: ValidationError) => {
-      // Handle validation errors (422)
-      if (error.status === 422) {
-        if (error.errors) {
-          // Handle general login errors
-          if (error.errors.login) {
-            // Show login error for both email and password fields
-            form.setError("login", {
-              type: "manual",
-              message: error.errors.login[0],
-            });
-            form.setError("password", {
-              type: "manual",
-              message: error.errors.login[0],
-            });
-            toast.error(error.errors.login[0]);
-            return;
-          }
+      // Clear any existing errors first
+      form.clearErrors();
 
-          // Handle specific field errors
-          if (error.errors.login) {
-            form.setError("login", {
-              type: "manual",
-              message: error.errors.login[0],
-            });
-          }
-          if (error.errors.password) {
-            form.setError("password", {
-              type: "manual",
-              message: error.errors.password[0],
-            });
-          }
-        } else {
-          // If it's a general validation message
-          toast.error(error.message || "فشل التحقق من البيانات");
-        }
-      } else {
-        // For other types of errors
-        toast.error(error.message || "فشل تسجيل الدخول");
-      }
+      // Show error message in toast
+      toast.error(error.message || "فشل تسجيل الدخول");
+
+      // Clear form errors after 5 seconds
+      setTimeout(() => {
+        form.clearErrors();
+      }, 5000);
     },
   });
 
   const onSubmit = (data: LoginFormData) => {
-    login(data);
+    loginMutation(data);
   };
 
   return (
@@ -104,7 +75,12 @@ const LoginForm = () => {
         <div className="w-full max-w-md space-y-8">
           <div className="text-right">
             <h2 className="text-3xl font-bold mb-2">تسجيل الدخول</h2>
-            <p className="text-gray-500 text-sm">ليس لديك حساب؟ · إنشاء حساب جديد</p>
+            <p className="text-gray-500 text-sm">
+              ليس لديك حساب؟ ·{" "}
+              <Link to="/signup" className="  hover:underline">
+                إنشاء حساب جديد
+              </Link>
+            </p>
           </div>
 
           {/* Google Sign In Button */}
@@ -127,7 +103,7 @@ const LoginForm = () => {
               <div className="space-y-4">
                 <div>
                   <FormInput
-                    type="email"
+                    type="text"
                     placeholder="أدخل بريدك الإلكتروني أو الهاتف"
                     label="البريد الإلكتروني"
                     name="login"

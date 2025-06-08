@@ -17,16 +17,16 @@ const Price = ({
     <div className={`flex  items-center gap-3  text-[#414141] ${className}`}>
       <span className="text-2xl text-nowrap  flex items-start ">
         ₪ {price.toFixed(2)}
-        {originalPrice && (
+        {/* {originalPrice && (
           <span className=" text-red-500 p-2 text-xs line-through">{originalPrice.toFixed(2) }₪</span>
-        )}
+        )} */}
       </span>
 
-      {discount && (
+      {/* {discount && (
         <span className=" bg-green-300 text-black rounded-full  px-2 py-1  font-[600] text-xs">
           {discount}% {rtl ? "خصم" : "off"}
         </span>
-      )}
+      )} */}
     </div>
   );
 };

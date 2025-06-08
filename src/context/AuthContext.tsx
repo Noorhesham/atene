@@ -18,6 +18,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  login: (token: string) => Promise<void>;
   logout: () => void;
   checkAuth: () => Promise<void>;
 }
@@ -26,6 +27,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   isLoading: true,
   isAuthenticated: false,
+  login: async () => {},
   logout: () => {},
   checkAuth: async () => {},
 });
@@ -54,16 +56,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!response.ok) {
         throw new Error("Authentication failed");
       }
-      console.log(response);
+
       const userData = await response.json();
-      console.log(userData);
       setUser(userData);
     } catch (error) {
       console.error("Auth check failed:", error);
-
+      // Clear token if authentication fails
+      localStorage.removeItem("token");
       setUser(null);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const login = async (token: string) => {
+    try {
+      localStorage.setItem("token", token);
+      await checkAuth(); // Immediately fetch user data after setting token
+    } catch (error) {
+      console.error("Login failed:", error);
+      throw error;
     }
   };
 
@@ -85,6 +97,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         user,
         isLoading,
         isAuthenticated: !!user,
+        login,
         logout,
         checkAuth,
       }}

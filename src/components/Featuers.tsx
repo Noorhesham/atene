@@ -26,7 +26,7 @@ const Features = ({ specifications }: FeaturesProps) => {
         return (
           <div key={spec.id} className="flex items-center text-center gap-2 p-4">
             <div className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center">
-              <IconComponent className="w-5 h-5 text-[#2E2E2F]" />
+              <IconComponent className="w-5 h-5 text-[#797979]" />
             </div>
             <span className="text-sm text-[#2E2E2F] font-medium">{spec.title}</span>
           </div>

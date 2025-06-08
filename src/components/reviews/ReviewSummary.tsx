@@ -10,40 +10,47 @@ type ReviewSummaryProps = {
 
 const ReviewSummary = ({ reviews_counts, review_count, review_rate }: ReviewSummaryProps) => {
   return (
-    <div className="flex flex-col-reverse lg:flex-row justify-between items-start gap-8">
-      {/* Rating summary */}
-      <div className="flex flex-col w-full lg:w-auto items-center bg-gray-100  rounded-xl p-4 justify-center min-w-[120px]">
-        <span className="text-6xl ">{review_rate.toFixed(1)}</span>
-        <span className="text-sm text-muted-foreground">من {review_count} مراجعة</span>
-        <Starrating className="mt-2" MaxRating={5} defaultRating={4} change={false} size={30} />
+    <div dir="rtl" className="flex flex-col-reverse lg:flex-row justify-between items-start gap-8">
+      {/* Star distribution */} {/* Rating summary */}
+      <div className="flex flex-col bg-[#FAFAFA] p-8 items-center  gap-3">
+        <div className="text-[4rem] leading-none font-semibold">{review_rate.toFixed(1)}</div>
+        <div className="flex flex-col items-end">
+          <span className="text-sm mx-auto text-gray-500">من {review_count} مراجعة</span>
+          <Starrating className="mb-1" MaxRating={5} defaultRating={review_rate} change={false} size={24} />
+        </div>
       </div>
-
-      {/* Star distribution */}
-      <div className="flex flex-col mt-2 gap-4 flex-grow lg:w-auto flex-[100% ] w-full lg:flex-[50%]">
-        {Object.keys(reviews_counts).map((key: any, i: number) => (
-          <div className="font-medium flex items-center gap-6" key={key}>
-            <p className="text-nowrap ml-10">{key}</p>
-            <MotionItem
-              nohover
-              viewport={{ once: true }}
-              initial={{ width: 0, opacity: 0 }}
-              whileInView={{
-                width: "100%",
-                opacity: 1,
-                transition: {
-                  duration: 0.5,
-                  ease: "easeInOut",
-                  stiffness: 100,
-                  type: "spring",
-                  delay: 0.2 * i,
-                },
-              }}
-            >
-              <Progress color="#FCAB30" value={(reviews_counts[key] / review_count) * 100} />
-            </MotionItem>
-            <p className="basis-[3rem] flex-grow">{reviews_counts[key]}</p>
-          </div>
-        ))}
+      <div className="flex flex-col gap-3  w-full">
+        {Object.keys(reviews_counts)
+          .sort((a, b) => Number(b) - Number(a))
+          .map((key: string, i: number) => (
+            <div className="font-medium flex items-center gap-4" key={key}>
+              <span className="text-gblack  text-right">{key}</span>
+              <MotionItem
+                nohover
+                viewport={{ once: true }}
+                initial={{ width: 0, opacity: 0 }}
+                whileInView={{
+                  width: "100%",
+                  opacity: 1,
+                  transition: {
+                    duration: 0.5,
+                    ease: "easeInOut",
+                    stiffness: 100,
+                    type: "spring",
+                    delay: 0.2 * i,
+                  },
+                }}
+                className="flex-grow  mr-10 "
+              >
+                <Progress
+                  className="h-2 bg-gray-200"
+                  style={{ "--progress-foreground": "#FF9B07" } as React.CSSProperties}
+                  value={(reviews_counts[key] / review_count) * 100}
+                />
+              </MotionItem>
+              <span className="text-gray-600  text-left">{reviews_counts[key]}</span>
+            </div>
+          ))}
       </div>
     </div>
   );

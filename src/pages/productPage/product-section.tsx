@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { HeartIcon, Link, Phone, PhoneIcon, SendHorizonalIcon, Star } from "lucide-react";
+import { HeartIcon, Phone, SendHorizonalIcon, Star } from "lucide-react";
 import CustomBreadcrumb from "../../components/CustomBreadcrumb";
 import MaxWidthWrapper from "../../components/MaxwidthWrapper";
 import ProductSwiper from "../../components/ProductSwiper";
@@ -24,6 +24,7 @@ import ProductTags from "@/components/ProductTags";
 \ */
 const ProductSection = ({ product }: { product: ProductSectionProps }) => {
   const [selectedVariation, setSelectedVariation] = useState<Variation | null>(null);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   console.log(product.cross_sells, "cross_sells");
   // Get the current price based on selected variation
   const currentPrice = selectedVariation?.price || product.price;
@@ -44,7 +45,7 @@ const ProductSection = ({ product }: { product: ProductSectionProps }) => {
   // Breadcrumb items based on category hierarchy
   const breadcrumbItems = [
     { label: "الرئيسية", href: "/" },
-    { label: product.category.name, href: `/category/${product.category.id}` },
+    { label: product.category.name, href: `/products?category_id=${product.category.id}` },
     { label: product.title, href: `/products/${product.id}` },
   ];
   const formattedNumber = formatPhoneNumber(product.store.phone);
@@ -95,7 +96,20 @@ const ProductSection = ({ product }: { product: ProductSectionProps }) => {
             </div>
 
             {/* Description */}
-            <p className="text-muted-foreground mt-5 mb-6" dangerouslySetInnerHTML={{ __html: product.description }} />
+            <div className="mt-5 mb-6">
+              <div
+                className={`text-muted-foreground overflow-hidden ${!isDescriptionExpanded ? "line-clamp-4" : ""}`}
+                dangerouslySetInnerHTML={{ __html: product.description }}
+              />
+              {product.description.length > 200 && (
+                <button
+                  onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                  className="text-primary font-semibold mt-2 text-sm hover:underline"
+                >
+                  {isDescriptionExpanded ? "عرض أقل" : "اقرأ المزيد"}
+                </button>
+              )}
+            </div>
 
             {/* Product Options */}
             <ProductOptions
@@ -112,7 +126,7 @@ const ProductSection = ({ product }: { product: ProductSectionProps }) => {
                 {" "}
                 <Button
                   size="lg"
-                  className="w-full flex items-center text-right justify-center gap-3 text-lg rounded-full  text-white px-8"
+                  className="w-full flex items-center text-right justify-center gap-3 text-lg rounded-full text-white px-8 bg-gradient-to-r from-[#3B82F6] to-[#1D4ED8] hover:from-[#2563EB] hover:to-[#1E40AF] transition-all duration-200"
                 >
                   <span className="font-medium tracking-wider">{formattedNumber}</span>
                   <Phone className="h-6 w-6" />
@@ -136,13 +150,20 @@ const ProductSection = ({ product }: { product: ProductSectionProps }) => {
         {/* Seller Info */}
         <Seller store={product.store} />
         <div className="mt-5 flex justify-center">
-          {" "}
-          <CrossSellBundle bundle={product} />
+          <CrossSellBundle
+            bundle={product}
+            currentProduct={{
+              id: product.id,
+              name: product.title,
+              cover: product.images[0]?.src || "",
+              price: currentPrice,
+            }}
+          />
         </div>
         {/* Product Tabs */}
         <TabsProduct product={product} />
         <div className="flex flex-col mt-6 gap-4 ">
-          <h2 className="text-2xl font-bold text-right">استكشف المزيد من عمليات البحث ذات الصلة</h2>
+          <h2 className="text-lg lg:text-2xl font-bold text-right">استكشف المزيد من عمليات البحث ذات الصلة</h2>
           <ProductTags tags={product.tags} selectedTags={product.tags} handleTagChange={() => {}} />
         </div>
         {/* Similar Products */}
