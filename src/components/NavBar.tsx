@@ -85,13 +85,13 @@ const SearchBar = ({
     <div className="relative flex">
       <input
         type="text"
-        className="w-full border border-gray-700 rounded-md py-2 pr-3 focus:outline-none"
+        className="w-full border border-gray-700 rounded-md h-10 py-2 pr-3 focus:outline-none"
         placeholder="البحث"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
       />
       <button
-        className="absolute left-0 top-0 bg-primary text-white px-4 rounded-l-md flex items-center"
+        className="absolute left-0 top-0 bg-primary text-white px-4 rounded-l-md h-10 flex items-center"
         aria-label="بحث"
       >
         البحث
