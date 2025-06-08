@@ -39,6 +39,7 @@ const SimilarProducts = ({ products }: SimilarProductsProps) => {
               sku: product.sku || "",
               condition: product.condition,
               status: product.status,
+              slug: product.slug,
             }}
           />
         ))}
