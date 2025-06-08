@@ -133,7 +133,7 @@ export default function ProductsPage() {
   };
 
   const isLoading = isLoadingSearchData || isLoadingProducts;
-
+  console.log(productsData, "productsData");
   return (
     <div dir="rtl" className="bg-white min-h-screen">
       <MaxWidthWrapper>
