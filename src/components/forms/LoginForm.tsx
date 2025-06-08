@@ -48,7 +48,7 @@ const LoginForm = () => {
       console.log(data);
       localStorage.setItem("token", data.token);
       toast.success("تم تسجيل الدخول بنجاح!");
-      navigate("/dashboard");
+      navigate("/");
     },
     onError: (error: ValidationError) => {
       // Handle validation errors (422)

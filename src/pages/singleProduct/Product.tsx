@@ -68,7 +68,10 @@ const SingleProduct = () => {
       images: review.images || [],
       date: new Date().toISOString(), // You might want to add a date field in your API
     })) || [];
-  console.log(reviewsData, "reviews");
+  console.log(data.product, "reviews");
+  // read more , discount fix ,icon in features lighter ,cover in cross sells 
+  // ,add original product to the cross sells , red is total and backendreturn is green
+  //reviews direction reverse , coloring of the number ,add replies  
   return (
     <div className="font-display">
       <ProductSection

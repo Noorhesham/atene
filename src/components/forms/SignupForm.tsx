@@ -54,7 +54,7 @@ const SignupForm = () => {
     onSuccess: (data) => {
       localStorage.setItem("token", data.token);
       toast.success("تم إنشاء الحساب بنجاح!");
-      navigate("/dashboard");
+      navigate("/");
     },
     onError: (error: ValidationError) => {
       // Handle validation errors (422)
