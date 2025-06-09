@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { Filter, List, Loader2, Search, ServerCrash } from "lucide-react";
+import { Filter, Loader2, Search, ServerCrash } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 import type { Product } from "@/types/product";
@@ -23,6 +23,31 @@ interface Category {
   image: string;
   slug: string;
 }
+
+const transformProductForCard = (product: Product) => ({
+  id: String(product.id),
+  title: product.name,
+  price: product.price,
+  originalPrice: product.cross_sells_price,
+  discount:
+    product.cross_sells_price > 0
+      ? Math.round(((product.cross_sells_price - product.price) / product.cross_sells_price) * 100)
+      : 0,
+  images: product.gallery
+    ? product.gallery.map((url) => ({ src: url, alt: product.name }))
+    : product.cover
+    ? [{ src: product.cover, alt: product.name }]
+    : [],
+  rating: product.review_rate || 0,
+  reviewCount: product.review_count || 0,
+  description: product.description || "",
+  shortDescription: product.short_description || "",
+  category: product.category,
+  sku: product.sku || "",
+  condition: product.condition,
+  status: product.status,
+  slug: product.slug || "",
+});
 
 export default function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -279,13 +304,7 @@ export default function ProductsPage() {
                   </header>
                   <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-6">
                     {productsData?.products.map((product: Product) => (
-                      <ProductCard
-                        key={product.id}
-                        product={{
-                          ...product,
-                          id: String(product.id),
-                        }}
-                      />
+                      <ProductCard key={product.id} product={transformProductForCard(product)} />
                     ))}
                   </div>
                   {productsData?.products.length === 0 && (
