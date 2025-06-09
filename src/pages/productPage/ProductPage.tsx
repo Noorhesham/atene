@@ -176,9 +176,6 @@ export default function ProductsPage() {
       <MaxWidthWrapper>
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-600">
-              إظهار {productsData?.products.length || 0} من {productsData?.products.length || 0} عنصر
-            </p>
             <div className="flex items-center gap-4">
               <Sheet>
                 <SheetTrigger asChild>
