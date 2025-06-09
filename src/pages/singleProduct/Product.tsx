@@ -68,7 +68,7 @@ const SingleProduct = () => {
       images: review.images || [],
       date: new Date().toISOString(), // You might want to add a date field in your API
     })) || [];
-
+  console.log(data, "product");
   return (
     <div className="font-display">
       <ProductSection

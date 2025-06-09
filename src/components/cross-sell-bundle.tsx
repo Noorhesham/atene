@@ -55,7 +55,7 @@ export default function CrossSellBundle({ bundle, currentProduct }: CrossSellBun
           {/* Current Product */}
           <div className="flex items-center space-x-2 md:space-x-3 space-x-reverse">
             <ProductItemCard product={currentProductFormatted} />
-            <Plus className="w-4 h-4 md:w-5 md:h-5 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+            <Plus className="w-4 h-4 md:w-5 md:h-5 text-gray-900  dark:text-gray-400 flex-shrink-0" />
           </div>
 
           {/* Cross-sell Products */}
@@ -63,7 +63,7 @@ export default function CrossSellBundle({ bundle, currentProduct }: CrossSellBun
             <div key={product.id} className="flex items-center space-x-2 md:space-x-3 space-x-reverse">
               <ProductItemCard product={product} />
               {index < cross_sells.length - 1 && (
-                <Plus className="w-4 h-4 md:w-5 md:h-5 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                <Plus className="w-4 h-4 md:w-5 md:h-5 text-gray-900  dark:text-gray-400 flex-shrink-0" />
               )}
             </div>
           ))}
@@ -72,7 +72,7 @@ export default function CrossSellBundle({ bundle, currentProduct }: CrossSellBun
 
       {/* Price Section - Fixed at bottom on mobile */}
       <div className="flex items-center justify-center flex-shrink-0 md:pl-4 md:pr-6 py-2 md:py-4 border-t md:border-t-0 mt-2 md:mt-0">
-        <div className="text-2xl md:text-3xl text-gray-500 dark:text-gray-400 mx-2 md:mx-3">=</div>
+        <div className="text-2xl md:text-3xl text-gray-900 dark:text-gray-900 mx-2 md:mx-3">=</div>
         <div className="text-center">
           <div className="text-xl md:text-2xl font-bold text-green-600 dark:text-green-500 whitespace-nowrap">
             {final_price?.toFixed(2)} ₪

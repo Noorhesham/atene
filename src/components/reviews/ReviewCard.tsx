@@ -13,9 +13,20 @@ export interface ReviewCardProps {
   date?: string;
   id: string;
   productSlug: string;
+  type?: "product" | "store";
 }
 
-const ReviewCard = ({ name, avatar, review, images, rating, date, id, productSlug }: ReviewCardProps) => {
+const ReviewCard = ({
+  name,
+  avatar,
+  review,
+  images = [],
+  rating,
+  date,
+  id,
+  productSlug,
+  type = "product",
+}: ReviewCardProps) => {
   const [isReplyOpen, setIsReplyOpen] = useState(false);
 
   return (
@@ -62,7 +73,9 @@ const ReviewCard = ({ name, avatar, review, images, rating, date, id, productSlu
           )}
         </div>
       </div>
-      {isReplyOpen && <ReviewReply reviewId={id} productSlug={productSlug} onClose={() => setIsReplyOpen(false)} />}
+      {isReplyOpen && (
+        <ReviewReply reviewId={id} productSlug={productSlug} onClose={() => setIsReplyOpen(false)} type={type} />
+      )}
 
       {/* Review Replies Section */}
     </Card>

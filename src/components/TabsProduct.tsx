@@ -126,16 +126,16 @@ export function TabsProduct({ product }: { product: ProductSectionProps }) {
           <Tabs defaultValue="product-reviews">
             <TabsList className="w-full max-w-2xl ml-auto mb-6">
               <TabsTrigger value="store-reviews" className="bg-none flex-1">
-                مراجعات المتجر{" "}
                 <span className="bg-[#FF00E5] text-white rounded-full px-3 py-0.5 text-sm mr-1">
                   {product.store.review_count || 0}
                 </span>
+                مراجعات المتجر{" "}
               </TabsTrigger>
               <TabsTrigger value="product-reviews" className="bg-none flex-1">
-                مراجعات المنتج{" "}
                 <span className="bg-[#3B82F6] text-white rounded-full px-3 py-0.5 text-sm mr-1">
                   {product.reviewCount}
                 </span>
+                مراجعات المنتج{" "}
               </TabsTrigger>
             </TabsList>
 

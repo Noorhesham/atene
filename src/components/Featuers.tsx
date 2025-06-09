@@ -20,7 +20,7 @@ const Features = ({ specifications }: FeaturesProps) => {
   console.log(specifications);
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
+    <div className="grid lg:mt-5 grid-cols-2 md:grid-cols-2 gap-4">
       {specifications.map((spec) => {
         const IconComponent = getDynamicIcon(spec.icon);
         return (

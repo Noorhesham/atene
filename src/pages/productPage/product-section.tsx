@@ -120,13 +120,13 @@ const ProductSection = ({ product }: { product: ProductSectionProps }) => {
             />
 
             {/* Contact Buttons */}
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-4">
               {" "}
               <a href={`tel:${product.store.phone}`}>
                 {" "}
                 <Button
                   size="lg"
-                  className="w-full flex items-center text-right justify-center gap-3 text-lg rounded-full text-white px-8 bg-gradient-to-r from-[#3B82F6] to-[#1D4ED8] hover:from-[#2563EB] hover:to-[#1E40AF] transition-all duration-200"
+                  className="w-full duration-200 flex items-center text-right justify-center gap-3 text-lg rounded-full text-white px-8 bg-gradient-to-r from-[#3B82F6] to-[#1D4ED8] hover:from-[#2563EB] hover:to-[#1E40AF] transition-all duration-200"
                 >
                   <span className="font-medium tracking-wider">{formattedNumber}</span>
                   <Phone className="h-6 w-6" />
@@ -136,9 +136,9 @@ const ProductSection = ({ product }: { product: ProductSectionProps }) => {
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full border-primary text-primary  font-semibold text-lg rounded-full"
+                className="w-full hover:bg-primary hover:text-white duration-200 border-primary text-primary  font-bold text-lg rounded-full"
               >
-                <span>دردش</span> <SendHorizonalIcon />
+                <span className=" ">دردش</span> <SendHorizonalIcon />
               </Button>
             </div>
 
@@ -164,16 +164,18 @@ const ProductSection = ({ product }: { product: ProductSectionProps }) => {
         <TabsProduct product={product} />
         <div className="flex flex-col mt-6 gap-4 ">
           <h2 className="text-lg lg:text-2xl font-bold text-right">استكشف المزيد من عمليات البحث ذات الصلة</h2>
-          <ProductTags tags={product.tags} selectedTags={product.tags} handleTagChange={() => {}} />
+          <ProductTags asLink tags={product.tags} selectedTags={product.tags} handleTagChange={() => {}} />
         </div>
         {/* Similar Products */}
         <SimilarProducts products={product.similar} />
 
         {/* Category Scroll */}
-        <div className="flex flex-col gap-2 mt-8">
-          <h2 className="text-2xl font-bold text-right">استكشاف الفئات</h2>
-          <CategoryScroll categories={product.categories} />
-        </div>
+        {product.categories.length > 0 && (
+          <div className="flex flex-col gap-2 mt-8">
+            <h2 className="text-2xl font-bold text-right">استكشاف الفئات</h2>
+            <CategoryScroll categories={product.categories} />
+          </div>
+        )}
       </MaxWidthWrapper>
     </section>
   );

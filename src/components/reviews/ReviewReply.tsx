@@ -10,34 +10,34 @@ interface ReviewReplyProps {
   reviewId: string;
   productSlug: string;
   onClose: () => void;
+  type?: "product" | "store";
 }
 
 interface Reply {
   id: string;
   user: {
-    fullname: string;
+    name: string;
     avatar: string | null;
   };
   content: string;
   created_at: string;
 }
 
-const ReviewReply = ({ reviewId, productSlug, onClose }: ReviewReplyProps) => {
+const ReviewReply = ({ reviewId, productSlug, onClose, type = "product" }: ReviewReplyProps) => {
   const [replies, setReplies] = useState<Reply[]>([]);
   const [replyText, setReplyText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const { user: userData, isAuthenticated } = useAuth();
-  const user = userData?.user;
-  console.log(productSlug, "user");
+
   useEffect(() => {
     fetchReplies();
-  }, [reviewId, productSlug]);
+  }, [reviewId, productSlug, type]);
 
   const fetchReplies = async () => {
     try {
       setIsFetching(true);
-      const response = await fetch(`${API_BASE_URL}/reviews/product/${productSlug}/${reviewId}`, {
+      const response = await fetch(`${API_BASE_URL}/reviews/${type}/${productSlug}/${reviewId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -45,7 +45,6 @@ const ReviewReply = ({ reviewId, productSlug, onClose }: ReviewReplyProps) => {
         },
       });
       const data = await response.json();
-      console.log(data, "data");
       setReplies(data.reviews);
     } catch (error) {
       console.error("Error fetching replies:", error);
@@ -55,11 +54,11 @@ const ReviewReply = ({ reviewId, productSlug, onClose }: ReviewReplyProps) => {
   };
 
   const handleSubmitReply = async () => {
-    if (!replyText.trim() || !user) return;
+    if (!replyText.trim() || !userData) return;
 
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/reviews/product/${productSlug}`, {
+      const response = await fetch(`${API_BASE_URL}/reviews/${type}/${productSlug}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -74,8 +73,6 @@ const ReviewReply = ({ reviewId, productSlug, onClose }: ReviewReplyProps) => {
       if (!response.ok) {
         throw new Error("Failed to post reply");
       }
-      const data = await response.json();
-      console.log(data, "data");
       setReplyText("");
       await fetchReplies();
     } catch (error) {
@@ -85,10 +82,15 @@ const ReviewReply = ({ reviewId, productSlug, onClose }: ReviewReplyProps) => {
     }
   };
 
+  if (!isAuthenticated || !userData) {
+    return null;
+  }
+  console.log(userData, "userData");
+  const { user } = userData;
   return (
     <div className="mt-6">
       {/* Existing Replies */}
-      <Card className="space-y-4 mb-6  mr-10">
+      <Card className="space-y-4 mb-6 mr-10">
         {isFetching ? (
           <div className="flex justify-center py-4">
             <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
@@ -97,10 +99,10 @@ const ReviewReply = ({ reviewId, productSlug, onClose }: ReviewReplyProps) => {
           replies?.map((reply) => (
             <div key={reply.id} className="flex gap-3 items-start">
               {reply.user.avatar ? (
-                <img src={reply.user.avatar} alt={reply.user.fullname} className="w-8 h-8 rounded-full object-cover" />
+                <img src={reply.user.avatar} alt={reply.user.name} className="w-8 h-8 rounded-full object-cover" />
               ) : (
                 <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm">
-                  {reply.user.fullname[0]?.toUpperCase()}
+                  {reply.user.name[0]?.toUpperCase()}
                 </div>
               )}
               <div className="flex-1">
@@ -117,35 +119,33 @@ const ReviewReply = ({ reviewId, productSlug, onClose }: ReviewReplyProps) => {
       </Card>
 
       {/* Reply Input */}
-      {isAuthenticated && user && (
-        <div className="flex gap-3">
-          {user.avatar ? (
-            <img src={user.avatar} alt={user.fullname} className="w-8 h-8 rounded-full object-cover" />
-          ) : (
-            <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm">
-              {user.fullname[0]?.toUpperCase()}
-            </div>
-          )}
-          <div className="flex-1">
-            <Textarea
-              value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
-              placeholder="اكتب ردك هنا..."
-              className="mb-2 resize-none"
-              rows={3}
-              disabled={isLoading}
-            />
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={onClose} disabled={isLoading}>
-                إلغاء
-              </Button>
-              <Button onClick={handleSubmitReply} disabled={isLoading || !replyText.trim()} className="min-w-[80px]">
-                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "إرسال"}
-              </Button>
-            </div>
+      <div className="flex gap-3">
+        {user.avatar ? (
+          <img src={user.avatar} alt={user.fullname} className="w-8 h-8 rounded-full object-cover" />
+        ) : (
+          <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm">
+            {user?.fullname}
+          </div>
+        )}
+        <div className="flex-1">
+          <Textarea
+            value={replyText}
+            onChange={(e) => setReplyText(e.target.value)}
+            placeholder="اكتب ردك هنا..."
+            className="mb-2 resize-none"
+            rows={3}
+            disabled={isLoading}
+          />
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={onClose} disabled={isLoading}>
+              إلغاء
+            </Button>
+            <Button onClick={handleSubmitReply} disabled={isLoading || !replyText.trim()} className="min-w-[80px]">
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "إرسال"}
+            </Button>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

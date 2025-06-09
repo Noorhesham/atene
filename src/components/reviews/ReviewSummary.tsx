@@ -13,7 +13,7 @@ const ReviewSummary = ({ reviews_counts, review_count, review_rate }: ReviewSumm
     <div dir="rtl" className="flex flex-col-reverse lg:flex-row justify-between items-start gap-8">
       {/* Star distribution */} {/* Rating summary */}
       <div className="flex flex-col bg-[#FAFAFA] p-8 items-center  gap-3">
-        <div className="text-[4rem] leading-none font-semibold">{review_rate.toFixed(1)}</div>
+        <div className="text-[4rem] leading-none font-semibold">{review_rate ? review_rate : 0}</div>
         <div className="flex flex-col items-end">
           <span className="text-sm mx-auto text-gray-500">من {review_count} مراجعة</span>
           <Starrating className="mb-1" MaxRating={5} defaultRating={review_rate} change={false} size={24} />
