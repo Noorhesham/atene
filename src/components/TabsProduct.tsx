@@ -159,6 +159,7 @@ export function TabsProduct({ product }: { product: ProductSectionProps }) {
                   <div className="my-6">
                     {product.reviews?.map((review) => (
                       <ReviewCard
+                        productSlug={product.slug}
                         name={review.name}
                         avatar={review.avatar}
                         review={review.review}

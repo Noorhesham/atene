@@ -4,6 +4,7 @@ import { Textarea } from "../ui/textarea";
 import { useAuth } from "@/context/AuthContext";
 import { API_BASE_URL } from "@/constants/api";
 import { Loader2 } from "lucide-react";
+import Card from "../Card";
 
 interface ReviewReplyProps {
   reviewId: string;
@@ -28,7 +29,7 @@ const ReviewReply = ({ reviewId, productSlug, onClose }: ReviewReplyProps) => {
   const [isFetching, setIsFetching] = useState(true);
   const { user: userData, isAuthenticated } = useAuth();
   const user = userData?.user;
-
+  console.log(productSlug, "user");
   useEffect(() => {
     fetchReplies();
   }, [reviewId, productSlug]);
@@ -45,7 +46,7 @@ const ReviewReply = ({ reviewId, productSlug, onClose }: ReviewReplyProps) => {
       });
       const data = await response.json();
       console.log(data, "data");
-      setReplies(data.replies);
+      setReplies(data.reviews);
     } catch (error) {
       console.error("Error fetching replies:", error);
     } finally {
@@ -58,7 +59,7 @@ const ReviewReply = ({ reviewId, productSlug, onClose }: ReviewReplyProps) => {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/reviews/${reviewId}/reply`, {
+      const response = await fetch(`${API_BASE_URL}/reviews/product/${productSlug}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -66,13 +67,15 @@ const ReviewReply = ({ reviewId, productSlug, onClose }: ReviewReplyProps) => {
         },
         body: JSON.stringify({
           content: replyText,
+          parent_id: reviewId,
         }),
       });
 
       if (!response.ok) {
         throw new Error("Failed to post reply");
       }
-
+      const data = await response.json();
+      console.log(data, "data");
       setReplyText("");
       await fetchReplies();
     } catch (error) {
@@ -83,9 +86,9 @@ const ReviewReply = ({ reviewId, productSlug, onClose }: ReviewReplyProps) => {
   };
 
   return (
-    <div className="mt-6 border-t pt-4">
+    <div className="mt-6">
       {/* Existing Replies */}
-      <div className="space-y-4 mb-6">
+      <Card className="space-y-4 mb-6  mr-10">
         {isFetching ? (
           <div className="flex justify-center py-4">
             <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
@@ -102,10 +105,7 @@ const ReviewReply = ({ reviewId, productSlug, onClose }: ReviewReplyProps) => {
               )}
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <h4 className="font-medium">{reply.user.fullname}</h4>
-                  <span className="text-xs text-gray-500">
-                    {new Date(reply.created_at).toLocaleDateString("ar-EG")}
-                  </span>
+                  <h4 className="font-medium">{reply.user.name}</h4>
                 </div>
                 <p className="text-gray-700 mt-1">{reply.content}</p>
               </div>
@@ -114,7 +114,7 @@ const ReviewReply = ({ reviewId, productSlug, onClose }: ReviewReplyProps) => {
         ) : (
           <p className="text-center text-gray-500 py-2">لا توجد ردود بعد</p>
         )}
-      </div>
+      </Card>
 
       {/* Reply Input */}
       {isAuthenticated && user && (

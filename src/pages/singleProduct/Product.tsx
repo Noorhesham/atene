@@ -91,7 +91,7 @@ const SingleProduct = () => {
           sizes: colorAttribute?.options.map((opt) => opt.title) || [],
           weights: storageAttribute?.options.map((opt) => opt.title) || [],
           reviews: mappedReviews,
-          rate_stats: reviewsData.rate_stats,
+          rate_stats: reviewsData?.rate_stats,
           specifications: data.product.specifications,
           store: data.store,
           similar: data.similar,
@@ -114,6 +114,7 @@ const SingleProduct = () => {
           final_price: data.product.price,
           tags: data.product.tags,
           categories: data.categories,
+          slug: data.product.slug,
         }}
       />
     </div>
