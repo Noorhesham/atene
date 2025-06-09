@@ -17,6 +17,13 @@ import MaxWidthWrapper from "@/components/MaxwidthWrapper";
 import ProductCard from "@/components/ProductCard";
 import ProductTags from "@/components/ProductTags";
 
+interface Category {
+  id: number;
+  name: string;
+  image: string;
+  slug: string;
+}
+
 export default function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -133,7 +140,12 @@ export default function ProductsPage() {
   };
 
   const isLoading = isLoadingSearchData || isLoadingProducts;
-  console.log(productsData, "productsData");
+
+  // Check if we have a single category from URL and find its data
+  const isOneCategory = selectedCategories.length === 1;
+  const selectedCategory =
+    isOneCategory && searchData?.categories?.find((cat: Category) => cat.id === selectedCategories[0]);
+
   return (
     <div dir="rtl" className="bg-white min-h-screen">
       <MaxWidthWrapper>
@@ -201,7 +213,52 @@ export default function ProductsPage() {
               {!isLoading && !productsError && (
                 <div className="space-y-4">
                   <header className="space-y-4 w-full">
-                    <h1 className="text-lg lg:text-3xl font-bold text-gray-800">استكشف المزيد من عمليات البحث ذات الصلة</h1>
+                    {selectedCategory ? (
+                      <div className="relative w-full h-[300px] rounded-2xl overflow-hidden mb-8">
+                        <img
+                          src={selectedCategory.image}
+                          alt={selectedCategory.name}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-black/20 flex flex-col items-center justify-center p-6">
+                          <h1 className="text-3xl font-bold text-white mb-8">{selectedCategory.name}</h1>
+                          <div className="w-full max-w-2xl">
+                            <div className="relative">
+                              <Input
+                                type="search"
+                                placeholder="ابحث..."
+                                className="rounded-full w-full pl-12 pr-4 h-12 bg-white/90 backdrop-blur-sm"
+                                value={searchQuery}
+                                onChange={(e) => handleSearch(e.target.value)}
+                              />
+                              <div className="absolute bg-primary rounded-full p-2 left-4 top-1/2 -translate-y-1/2">
+                                <Search className="h-5 w-5 text-white" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <h1 className="text-lg lg:text-3xl font-bold text-gray-800">
+                          استكشف المزيد من عمليات البحث ذات الصلة
+                        </h1>
+                        <div className="flex w-full">
+                          <div className="relative border-1 border-primary rounded-full w-full">
+                            <Input
+                              type="search"
+                              placeholder="ابحث..."
+                              className="rounded-full w-full pl-12 pr-4 h-10 lg:h-12"
+                              value={searchQuery}
+                              onChange={(e) => handleSearch(e.target.value)}
+                            />
+                            <div className="absolute bg-primary rounded-full p-1 lg:p-2 left-1 lg:left-4 top-1/2 -translate-y-1/2">
+                              <Search className="h-5 w-5 text-white" />
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
                     {searchData?.tags && (
                       <ProductTags
                         tags={searchData.tags}
@@ -209,20 +266,6 @@ export default function ProductsPage() {
                         handleTagChange={handleTagChange}
                       />
                     )}
-                    <div className="flex w-full">
-                      <div className="relative border-1 border-primary rounded-full w-full">
-                        <Input
-                          type="search"
-                          placeholder="ابحث..."
-                          className="rounded-full w-full pl-12 pr-4 h-10 lg:h-12"
-                          value={searchQuery}
-                          onChange={(e) => handleSearch(e.target.value)}
-                        />
-                        <div className="absolute bg-primary rounded-full p-1 lg:p-2 left-1 lg:left-4 top-1/2 -translate-y-1/2">
-                          <Search className="h-5 w-5 text-white" />
-                        </div>
-                      </div>
-                    </div>
                     <div className="flex flex-col text-base gap-2 mb-8">
                       <p className="font-bold">
                         إظهار 1- {productsData?.products.length} من {productsData?.products.length} عنصر (عدد النتائج)
@@ -240,7 +283,7 @@ export default function ProductsPage() {
                         key={product.id}
                         product={{
                           ...product,
-                          id: String(product.id), // Convert number to string for ProductCard
+                          id: String(product.id),
                         }}
                       />
                     ))}
