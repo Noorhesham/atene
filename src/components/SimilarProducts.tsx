@@ -40,6 +40,7 @@ const SimilarProducts = ({ products }: SimilarProductsProps) => {
               condition: product.condition,
               status: product.status,
               slug: product.slug,
+              
             }}
           />
         ))}

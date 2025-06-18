@@ -9,7 +9,7 @@
   --color-main: #395a7d;
   --font-oxygen: "Cairo", sans-serif;
   --color-gray: #666666;
-  --color-primary: #287cda;
+  --color-primary: #6191c7;
   --color-light: #8d8d8d;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -21,7 +21,7 @@
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
+  /* --color-primary: var(--primary); */
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -133,3 +133,9 @@ body {
     @apply bg-background text-foreground;
   }
 } */
+.heading {
+  @apply lg:text-4xl text-[#3D3D3D] text-2xl font-bold;
+}
+.sub-heading {
+  @apply lg:text-[22px]  text-[#2D2D2D] text-lg font-normal;
+}

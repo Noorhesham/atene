@@ -10,6 +10,7 @@ interface SearchParams {
   tags?: string[];
   min_price?: number;
   max_price?: number;
+  variation_options?: number[];
 }
 
 export const searchProducts = async (params: SearchParams = {}): Promise<ProductsResponse> => {
@@ -38,6 +39,11 @@ export const searchProducts = async (params: SearchParams = {}): Promise<Product
   }
   if (params.max_price) {
     searchParams.append("max_price", params.max_price.toString());
+  }
+  if (params.variation_options?.length) {
+    params.variation_options.forEach((option) => {
+      searchParams.append("variation_options[]", option.toString());
+    });
   }
 
   const queryString = searchParams.toString();

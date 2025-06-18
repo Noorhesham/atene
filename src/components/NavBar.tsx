@@ -48,7 +48,7 @@ const NavbarWithState = () => {
               <img src="/black.svg" className="h-10" alt="logo" />
             </Link>
 
-            <div className="flex-1 max-w-2xl mx-4">
+            <div className="flex-1 max-w-2xl mx-[77px] ">
               <SearchBar
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
@@ -85,13 +85,13 @@ const SearchBar = ({
     <div className="relative flex">
       <input
         type="text"
-        className="w-full border border-gray-700 rounded-md h-10 py-2 pr-3 focus:outline-none"
+        className="w-full border border-[#287CDA] rounded-md h-10 py-2 pr-3 focus:outline-none"
         placeholder="البحث"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
       />
       <button
-        className="absolute left-0 top-0 bg-primary text-white px-4 rounded-l-md h-10 flex items-center"
+        className="absolute left-0 top-0 lg:text-base text-sm bg-[#287CDA] text-white px-6 rounded-l-md h-10 flex items-center"
         aria-label="بحث"
       >
         البحث
@@ -99,7 +99,7 @@ const SearchBar = ({
       <div className="absolute left-20 top-0 h-full flex items-center">
         <div className="relative">
           <button
-            className="flex items-center gap-1 px-3 text-gray-600 text-sm h-full"
+            className="flex items-center gap-1 px-3 text-black text-sm h-full"
             onClick={() => setCategoryOpen(!categoryOpen)}
             aria-label={categoryOpen ? "إغلاق قائمة الفئات" : "فتح قائمة الفئات"}
           >

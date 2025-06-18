@@ -36,7 +36,7 @@ export function TabsProduct({ product }: { product: ProductSectionProps }) {
         {/* <TabsTrigger value="shipping"> سياسة المتجر</TabsTrigger> */}
       </TabsList>
       <TabsContent value="product">
-        <div className="overflow-hidden h-full min-h-[20vh] lg:min-h-[30vh] mt-8">
+        <div className="overflow-hidden h-full min-h-[20vh] lg:min-h-[20vh] mt-8">
           <AnimatePresence mode="wait">
             <motion.div
               initial={{ opacity: 0 }}
@@ -49,11 +49,11 @@ export function TabsProduct({ product }: { product: ProductSectionProps }) {
                   <h2 className="font-bold my-4 text-xl">المعلومات</h2>
                   <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
                     <div className="flex gap-4 flex-col">
-                      <Card className="justify-between !border-none flex items-center">
+                      <Card variant="secondary" className="justify-between !border-none flex items-center">
                         <span className="font-bold">إعلان /نموذج رقم</span>
                         <span># {product.sku || "لا يوجد"}</span>
                       </Card>
-                      <Card className="bg-[#EFF2F4] !border-none justify-between flex items-center">
+                      <Card variant="secondary" className="bg-[#EFF2F4] !border-none justify-between flex items-center">
                         <span className="font-bold">القسم الرئيسي</span>
                         <span>{product.category.name}</span>
                       </Card>
@@ -65,7 +65,7 @@ export function TabsProduct({ product }: { product: ProductSectionProps }) {
                     </div>
 
                     <div className="flex flex-col">
-                      <Card className="justify-between !border-none flex items-center">
+                      <Card variant="secondary" className="justify-between !border-none flex items-center">
                         <span className="font-bold">الحالة </span>
                         <span>{product.condition === "new" ? "جديد" : "مستعمل"}</span>
                       </Card>

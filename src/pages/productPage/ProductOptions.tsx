@@ -93,7 +93,7 @@ const ProductOptions = ({ attributes, variations, className, onVariationChange }
             >
               <SelectTrigger className="w-full border-gray-200 bg-white">
                 <div className="flex placeholder:text-right text-right justify-between items-center w-fit">
-                  <SelectValue placeholder={attribute.title} />
+                  <SelectValue placeholder={`اختر ${attribute.title}`} />
                 </div>
               </SelectTrigger>
               <SelectContent>

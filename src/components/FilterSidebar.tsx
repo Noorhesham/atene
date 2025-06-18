@@ -4,9 +4,11 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
-import type { SearchPageData } from "@/types/product";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { SearchPageData, Attribute } from "@/types/product";
 import { ListFilterPlus, Loader2 } from "lucide-react";
 import Card from "./Card";
+import { useState } from "react";
 
 interface FilterSidebarProps {
   data?: SearchPageData;
@@ -19,6 +21,10 @@ interface FilterSidebarProps {
   priceRange: [number, number];
   onPriceChange: (value: [number, number]) => void;
   isLoading: boolean;
+  isPriceEnabled: boolean;
+  setIsPriceEnabled: (value: boolean) => void;
+  selectedAttributes: Record<number, number[]>;
+  onAttributeChange: (attributeId: number, optionId: number) => void;
 }
 
 export default function FilterSidebar({
@@ -32,11 +38,17 @@ export default function FilterSidebar({
   priceRange,
   onPriceChange,
   isLoading,
+  isPriceEnabled,
+  setIsPriceEnabled,
+  selectedAttributes,
+  onAttributeChange,
 }: FilterSidebarProps) {
   const parentCategories = data?.categories.filter((c) => c.parent_id === null) || [];
   const getChildCategories = (parentId: number) => {
     return data?.categories.filter((c) => c.parent_id === parentId) || [];
   };
+
+  const [tempPriceRange, setTempPriceRange] = useState<[number, number]>(priceRange);
 
   if (isLoading) {
     return (
@@ -55,7 +67,7 @@ export default function FilterSidebar({
 
       {/* Sections Filter */}
       <Card className="space-y-2">
-        <h3 className="font-semibold text-[#2D2D2D] text-xl border-r-2 border-primary pr-2 mt-4">الأقسام</h3>
+        <h3 className="sub-heading  border-r-4 border-primary pr-2 ">الأقسام</h3>
         <div className="space-y-3 pr-4">
           {data?.sections?.map((section) => (
             <div key={section.id} className="flex items-center space-x-2 rtl:space-x-reverse">
@@ -66,7 +78,7 @@ export default function FilterSidebar({
               />
               <label
                 htmlFor={`section-${section.id}`}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="text-sm  text-[#414141] mr-2 font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
                 {section.name}
               </label>
@@ -77,7 +89,7 @@ export default function FilterSidebar({
 
       {/* Categories Filter */}
       <Card className="space-y-2">
-        <h3 className="font-semibold text-[#2D2D2D] text-xl border-r-2 border-primary pr-2 mt-4">فئات</h3>
+        <h3 className="sub-heading  border-r-4 border-primary pr-2 ">فئات</h3>
         <Accordion type="multiple" className="w-full !border-none">
           {parentCategories.map((parent) => (
             <AccordionItem key={parent.id} value={`item-${parent.id}`}>
@@ -119,14 +131,14 @@ export default function FilterSidebar({
 
       {/* Tags Filter */}
       <Card className="space-y-3">
-        <h3 className="font-semibold text-[#2D2D2D] text-xl border-r-2 border-primary pr-2 mt-4">العلامات</h3>
+        <h3 className="sub-heading  border-r-4 border-primary pr-2 ">العلامات</h3>
         <div className="flex flex-wrap gap-2">
           {data?.tags.map((tag) => (
             <Button
               key={tag.id}
               variant={selectedTags.includes(tag.id.toString()) ? "default" : "outline"}
               size="sm"
-              className="rounded-full"
+              className="rounded-full bg-[#0E0E0E17]"
               onClick={() => onTagChange(tag.id.toString())}
             >
               {tag.title}
@@ -135,22 +147,60 @@ export default function FilterSidebar({
         </div>
       </Card>
 
+      {/* Attributes Filter */}
+      {data?.attributes?.map((attribute: Attribute) => (
+        <Card key={attribute.id} className="space-y-2">
+          <h3 className="sub-heading border-r-4 border-primary pr-2">{attribute.title}</h3>
+          <Select
+            value={selectedAttributes[attribute.id]?.[0]?.toString()}
+            onValueChange={(value) => {
+              const optionId = parseInt(value);
+              onAttributeChange(attribute.id, optionId);
+            }}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder={`اختر ${attribute.title}`} />
+            </SelectTrigger>
+            <SelectContent>
+              {attribute.options.map((option) => (
+                <SelectItem key={option.id} value={option.id.toString()}>
+                  {option.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Card>
+      ))}
+
       {/* Price Range Filter */}
       <Card className="space-y-4">
-        <h3 className="font-semibold text-[#2D2D2D] text-xl border-r-2 border-primary pr-2 mt-4">النطاق السعري</h3>
-        <Slider
-          min={data?.price_range.min || 0}
-          max={data?.price_range.max || 1000}
-          step={10}
-          value={priceRange}
-          onValueChange={onPriceChange}
-          dir="ltr" // Slider component works best in LTR mode
-        />
-        <div className="flex justify-between text-sm text-gray-600">
-          <span>${priceRange[0]}</span>
-          <span>${priceRange[1]}</span>
+        <h3 className="sub-heading border-r-4 border-primary pr-2 ">النطاق السعري</h3>
+        <div className="space-y-4">
+          <div className="flex justify-between text-sm text-gray-600">
+            <span>${tempPriceRange[0]}</span>
+            <span>${tempPriceRange[1]}</span>
+          </div>
+          <div className="transition-opacity duration-300">
+            <Slider
+              min={data?.price_range.min || 0}
+              max={data?.price_range.max || 1000}
+              step={10}
+              value={tempPriceRange}
+              onValueChange={(value) => setTempPriceRange(value as [number, number])}
+              dir="ltr" // Slider component works best in LTR mode
+            />
+          </div>
         </div>
       </Card>
+      <button
+        onClick={() => {
+          setIsPriceEnabled(true);
+          onPriceChange(tempPriceRange);
+        }}
+        className="w-full py-2 px-4 rounded-full text-white bg-gradient-to-r from-[#287CDA] to-[#154274] hover:opacity-90 transition-opacity"
+      >
+        {isPriceEnabled ? "تحديث فلتر السعر" : "تفعيل فلتر السعر"}
+      </button>
     </div>
   );
 }

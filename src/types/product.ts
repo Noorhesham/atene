@@ -96,6 +96,19 @@ export interface SearchPageData {
   sections: Section[];
   tags: Tag[];
   price_range: PriceRange;
+  attributes: Attribute[];
+}
+
+export interface SearchParams {
+  query?: string;
+  page?: number;
+  limit?: number;
+  category_id?: number;
+  section_id?: number;
+  tags?: string[];
+  min_price?: number;
+  max_price?: number;
+  attributes?: Record<string, number[]>;
 }
 
 export type Categories = Category[];
@@ -241,4 +254,3 @@ export interface ReviewsResponse {
   avg_rate: string;
   rate_stats: Record<string, number>; // e.g. { "1": 5, "2": 10, "3": 15, "4": 20, "5": 50 }
 }
- 

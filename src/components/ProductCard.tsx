@@ -14,7 +14,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
   return (
     <Link to={`/products/${product.slug}`} className="group">
-      <div className="relative shadow-md overflow-hidden rounded-lg h-64">
+      <div className="relative shadow-md overflow-hidden rounded-lg h-[360px]">
         {product.cover || (product.images && product.images.length > 0) ? (
           <img
             src={product.cover || product.images?.[0]?.src}
@@ -30,22 +30,26 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </div>
         )}
       </div>
-      <div className="mt-4">
-        <h3 className="text-lg font-bold line-clamp-2 text-main text-right">{product.title || product.name}</h3>
+      <div className="mt-3">
+        <h3 className=" lg:text-[22px] text-base font-bold line-clamp-2 text-main text-right">
+          {product.title || product.name}
+        </h3>
         {product.shortDescription && (
-          <p className="text-sm text-gray-600 mt-1 line-clamp-2 text-right">{product.shortDescription}</p>
+          <p className="text-sm text-gray mt-1 line-clamp-2 text-right">{product.shortDescription}</p>
         )}
         <div className="flex items-center justify-between mt-1">
           <div className="text-right">
-            <div className="text-sm font-bold">{product.price ? `${product.price} جنيه` : "السعر غير متوفر"}</div>
-            {product.originalPrice && product.price && product.originalPrice > product.price && (
+            <div className="text-sm text-black font-bold">
+              {product.price ? `${product.price} جنيه` : "السعر غير متوفر"}
+            </div>
+            {/* {product.originalPrice && product.price && product.originalPrice > product.price && (
               <div className=" text-gray-500 line-through text-sm">{product.originalPrice} جنيه</div>
-            )}
+            )} */}
           </div>
-          <div className="flex items-center gap-1">
+          {/* <div className="flex items-center gap-1">
             <Star className="h-4 w-4 text-yellow-500" fill="oklch(79.5% 0.184 86.047)" />
             <span className="text-sm text-gray-600">{product.review_rate || 0}</span>
-          </div>
+          </div> */}
         </div>
       </div>
     </Link>

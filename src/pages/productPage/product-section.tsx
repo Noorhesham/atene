@@ -66,7 +66,7 @@ const ProductSection = ({ product }: { product: ProductSectionProps }) => {
           </div>
           {/* Product Info and Options */}
           <div className="flex flex-col text-right">
-            <div className="flex lg:flex-row flex-col w-full items-center mb-6 gap-2">
+            <div className="flex lg:flex-row flex-col w-full items-center mb-3 gap-2">
               {/* Price */}
               <Price price={currentPrice} originalPrice={currentOriginalPrice} discount={currentDiscount} />
               <div className="flex items-center">
@@ -82,7 +82,7 @@ const ProductSection = ({ product }: { product: ProductSectionProps }) => {
                 </div>
                 {/* Review count */}
                 {product.reviewCount > 0 ? (
-                  <div>{`(${product.reviewCount} مراجعة)`}</div>
+                  <div className="text-sm">{`(${product.reviewCount} مراجعة)`}</div>
                 ) : (
                   <div>لا مراجعات حتي الان</div>
                 )}
@@ -91,24 +91,24 @@ const ProductSection = ({ product }: { product: ProductSectionProps }) => {
 
             {/* Title and Rating */}
             <div className="flex justify-between pb-6 border-b border-[#AEAEAE] items-start">
-              <h1 className="text-3xl font-bold mb-2">{product.title}</h1>
+              <h1 className="text-[20px] lg:text-[26px] font-bold mb-2">{product.title}</h1>
               <HeartIcon className="text-[#AEAEAE] mt-3 w-8 h-8 font-normal" />
             </div>
 
             {/* Description */}
-            <div className="mt-5 mb-6">
+            <div className="mt-5 min-h-44 mb-6">
               <div
-                className={`text-muted-foreground overflow-hidden ${!isDescriptionExpanded ? "line-clamp-4" : ""}`}
-                dangerouslySetInnerHTML={{ __html: product.description }}
+                className={`text-[#414141] text-base overflow-hidden ${!isDescriptionExpanded ? "line-clamp-4" : ""}`}
+                dangerouslySetInnerHTML={{ __html: product.shortDescription }}
               />
-              {product.description.length > 200 && (
+              {/* {product.description.length > 200 && (
                 <button
                   onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
                   className="text-primary font-semibold mt-2 text-sm hover:underline"
                 >
                   {isDescriptionExpanded ? "عرض أقل" : "اقرأ المزيد"}
                 </button>
-              )}
+              )} */}
             </div>
 
             {/* Product Options */}
@@ -126,19 +126,20 @@ const ProductSection = ({ product }: { product: ProductSectionProps }) => {
                 {" "}
                 <Button
                   size="lg"
-                  className="w-full duration-200 flex items-center text-right justify-center gap-3 text-lg rounded-full text-white px-8 bg-gradient-to-r from-[#3B82F6] to-[#1D4ED8] hover:from-[#2563EB] hover:to-[#1E40AF] transition-all duration-200"
+                  className="w-full
+                   flex items-center text-right justify-center gap-3 text-lg rounded-full text-white px-8 duration-300 bg-gradient-to-r to-[#0D6EFD] from-[#72ABFF]  hover:opacity-80 transition-all duration-200"
                 >
-                  <span className="font-medium tracking-wider">{formattedNumber}</span>
-                  <Phone className="h-6 w-6" />
+                  <span className="font-medium text-lg tracking-wider">{formattedNumber}</span>
+                  <Phone className="h-8 w-8" />
                 </Button>
               </a>
               {/* Chat Button */}
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full hover:bg-primary hover:text-white duration-200 border-primary text-primary  font-bold text-lg rounded-full"
+                className="w-full hover:bg-primary hover:text-white duration-200 border-[#0D6EFD] text-[#0D6EFD]  font-bold text-lg rounded-full"
               >
-                <span className=" ">دردش</span> <SendHorizonalIcon />
+                <span className=" ">دردش</span> <SendHorizonalIcon className="h-12 w-12" />
               </Button>
             </div>
 
@@ -162,6 +163,20 @@ const ProductSection = ({ product }: { product: ProductSectionProps }) => {
         </div>
         {/* Product Tabs */}
         <TabsProduct product={product} />
+        <div className=" mt-4  mb-6">
+          <div
+            className={`text-[#414141] text-base overflow-hidden ${!isDescriptionExpanded ? "line-clamp-5" : ""}`}
+            dangerouslySetInnerHTML={{ __html: product.description || "" }}
+          />
+          {product.description.length > 200 && (
+            <button
+              onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+              className="text-primary font-semibold mt-2 text-sm hover:underline"
+            >
+              {isDescriptionExpanded ? "عرض أقل" : "اقرأ المزيد"}
+            </button>
+          )}
+        </div>
         <div className="flex flex-col mt-6 gap-4 ">
           <h2 className="text-lg lg:text-2xl font-bold text-right">استكشف المزيد من عمليات البحث ذات الصلة</h2>
           <ProductTags asLink tags={product.tags} selectedTags={product.tags} handleTagChange={() => {}} />

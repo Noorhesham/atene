@@ -15,7 +15,7 @@ const Price = ({
 }) => {
   return (
     <div className={`flex  items-center gap-3  text-[#414141] ${className}`}>
-      <span className="text-2xl text-nowrap  flex items-start ">
+      <span className="text-[18px] lg:text-[28px] text-nowrap  flex items-start ">
         ₪ {price.toFixed(2)}
         {/* {originalPrice && (
           <span className=" text-red-500 p-2 text-xs line-through">{originalPrice.toFixed(2) }₪</span>
