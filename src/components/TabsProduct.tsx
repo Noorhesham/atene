@@ -29,10 +29,12 @@ export function TabsProduct({ product }: { product: ProductSectionProps }) {
   return (
     <Tabs defaultValue="product" className="w-full mt-5" dir="rtl">
       <TabsList className="grid w-full grid-cols-2 gap-4 md:grid-cols-2 sm:grid-cols-2">
-        <TabsTrigger className="" value="product">
+        <TabsTrigger className="border-b-2 border-transparent data-[state=active]:border-b-[#046CFF]" value="product">
           وصف المنتج
         </TabsTrigger>
-        <TabsTrigger value="reviews">تقييم و مراجعات</TabsTrigger>
+        <TabsTrigger className="border-b-2 border-transparent data-[state=active]:border-b-[#046CFF]" value="reviews">
+          تقييم و مراجعات
+        </TabsTrigger>
         {/* <TabsTrigger value="shipping"> سياسة المتجر</TabsTrigger> */}
       </TabsList>
       <TabsContent value="product">
@@ -44,8 +46,8 @@ export function TabsProduct({ product }: { product: ProductSectionProps }) {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
             >
-              <div className="grid gap-5 my-5 grid-cols-1 md:grid-cols-2 lg:grid-cols-5">
-                <div className="col-span-1 md:col-span-2 lg:col-span-3 shadow-sm py-2 px-4 rounded-2xl border-gray-300 border">
+              <div className="grid gap-5  grid-cols-1 md:grid-cols-2 lg:grid-cols-5">
+                <div className="col-span-1 md:col-span-2 lg:col-span-3 shadow-sm py-4 px-4 rounded-2xl border-gray-300 border">
                   <h2 className="font-bold my-4 text-xl">المعلومات</h2>
                   <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
                     <div className="flex gap-4 flex-col">
@@ -125,13 +127,19 @@ export function TabsProduct({ product }: { product: ProductSectionProps }) {
         <div className="mt-6">
           <Tabs defaultValue="product-reviews">
             <TabsList className="w-full max-w-2xl ml-auto mb-6">
-              <TabsTrigger value="store-reviews" className="bg-none flex-1">
+              <TabsTrigger
+                value="store-reviews"
+                className="bg-none flex-1 border-b-2 border-transparent data-[state=active]:border-b-[#046CFF]"
+              >
                 <span className="bg-[#FF00E5] text-white rounded-full px-3 py-0.5 text-sm mr-1">
                   {product.store.review_count || 0}
                 </span>
                 مراجعات المتجر{" "}
               </TabsTrigger>
-              <TabsTrigger value="product-reviews" className="bg-none flex-1">
+              <TabsTrigger
+                value="product-reviews"
+                className="bg-none flex-1 border-b-2 border-transparent data-[state=active]:border-b-[#046CFF]"
+              >
                 <span className="bg-[#3B82F6] text-white rounded-full px-3 py-0.5 text-sm mr-1">
                   {product.reviewCount}
                 </span>
@@ -159,12 +167,13 @@ export function TabsProduct({ product }: { product: ProductSectionProps }) {
                   <div className="my-6">
                     {product.reviews?.map((review) => (
                       <ReviewCard
-                        productSlug={product.slug}
+                        key={review.id}
+                        productSlug={product.id.toString()}
                         name={review.name}
                         avatar={review.avatar}
                         review={review.review}
-                        images={review.images}
-                        rating={review.rating}
+                        images={review.images || []}
+                        rating={review.rating || 0}
                         date={review.date}
                         id={review.id.toString()}
                       />

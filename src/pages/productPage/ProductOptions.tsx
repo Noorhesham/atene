@@ -78,7 +78,7 @@ const ProductOptions = ({ attributes, variations, className, onVariationChange }
   };
 
   return (
-    <div className={cn("space-y-4", className)}>
+    <div dir="rtl" className={cn("space-y-4", className)}>
       {attributes.map((attribute, index) => {
         const isFirstAttribute = index === 0;
         const availableOptions = isFirstAttribute
@@ -91,10 +91,8 @@ const ProductOptions = ({ attributes, variations, className, onVariationChange }
               value={selectedOptions[attribute.id]?.toString()}
               onValueChange={(value) => handleOptionSelect(attribute.id, value)}
             >
-              <SelectTrigger className="w-full border-gray-200 bg-white">
-                <div className="flex placeholder:text-right text-right justify-between items-center w-fit">
-                  <SelectValue placeholder={`اختر ${attribute.title}`} />
-                </div>
+              <SelectTrigger className="w-full border-gray-200 bg-white text-right">
+                <SelectValue placeholder={`اختر ${attribute.title}`} />
               </SelectTrigger>
               <SelectContent>
                 {attribute.options.map((option) => {

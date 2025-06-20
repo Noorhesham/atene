@@ -8,7 +8,11 @@ const Footer = () => {
       {/* Newsletter */}
       <MaxWidthWrapper className="bg-gradient-to-l overflow-hidden relative from-[#0A5DC2] to-[#052C5C] text-white p-6 md:p-10 rounded-lg max-w-6xl mx-auto text-center md:text-right">
         {" "}
-        <img className= " lg:block hidden  absolute w-96 right-0 bottom-0 lg:top-0" src="/334f03c99198ac744a17ed9b6b6a494ae460de7e.png" alt="" />
+        <img
+          className=" lg:block hidden  absolute w-96 right-0 bottom-0 lg:top-0"
+          src="/334f03c99198ac744a17ed9b6b6a494ae460de7e.png"
+          alt=""
+        />
         <div className="flex flex-col md:flex-row md:justify-between items-center gap-6 md:gap-4">
           <div className="flex flex-col items-stretch md:items-start gap-2 w-full md:w-[30%] ">
             <div className="relative flex items-center   w-full  gap-1 w-full justify-center md:justify-end">
@@ -25,7 +29,7 @@ const Footer = () => {
               </button>
             </div>
           </div>
-          <div className="text-2xl md:text-4xl lg:mr-72 font-bold mt-4 md:mt-0">
+          <div className="text-2xl md:text-[40px] lg:mr-72 font-bold mt-4 md:mt-0">
             ابق على اطلاع <br className="hidden md:block" /> بأحدث عروضنا
           </div>
         </div>
@@ -93,8 +97,8 @@ const Footer = () => {
       </MaxWidthWrapper>
 
       {/* Bottom bar */}
-      <div className="bg-gray-100 text-gray-600 text-xs px-4 py-4 text-center md:text-right border-t">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2">
+      <div className="bg-gray-100 text-gray-600 text-xs  py-4 text-center md:text-right border-t">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2">
           <div className="flex flex-wrap gap-2 justify-center md:justify-start text-center md:text-right">
             <span>© 2025 A’atene , Inc.</span>
             <span>خصوصية</span>

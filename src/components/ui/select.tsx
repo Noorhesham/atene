@@ -5,7 +5,7 @@ import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { cn } from "../lib/utils";
 
 function Select({ ...props }: React.ComponentProps<typeof SelectPrimitive.Root>) {
-  return <SelectPrimitive.Root data-slot="select" {...props} />;
+  return <SelectPrimitive.Root dir="rtl" data-slot="select" {...props} />;
 }
 
 function SelectGroup({ ...props }: React.ComponentProps<typeof SelectPrimitive.Group>) {
@@ -34,10 +34,10 @@ function SelectTrigger({
       )}
       {...props}
     >
-      <SelectPrimitive.Icon asChild>
-        <ChevronDownIcon className="size-4 opacity-50" />
-      </SelectPrimitive.Icon>
       {children}
+      <SelectPrimitive.Icon asChild>
+        <ChevronDownIcon className="size-4 opacity-50 mr-auto" />
+      </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   );
 }
@@ -81,7 +81,7 @@ function SelectLabel({ className, ...props }: React.ComponentProps<typeof Select
   return (
     <SelectPrimitive.Label
       data-slot="select-label"
-      className={cn("text-muted-foreground px-2 py-1.5 text-xs", className)}
+      className={cn("text-muted-foreground px-2 py-1.5 text-xs text-right", className)}
       {...props}
     />
   );
@@ -94,29 +94,17 @@ function SelectItem({ className, children, ...props }: React.ComponentProps<type
       className={cn(
         "focus:bg-accent focus:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground",
         "relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5",
-        "pl-8 pr-2 ", // padding adjustment
+        "pr-8 pl-2", // RTL padding
         "text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        "*:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2 gap-reverse", // gap reversal
+        "*:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         className
       )}
       {...props}
     >
-      <SelectPrimitive.ItemText
-        className={cn(
-          "!absolute right-2 ", // positioning
-          "self-start"
-        )}
-      >
-        {children}
-      </SelectPrimitive.ItemText>
+      <SelectPrimitive.ItemText className="text-right w-full">{children}</SelectPrimitive.ItemText>
 
-      <span
-        className={cn(
-          "absolute flex size-3.5 items-center justify-center",
-          "right-2 left-auto " // icon positioning
-        )}
-      >
+      <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
         <SelectPrimitive.ItemIndicator>
           <CheckIcon className="size-4" />
         </SelectPrimitive.ItemIndicator>
