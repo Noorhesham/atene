@@ -76,9 +76,17 @@ const StoreProfile: React.FC<StoreProfileProps> = ({
 
       {/* Store Info */}
       <MaxWidthWrapper noPadding className="relative  flex flex-col lg:flex-row justify-between z-30 px-4">
-        <div className="flex flex-col gap-4">
-          <div className="absolute -top-20 right-4 lg:right-8 h-32 lg:h-40 w-32 lg:w-40 shadow-lg rounded-full border-4 border-white overflow-hidden bg-white">
-            <img src={avatar} alt={name} className="w-full h-full object-cover" />
+        <div className="flex relative flex-col">
+          <div className="relative bg-white ">
+            <img src="/starss.svg" className="  absolute z-10 right-28 -bottom-12 lg:-bottom-20 lg:right-36" alt="" />
+            <img src="/9110128_crown_f_icon 1 (Traced).svg" alt="" className="absolute -top-32  right-6  lg:right-16" />{" "}
+            <div
+              className="absolute border-[#FFCE3B]  -top-20 right-2 lg:right-8 h-32 lg:h-40 w-32 lg:w-40 shadow-lg rounded-full border-4 
+           
+          overflow-hidden bg-white"
+            >
+              <img src={avatar} alt={name} className="w-full h-full object-cover" />
+            </div>
           </div>
           <div className="flex flex-col  lg:flex-row w-full gap-4 lg:gap-10  pt-16 lg:pt-12 items-start lg:items-center  lg:mb-6">
             <StoreStats

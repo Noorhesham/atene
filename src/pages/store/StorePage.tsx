@@ -8,6 +8,7 @@ import StoreReviews from "@/components/reviews/StoreReviews";
 import ProductCard from "@/components/ProductCard";
 import CrossSellBundle from "@/components/cross-sell-bundle";
 import StoreProducts from "@/components/StoreProducts";
+import toast from "react-hot-toast";
 
 const TikTokIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -40,10 +41,32 @@ const StorePage = () => {
   // Tab state
   const [activeTab, setActiveTab] = useState("overview");
 
-  // Sample store data (in a real app, this would come from an API)
-  const storeData = {
-    id: 1,
-    slug: "etnix-byron",
+  const handleCopyLink = (url: string, label: string) => {
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        toast.success(`تم نسخ رابط ${label} بنجاح!`, {
+          duration: 2000,
+          position: "top-center",
+          style: {
+            direction: "rtl",
+          },
+        });
+      })
+      .catch(() => {
+        toast.error("حدث خطأ أثناء نسخ الرابط", {
+          duration: 2000,
+          position: "top-center",
+          style: {
+            direction: "rtl",
+          },
+        });
+      });
+  };
+
+  // Data for StoreProfile component
+  const profileData = {
+    id: "1",
     name: "EtnixByron",
     avatar: "https://ui-avatars.com/api/?name=Etnix&background=FFF&color=000&bold=true&size=256",
     location: "خليج بايرون، أستراليا",
@@ -63,49 +86,45 @@ const StorePage = () => {
       "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80",
       "https://images.unsplash.com/photo-1485968579580-b6d095142e6e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80",
     ],
+  };
+
+  // Data for StoreReviews component
+  const reviewsData = {
+    id: 1,
+    slug: "etnix-byron",
+    name: "EtnixByron",
     status: "active",
     phone: "+61 123 456 789",
     whats_app: "+61 123 456 789",
     email: "contact@etnix.com.au",
-    website: "www.etnix.com.au",
-    facebook: "https://www.facebook.com/Etnix.byron",
-    instagram: "etnix.byron",
-    twitter: "etnix_byron",
-    tiktok: "etnix.byron",
-    snapchat: "etnix.byron",
-    created_at: "2017-01-01",
-    updated_at: "2023-01-01",
-    category: "Fashion & Apparel",
-    subcategory: "Bohemian Fashion",
-    description: "زي الجينات، الجينات الأنيقة الرائع لمهرجان بوهيمي",
-    shipping_info: "شحن مجاني للطلبات فوق 500 ريال",
-    return_policy: "سياسة إرجاع واسترداد بدون أي أسئلة",
     address: "123 Byron Bay, NSW 2481, Australia",
     lat: -28.6474,
     lng: 153.602,
     logo: "https://ui-avatars.com/api/?name=Etnix&background=FFF&color=000&bold=true&size=256",
-    banner: "https://images.unsplash.com/photo-1523381294911-8d3cead13475",
-    verified: true,
-    featured: true,
-    products_count: 150,
-    followers_count: 350,
-    following_count: 50,
     cover: "https://images.unsplash.com/photo-1523381294911-8d3cead13475",
     review_rate: 4.5,
     review_count: 32,
-    weekends: ["Saturday", "Sunday"],
-    working_hours: "1PM - 9PM",
-    working_days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    weekends: "Saturday,Sunday",
     am_i_following: false,
+    created_at: "2017-01-01",
+    updated_at: "2023-01-01",
     orders_count: 27,
   };
 
   const socialLinks = [
-    { icon: <Link2 className="w-5 h-5 text-gray-600" />, label: "Website" },
-    { icon: <Grid className="w-5 h-5 text-gray-600" />, label: "Grid" },
-    { icon: <Facebook className="w-5 h-5 text-gray-600" />, label: "Facebook" },
-    { icon: <Instagram className="w-5 h-5 text-gray-600" />, label: "Instagram" },
-    { icon: <TikTokIcon />, label: "TikTok" },
+    { icon: <Link2 className="w-5 h-5 text-gray-600" />, label: "Website", url: "https://www.etnix.com.au" },
+    { icon: <Grid className="w-5 h-5 text-gray-600" />, label: "Grid", url: "https://www.etnix.com.au/grid" },
+    {
+      icon: <Facebook className="w-5 h-5 text-gray-600" />,
+      label: "Facebook",
+      url: "https://www.facebook.com/Etnix.byron",
+    },
+    {
+      icon: <Instagram className="w-5 h-5 text-gray-600" />,
+      label: "Instagram",
+      url: "https://www.instagram.com/etnix.byron",
+    },
+    { icon: <TikTokIcon />, label: "TikTok", url: "https://www.tiktok.com/@etnix.byron" },
   ];
   const stats = [
     { icon: "/clock.svg", title: "مواعيد العمل", value: "1PM - 9PM" },
@@ -212,7 +231,7 @@ const StorePage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-16">
-      <StoreProfile {...storeData} />
+      <StoreProfile {...profileData} />
       <StoreHighlights stories={sampleStories} />
       <MaxWidthWrapper noPadding className="mt-8 border-2 border-input bg-white  rounded-3xl shadow-lg">
         {/* Tabs */}
@@ -328,12 +347,13 @@ const StorePage = () => {
             <div className="lg:col-span-1 flex flex-col gap-4">
               <div className="bg-white rounded-xl shadow-md p-3 border border-gray-100">
                 <div className="flex items-center justify-end gap-2">
-                  <span className="text-sm  text-[#3C5D80] font-bold">اختصارات المتجر:</span>
+                  <span className="text-sm text-[#3C5D80] font-bold">اختصارات المتجر:</span>
                   {socialLinks.map((link, index) => (
                     <button
                       key={index}
                       aria-label={link.label}
-                      className="flex items-center  text-[#3C5D80] justify-center w-10 h-10 rounded-lg border bg-gray-50 hover:bg-gray-100 transition-colors"
+                      onClick={() => handleCopyLink(link.url, link.label)}
+                      className="flex items-center text-[#3C5D80] justify-center w-10 h-10 rounded-lg border bg-gray-50 hover:bg-gray-100 transition-colors"
                     >
                       {link.icon}
                     </button>
@@ -347,7 +367,7 @@ const StorePage = () => {
 
         {activeTab === "reviews" && (
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <StoreReviews store={storeData} dummy={true} />
+            <StoreReviews store={reviewsData} dummy={true} />
           </div>
         )}
 
