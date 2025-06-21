@@ -4,6 +4,7 @@ import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import { ChevronLeft, ChevronRight, Clock, MessageCircle, Star, X } from "lucide-react";
+import SellerActions from "./SellerActions";
 
 interface FavouriteItem {
   id: string;
@@ -108,14 +109,7 @@ const FavouritesSlider: React.FC<FavouritesSliderProps> = ({ items, type }) => {
                     </div>
                   </div>
                   <p className="text-[9px] text-gray-600 line-clamp-2">{item.description}</p>
-                  <div className="flex justify-end gap-2 mt-3">
-                    <button className="px-2 flex items-center gap-2 py-1 text-xs bg-gradient-to-r from-[#5E8CBE] to-[#3B5D80] text-white rounded-full border border-primary hover:bg-primary hover:text-white transition-colors">
-                      تواصل معي <MessageCircle className="w-4 h-4" />
-                    </button>
-                    <button className="px-2  flex items-center gap-2 py-1 text-xs rounded-full border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-colors">
-                      بلغ عن إساءة <X className="w-4 h-4" />
-                    </button>
-                  </div>
+                  <SellerActions />
                 </div>
               </div>
             </div>

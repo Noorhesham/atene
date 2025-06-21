@@ -10,9 +10,9 @@ type ReviewSummaryProps = {
 
 const ReviewSummary = ({ reviews_counts, review_count, review_rate }: ReviewSummaryProps) => {
   return (
-    <div dir="rtl" className="flex flex-col-reverse lg:flex-row justify-between items-start gap-8">
+    <div dir="rtl" className="flex flex-col-reverse lg:flex-row  justify-between items-start gap-8">
       {/* Star distribution */} {/* Rating summary */}
-      <div className="flex flex-col bg-[#FAFAFA] p-8 items-center  gap-3">
+      <div className="flex flex-col bg-[#FAFAFA] p-8 lg:w-fit w-full items-center  gap-3">
         <div className="text-[4rem] leading-none font-semibold">{review_rate ? review_rate : 0}</div>
         <div className="flex flex-col items-end">
           <span className="text-sm mx-auto text-gray-500">من {review_count} مراجعة</span>

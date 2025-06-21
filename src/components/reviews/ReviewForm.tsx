@@ -128,15 +128,16 @@ const ReviewForm = ({ productId, storeId, type = "product" }: ReviewFormProps) =
       </div>
       <Form {...form}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 w-full">
-          <FormInput area placeholder="اكتب مراجعتك ..." label="اكتب مراجعتك" name="content" />
+          <FormInput area placeholder="اكتب مراجعتك ..." name="content" />
 
           <FormInput photo name="images" />
+          <div className="flex lg:items-center lg:flex-row flex-col justify-between gap-2">
+            <FormInput rate name="rate" />
 
-          <FormInput rate name="rate" />
-
-          <Button type="submit" className="flex items-center gap-2 rounded-full !w-fit " disabled={isSubmitting}>
-            <ChevronLeft /> {isSubmitting ? "جاري الإرسال..." : "إرسال المراجعة"}
-          </Button>
+            <Button type="submit" className="flex items-center gap-2 rounded-full !w-fit " disabled={isSubmitting}>
+              <ChevronLeft /> {isSubmitting ? "جاري الإرسال..." : "إرسال المراجعة"}
+            </Button>
+          </div>
         </form>
       </Form>
     </Card>

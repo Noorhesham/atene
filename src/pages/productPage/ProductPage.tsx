@@ -382,11 +382,13 @@ export default function ProductsPage() {
                           </div>
                         )}
                         {productsData?.products && productsData.products.length > 0 && (
-                          <Pagination
-                            currentPage={currentPage}
-                            totalPages={Math.ceil((productsData?.total || 0) / 15)}
-                            onPageChange={handlePageChange}
-                          />
+                          <div className="mt-8">
+                            <Pagination
+                              currentPage={currentPage}
+                              totalPages={Math.ceil((productsData?.total || 0) / 15)}
+                              onPageChange={handlePageChange}
+                            />
+                          </div>
                         )}
                       </>
                     )}

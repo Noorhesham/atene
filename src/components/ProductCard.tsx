@@ -1,10 +1,14 @@
 import { Link } from "react-router-dom";
 import { ProductSectionProps } from "@/types/product";
-import { Star } from "lucide-react";
+import { Heart, Star } from "lucide-react";
 import { DefaultProductImage } from "./ui/default-product-image";
 
 interface ProductCardProps {
-  product: Partial<ProductSectionProps>;
+  product: Partial<ProductSectionProps> & {
+    isNew?: boolean;
+    seller?: string;
+    isFavorite?: boolean;
+  };
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
@@ -13,44 +17,47 @@ const ProductCard = ({ product }: ProductCardProps) => {
   }
 
   return (
-    <Link to={`/products/${product.slug}`} className="group">
-      <div className="relative shadow-md overflow-hidden rounded-lg h-[360px]">
-        {product.cover || (product.images && product.images.length > 0) ? (
-          <img
-            src={product.cover || product.images?.[0]?.src}
-            alt={product.images?.[0]?.alt}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-        ) : (
-          <DefaultProductImage />
-        )}
-        {product.discount && product.discount > 0 && (
-          <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-sm">
-            {product.discount}% خصم
-          </div>
-        )}
-      </div>
-      <div className="mt-3">
-        <h3 className=" lg:text-[22px] text-base font-bold line-clamp-2 text-main text-right">
-          {product.title || product.name}
-        </h3>
-        {product.shortDescription && (
-          <p className="text-sm text-gray mt-1 line-clamp-2 text-right">{product.shortDescription}</p>
-        )}
-        <div className="flex items-center justify-between mt-1">
-          <div className="text-right">
-            <div className="text-sm text-black font-bold">
-              {product.price ? `${product.price} جنيه` : "السعر غير متوفر"}
-            </div>
-            {/* {product.originalPrice && product.price && product.originalPrice > product.price && (
-              <div className=" text-gray-500 line-through text-sm">{product.originalPrice} جنيه</div>
-            )} */}
-          </div>
-          {/* <div className="flex items-center gap-1">
-            <Star className="h-4 w-4 text-yellow-500" fill="oklch(79.5% 0.184 86.047)" />
-            <span className="text-sm text-gray-600">{product.review_rate || 0}</span>
-          </div> */}
+    <Link to={`/products/${product.slug}`} className="group block text-right">
+      <div className="relative overflow-hidden rounded-lg shadow-sm border border-gray-200">
+        <div className="relative h-[250px] overflow-hidden">
+          {product.cover || (product.images && product.images.length > 0) ? (
+            <img
+              src={product.cover || product.images?.[0]?.src}
+              alt={product.title}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+          ) : (
+            <DefaultProductImage />
+          )}
         </div>
+        <div className="absolute top-2 left-2 flex flex-col gap-2">
+          {product.isNew && (
+            <span className="bg-green-500 text-white text-xs font-semibold px-2.5 py-1 rounded-md">جديد</span>
+          )}
+          {product.discount && product.discount > 0 && (
+            <span className="bg-red-500 text-white text-xs font-semibold px-2.5 py-1 rounded-md">
+              -{product.discount}%
+            </span>
+          )}
+        </div>
+        <button className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm p-1.5 rounded-full text-gray-600 hover:text-red-500 hover:bg-white transition-colors">
+          <Heart className={`w-5 h-5 ${product.isFavorite ? "fill-red-500 text-red-500" : ""}`} />
+        </button>
+      </div>
+      <div className="mt-3 px-1">
+        <h3 className="font-semibold text-sm text-gray-800 truncate">{product.title}</h3>
+        {product.seller && <p className="text-xs text-gray-500 mt-0.5">{product.seller}</p>}
+        <div className="flex items-center gap-1 mt-1">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Star
+              key={i}
+              className={`w-3.5 h-3.5 ${
+                (product.rating || 0) > i ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
+              }`}
+            />
+          ))}
+        </div>
+        <p className="text-sm font-bold text-gray-800 mt-1">{product.price ? `${product.price}₪` : ""}</p>
       </div>
     </Link>
   );

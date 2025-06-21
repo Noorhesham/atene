@@ -112,7 +112,7 @@ const FormInput = ({
           <div className={`relative  w-full inline-flex items-center justify-center ${className}`}>
             <FormControl className={`  ${switchToggle ? "" : "   duration-200"} `}>
               {area ? (
-                <Textarea className=" bg-white !w-full  rounded-3xl" {...field} />
+                <Textarea placeholder={placeholder} className=" bg-white !w-full min-h-24  placeholder:text-gray-400 p-4  rounded-3xl" {...field} />
               ) : photo ? (
                 <div className=" w-fit ml-auto">
                   {" "}
@@ -129,8 +129,8 @@ const FormInput = ({
                   </Label>
                 </div>
               ) : rate ? (
-                <div className=" ml-auto">
-                  <Label>تقييمك</Label>
+                <div className="flex items-center gap-2 ml-auto">
+                  <Label>تقييماتك:</Label>
                   <Starrating OnSetRating={field.onChange} MaxRating={5} />
                 </div>
               ) : (

@@ -30,27 +30,27 @@ const ReviewCard = ({
   const [isReplyOpen, setIsReplyOpen] = useState(false);
 
   return (
-    <Card className="mb-4 p-6">
+    <Card className="mb-4  lg:px-6 lg:py-4 px-4 py-2">
       <div className="flex items-start gap-4">
         <img src={avatar} alt={name} className="w-12 h-12 rounded-full object-cover" />
         <div className="flex-1 ">
-          <div className="flex  flex-col gap-1 justify-between items-start mb-3">
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-lg">{name}</h3>
+          <div className="flex  flex-col  justify-between items-start mb-1">
+            <div className="w-full">
+              <div className="flex w-full  justify-between items-center ">
+                <h3 className="font-semibold text-base">{name}</h3>
                 {rating !== undefined && (
-                  <div className="flex items-center">
+                  <div className="flex  mr-auto items-center">
                     <Starrating MaxRating={5} defaultRating={rating} change={false} size={16} />
                   </div>
                 )}
               </div>
-              {date && (
-                <span className="text-sm text-gray-500 block mt-1">{new Date(date).toLocaleDateString("ar-EG")}</span>
-              )}
+              {/* {date && (
+                <span className="text-sm text-gray-500 block ">{new Date(date).toLocaleDateString("ar-EG")}</span>
+              )} */}
             </div>
           </div>
 
-          <p className="text-gray-700 text-base leading-relaxed mb-4">{review}</p>
+          <p className="text-[#949494] text-base mb-4">{review}</p>
           <Button variant="ghost" className="text-blue-600 hover:text-blue-700 px-2 h-auto py-1 text-sm">
             يحب
           </Button>

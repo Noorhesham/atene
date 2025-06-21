@@ -44,7 +44,7 @@ const StoreProfile: React.FC<StoreProfileProps> = ({
   };
 
   return (
-    <div dir="rtl" className="w-full bg-white shadow-sm overflow-hidden">
+    <div dir="rtl" className="w-full bg-white shadow-lg overflow-hidden">
       {/* Cover Image Slider */}
       <div className="w-full h-56 relative">
         <Swiper
@@ -75,40 +75,50 @@ const StoreProfile: React.FC<StoreProfileProps> = ({
       </div>
 
       {/* Store Info */}
-      <MaxWidthWrapper className="relative flex justify-between z-30 px-4 pt-14 pb-6">
+      <MaxWidthWrapper noPadding className="relative  flex flex-col lg:flex-row justify-between z-30 px-4">
         <div className="flex flex-col gap-4">
-          <div className="absolute -top-20 right-8 h-40  shadow-lg w-40  rounded-full border-4 border-white overflow-hidden bg-white">
+          <div className="absolute -top-20 right-4 lg:right-8 h-32 lg:h-40 w-32 lg:w-40 shadow-lg rounded-full border-4 border-white overflow-hidden bg-white">
             <img src={avatar} alt={name} className="w-full h-full object-cover" />
           </div>
-          <div className="flex  w-full gap-10 mt-4 items-center mb-6">
+          <div className="flex flex-col  lg:flex-row w-full gap-4 lg:gap-10  pt-16 lg:pt-12 items-start lg:items-center  lg:mb-6">
             <StoreStats
               rating={rating}
               reviewCount={reviewCount}
               followers={followers}
               followersAvatars={followersAvatars}
             />
-            <div className="flex  gap-10 items-start mb-4">
+            <div className="flex flex-col lg:flex-row gap-4 lg:gap-10 items-start  mb-4">
               <div className="flex flex-col gap-4">
                 {" "}
                 <div className="text-right">
-                  <h1 className="text-4xl font-bold text-gray-900">{name}</h1>
+                  <h1 className="text-2xl lg:text-4xl font-bold text-gray-900">{name}</h1>
                   <div className="my-1 text-right">
-                    <p className="text-gray-700 text-sm font-semibold leading-relaxed">{bio}</p>
+                    <p className="text-black text-base lg:text-lg font-semibold leading-relaxed">{bio}</p>
                   </div>
-                  <p className="text-sm text-gray-600">{location}</p>{" "}
+                  <p className="text-[10px] black">{location}</p>{" "}
                 </div>
-                <div className="flex items-center space-x-3">
-                  <MainButton bg="bg-white" className="!text-[#5B89BA] border-2 border-[#5B89BA] ! ">
-                    <Link to={`/chat/${id}`} className="flex items-center ">
-                      <MessageCircle className="h-5 w-5 ml-1.5" />
-                      <span className="text-sm font-medium">الدردشة</span>
-                    </Link>
-                  </MainButton>
-                  <MainButton onClick={toggleFollow} className="flex items-center">
+                <div className="flex flex-wrap lg:flex-nowrap items-center gap-2 lg:space-x-3">
+                  <MainButton
+                    onClick={toggleFollow}
+                    bg="!bg-[#3D5E83]"
+                    className="flex w-full lg:max-w-[164px] !bg-white items-center"
+                  >
                     <UserPlus className="h-5 w-5 ml-1.5" />
                     <span className="text-sm font-medium">تابع المتجر</span>
                   </MainButton>{" "}
-                  <button className="rounded-full p-2 bg-gray-100 text-gray-700 hover:bg-gray-200">
+                  <MainButton
+                    bg="bg-white"
+                    className="!text-[#5B89BA] border-2 w-full lg:max-w-[164px] border-[#5B89BA] ! "
+                  >
+                    <Link to={`/chat/${id}`} className="flex items-center ">
+                      <MessageCircle className="h-5 w-5 ml-1.5" />
+                      <span className="text-sm font-bold">الدردشة</span>
+                    </Link>
+                  </MainButton>
+                  <button
+                    className="rounded-full p-2 bg-white text-[#424242] border border-black hover:bg-gray-200"
+                    aria-label="المزيد من الخيارات"
+                  >
                     <MoreHorizontal className="h-5 w-5" />
                   </button>
                 </div>
@@ -116,26 +126,32 @@ const StoreProfile: React.FC<StoreProfileProps> = ({
             </div>
           </div>{" "}
         </div>
-        <div className="flex justify-between items-center">
+        <div className=" flex pb-7 lg:pb-0 justify-between items-center ">
           {/* Store Features */}
-          <div className="flex items-center space-x-4">
-            <div className="flex flex-col items-center">
-              <div className="rounded-xl bg-gray-100 p-3 mb-1">
-                <Truck className=" h-9 w-9 text-gray-700" />
+          <div className="  grid grid-cols-3 lg:flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:space-x-4 w-full">
+            <div className="flex flex-col w-full lg:max-w-20 gap-4 items-center mb-auto">
+              <div className="rounded-xl w-full flex items-center bg-[#F6F6F6] p-3 mb-1">
+                <Truck className="h-9 w-9 mx-auto text-[#3D5E83]" />
               </div>
-              <span className="text-xs text-gray-600 whitespace-nowrap">خدمة توصيل</span>
+              <span className="text-[10px] text-[#424242] text-center">
+                خدمة توصيل يتميز بسجل حافل بالشحن في الوقت المحدد مع خدمة التتبع.{" "}
+              </span>
             </div>
-            <div className="flex flex-col items-center">
-              <div className="rounded-xl bg-gray-100 p-3 mb-1">
-                <Briefcase className=" h-9 w-9 text-gray-700" />
+            <div className="flex flex-col w-full lg:max-w-20 gap-4 items-center mb-auto">
+              <div className="rounded-xl w-full flex items-center bg-[#F6F6F6] p-3 mb-1">
+                <Briefcase className="h-9 w-9 mx-auto text-[#3D5E83]" />
               </div>
-              <span className="text-xs text-gray-600 whitespace-nowrap">شحن مجاني</span>
+              <span className="text-[10px] text-[#424242] text-center">
+                شحن سلس يتميز بسجل حافل بالشحن في الوقت المحدد مع خدمة التتبع.{" "}
+              </span>
             </div>
-            <div className="flex flex-col items-center">
-              <div className="rounded-xl bg-gray-100 p-3 mb-1">
-                <MessageSquare className=" h-9 w-9 text-gray-700" />
+            <div className="flex flex-col w-full lg:max-w-20 gap-4 items-center mb-auto">
+              <div className="rounded-xl w-full flex items-center bg-[#F6F6F6] p-3 mb-1">
+                <MessageSquare className="h-9 w-9 mx-auto text-[#3D5E83]" />
               </div>
-              <span className="text-xs text-gray-600 whitespace-nowrap">ردود سريعة</span>
+              <span className="text-[10px] text-[#424242] text-center">
+                ردود سريعة يتميز بسجل حافل بالرد السريع على الرسائل.
+              </span>
             </div>
           </div>
         </div>
