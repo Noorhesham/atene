@@ -13,7 +13,7 @@ const LoadingButton = ({ isLoading = false, text, className, disabled, ...props 
       {...props}
       disabled={isLoading || disabled}
       className={cn(
-        "w-full bg-primary text-white rounded-full py-3 font-medium relative",
+        "w-full bg-gradient-to-r from-[#5E8CBE] to-[#3B5D80]  text-white rounded-full py-3 font-medium relative",
         "hover:opacity-90 transition-opacity disabled:opacity-70 disabled:cursor-not-allowed",
         className
       )}

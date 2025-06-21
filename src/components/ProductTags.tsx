@@ -13,7 +13,7 @@ const ProductTags = ({ tags, selectedTags, handleTagChange, asLink = false }: Pr
   const Component = asLink ? Link : Button;
   return (
     <div className="flex w-full flex-wrap gap-2">
-      <h2 className="flex flex-row-reverse items-center gap-2">
+      <h2 className="flex flex-row-reverse items-center font-[400]  lg:text-[15px] text-[12px] gap-2">
         العلامات: <img src="/Vector (4).svg" alt="tag" className="w-6 h-6" />
       </h2>
       {tags?.map((tag) => (

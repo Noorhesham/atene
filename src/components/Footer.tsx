@@ -1,6 +1,6 @@
 import { FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram, FaYoutube } from "react-icons/fa";
 import MaxWidthWrapper from "./MaxwidthWrapper";
-import { Mail } from "lucide-react";
+import { Earth, EarthIcon, Mail, WholeWord } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -36,68 +36,72 @@ const Footer = () => {
       </MaxWidthWrapper>
 
       {/* Footer links */}
-      <MaxWidthWrapper
-        noPaddingX
-        noPadding
-        className="max-w-6xl mx-auto mt-10 px-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-6 text-sm"
-      >
-        <div className="col-span-1 lg:block hidden sm:col-span-1">
-          <h4 className="font-bold mb-2">احصل على التطبيق</h4>
-          <div className="flex flex-col items-start ml-auto gap-2">
-            <a className="block w-full relative h-14" href="#">
-              <img src="/Group.svg" alt="App Store" className="w-full absolute inset-0 object-contain rounded" />
-            </a>
-            <a className="block w-full relative h-14" href="#">
-              <img src="/apple.svg" alt="App Store" className="w-full absolute inset-0 object-contain rounded" />
-            </a>
-          </div>
-        </div>
-        {/* Links sections */}
-        {[...Array(4)].map((_, idx) => (
-          <div key={idx}>
-            <h4 className="font-bold mb-2">{["عن", "شراكة", "معلومة", "للمستخدمين"][idx]}</h4>
-            <ul className="space-y-1">
-              {["معلومات عنا", "البحث عن المتجر", "فئات", "المدونات"].map((item, i) => (
-                <li key={i}>{item}</li>
-              ))}
-            </ul>
-          </div>
-        ))}
-        <div className="col-span-2 lg:hidden block ml-auto sm:col-span-1">
-          <h4 className="font-bold mb-2">احصل على التطبيق</h4>
-          <div className="flex flex-col items-start ml-auto gap-2">
-            <a className="block w-full relative h-14" href="#">
-              <img src="/Group.svg" alt="App Store" className="w-full absolute inset-0 object-contain rounded" />
-            </a>
-            <a className="block w-full relative h-14" href="#">
-              <img src="/apple.svg" alt="App Store" className="w-full absolute inset-0 object-contain rounded" />
-            </a>
-          </div>
-        </div>
-        {/* Logo and social */}
-        <div className="flex flex-col col-span-2 sm:col-span-3 md:col-span-2 w-full justify-between items-center md:items-end gap-4 mb-4 text-center md:text-right">
-          <div className="w-full flex flex-col items-start gap-1">
-            <img
-              src="/logoblack.svg"
-              alt="A'atene"
-              className=" w-fit object-cover  ml-[100px] object-right mx-auto   "
-            />
-            <p className="text-sm ml-auto mt-1">
-              أفضل معلومات حول الشركة gies هنا ولكن <br className="hidden md:block" /> lorem ipsum الأن
-            </p>
-          </div>
-          <div className="flex flex-wrap justify-center md:justify-end items-center gap-3 text-white text-lg">
-            {[FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram, FaYoutube].map((Icon, i) => (
-              <a key={i} className="p-2 bg-gray-500 rounded-full" href="#">
-                <Icon />
+      <div className="bg-white shadow-lg">
+        <MaxWidthWrapper
+          noPaddingX
+          noPadding
+          className="  mx-auto mt-12 !w-full px-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-6 text-sm"
+        >
+          <div className="col-span-1 lg:block hidden sm:col-span-1">
+            <h4 className="font-[900] mb-2">احصل على التطبيق</h4>
+            <div className="flex flex-col items-start ml-auto gap-2">
+              <a className="block w-full relative h-14" href="#">
+                <img src="/Group.svg" alt="App Store" className="w-full absolute inset-0 object-contain rounded" />
               </a>
-            ))}
+              <a className="block w-full relative h-14" href="#">
+                <img src="/apple.svg" alt="App Store" className="w-full absolute inset-0 object-contain rounded" />
+              </a>
+            </div>
           </div>
-        </div>{" "}
-      </MaxWidthWrapper>
+          {/* Links sections */}
+          {[...Array(4)].reverse().map((_, idx) => (
+            <div key={idx}>
+              <h4 className="font-[900] mb-[5px]">{["عن", "شراكة", "معلومة", "للمستخدمين"].reverse()[idx]}</h4>
+              <ul className="space-y-1">
+                {["معلومات عنا", "البحث عن المتجر", "فئات", "المدونات"].reverse().map((item, i) => (
+                  <li className="text-[#8B96A5] text-[15px]" key={i}>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          <div className="col-span-2 lg:hidden block ml-auto sm:col-span-1">
+            <h4 className="font-bold mb-2">احصل على التطبيق</h4>
+            <div className="flex flex-col items-start ml-auto gap-2">
+              <a className="block w-full relative h-14" href="#">
+                <img src="/Group.svg" alt="App Store" className="w-full absolute inset-0 object-contain rounded" />
+              </a>
+              <a className="block w-full relative h-14" href="#">
+                <img src="/apple.svg" alt="App Store" className="w-full absolute inset-0 object-contain rounded" />
+              </a>
+            </div>
+          </div>
+          {/* Logo and social */}
+          <div className="flex flex-col col-span-2 sm:col-span-3 md:col-span-2 w-full justify-between items-center md:items-end gap-4 mb-4 text-center md:text-right">
+            <div className="w-full flex flex-col items-start gap-2">
+              <img
+                src="/logoblack.svg"
+                alt="A'atene"
+                className=" w-fit object-cover  ml-[100px] object-right mx-auto   "
+              />
+              <p className="text-sm text-[#8B96A5] text-[15px] ml-auto mt-1">
+                أفضل معلومات حول الشركة gies هنا ولكن <br className="hidden md:block" /> lorem ipsum الأن
+              </p>
+            </div>
+            <div className="flex flex-wrap justify-center md:justify-end items-center gap-3 text-white text-lg">
+              {[FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram, FaYoutube].map((Icon, i) => (
+                <a key={i} className="p-2 bg-[#8B96A5] rounded-full" href="#">
+                  <Icon />
+                </a>
+              ))}
+            </div>
+          </div>{" "}
+        </MaxWidthWrapper>
+      </div>
 
       {/* Bottom bar */}
-      <div className="bg-gray-100 text-gray-600 text-xs  py-4 text-center md:text-right border-t">
+      <div className="bg-gray-100 text-[#1C1C1C] font-semibold text-xs  py-4 text-center md:text-right ">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2">
           <div className="flex flex-wrap gap-2 justify-center md:justify-start text-center md:text-right">
             <span>© 2025 A’atene , Inc.</span>
@@ -106,11 +110,17 @@ const Footer = () => {
             <span>الإعلانات القائمة على الانضمام</span>
             <span>المتاجر المحلية</span>
             <span>المناطق</span>
-          </div>
+          </div>{" "}
           <div className="flex items-center flex-wrap justify-center md:justify-end gap-2 text-sm">
-            <span>🇪🇬 مصر</span>
-            <span>. ن.س (NIS)</span>
-            <span>. عربي (AR)</span>
+            {" "}
+            <span> . ₪ (NIS) | </span>
+            <span>عربي (AR) | </span>
+            <div className="flex items-center gap-1">
+              <span>مصر</span>
+              <span>
+                <Earth className="w-4 h-4" />
+              </span>
+            </div>
           </div>
         </div>
       </div>

@@ -93,19 +93,17 @@ const LoginForm = () => {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200" />
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">أدخل بريدك الإلكتروني أو الهاتف</span>
-            </div>
+            <div className="relative flex justify-center text-sm"></div>
           </div>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="space-y-4">
+              <div className="flex flex-col gap-5">
                 <div>
                   <FormInput
                     type="text"
                     placeholder="أدخل بريدك الإلكتروني أو الهاتف"
-                    label="البريد الإلكتروني"
+                    label="أدخل بريدك الإلكتروني أو الهاتف"
                     name="login"
                   />
                 </div>
@@ -114,7 +112,7 @@ const LoginForm = () => {
                     password
                     type="password"
                     placeholder="أدخل كلمة المرور الخاصة بك"
-                    label="كلمة المرور "
+                    label="أدخل كلمة المرور الخاصة بك"
                     name="password"
                   />
                 </div>

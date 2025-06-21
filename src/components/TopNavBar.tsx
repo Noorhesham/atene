@@ -40,8 +40,9 @@ export default function TopNavBar() {
           <div className="hidden md:flex items-center gap-4">
             <div className="flex items-center gap-4">
               <button className="flex items-center gap-1.5 text-[13px] text-[#414141] hover:text-black">
-                <img src="/black.svg" alt="UAE Flag" className="w-4 h-4" />
-                <span>السوق الإ</span>
+                <span className="flex items-center gap-1">
+                  السوق <img src="/icon.png" className="w-4 h-4" alt="" />
+                </span>
                 <ChevronDown size={14} className="text-[#414141]" />
               </button>
               <button className="flex items-center gap-1 text-[13px] text-[#414141] hover:text-black">

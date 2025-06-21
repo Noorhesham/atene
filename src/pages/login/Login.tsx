@@ -22,7 +22,9 @@ const Login = () => {
   // Only render the form if not authenticated
   return (
     <MaxWidthWrapper>
-      <LoginForm />
+      <div className="my-10 lg:my-20">
+        <LoginForm />
+      </div>
     </MaxWidthWrapper>
   );
 };

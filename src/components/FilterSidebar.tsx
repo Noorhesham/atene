@@ -9,6 +9,7 @@ import type { SearchPageData, Attribute } from "@/types/product";
 import { ListFilterPlus, Loader2 } from "lucide-react";
 import Card from "./Card";
 import { useState } from "react";
+import { buttonVariants } from "./ui/button";
 
 interface FilterSidebarProps {
   data?: SearchPageData;
@@ -136,9 +137,12 @@ export default function FilterSidebar({
           {data?.tags.map((tag) => (
             <Button
               key={tag.id}
-              variant={selectedTags.includes(tag.id.toString()) ? "default" : "outline"}
               size="sm"
-              className="rounded-full bg-[#0E0E0E17]"
+              className={`rounded-full border-primary ${buttonVariants({
+                variant: "outline",
+              })}  text-black !rounded-full ${
+                selectedTags.includes(tag.id.toString()) ? "bg-primary text-white" : "  bg-[#0E0E0E17] "
+              }`}
               onClick={() => onTagChange(tag.id.toString())}
             >
               {tag.title}
@@ -201,6 +205,18 @@ export default function FilterSidebar({
       >
         {isPriceEnabled ? "تحديث فلتر السعر" : "تفعيل فلتر السعر"}
       </button>
+      <Button
+        variant="link"
+        onClick={() => {
+          setIsPriceEnabled(false);
+          onPriceChange([0, 1000]);
+          setTempPriceRange([0, 1000]);
+          onAttributeChange(0, 0); // Reset all attribute filters
+        }}
+        className="w-full underline py-2 px-4 rounded-full text-primary  "
+      >
+        إعادة
+      </Button>
     </div>
   );
 }

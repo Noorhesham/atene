@@ -45,6 +45,8 @@ const StoreStats: React.FC<StoreStatsProps> = ({ rating, reviewCount, followers,
       {/* Followers */}
       <div className="mt-2 flex justify-end w-full">
         <div className="flex items-center flex-row-reverse">
+          {" "}
+          <span className="text-gray-600 text-sm">{followers} متابع</span>
           <div className="flex -space-x-2 rtl:space-x-reverse ml-2">
             {followersAvatars.slice(0, 3).map((avatar, index) => (
               <img
@@ -60,7 +62,6 @@ const StoreStats: React.FC<StoreStatsProps> = ({ rating, reviewCount, followers,
               </div>
             )}
           </div>
-          <span className="text-gray-600 text-sm">{followers} متابع</span>
         </div>
       </div>
     </div>

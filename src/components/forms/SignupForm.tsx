@@ -24,10 +24,10 @@ const signupSchema = z
     email: z.string().min(1, "البريد الإلكتروني مطلوب"),
     password: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
     confirmPassword: z.string().min(6, "تأكيد كلمة المرور مطلوب"),
-    phone: z.string().min(1, "رقم الهاتف مطلوب"),
-    gender: z.enum(["male", "female"], {
-      required_error: "الجنس مطلوب",
-    }),
+    // phone: z.string().min(1, "رقم الهاتف مطلوب"),
+    // gender: z.enum(["male", "female"], {
+    //   required_error: "الجنس مطلوب",
+    // }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "كلمات المرور غير متطابقة",
@@ -47,8 +47,8 @@ const SignupForm = () => {
       email: "",
       password: "",
       confirmPassword: "",
-      phone: "",
-      gender: "male",
+      // phone: "",
+      // gender: "male",
     },
   });
 
@@ -105,6 +105,11 @@ const SignupForm = () => {
 
   return (
     <div className="grid bg-white shadow-md rounded-lg lg:grid-cols-2">
+      {" "}
+      {/* Right Side - Image */}
+      <div className="relative lg:block hidden h-full w-full bg-gray-100">
+        <img src="/singup.png" className="w-full h-full z-10 object-cover absolute inset-0" alt="Signup background" />
+      </div>
       {/* Left Side - Form */}
       <div className="flex flex-col items-center justify-center p-10">
         <div className="w-full max-w-md space-y-8">
@@ -124,7 +129,7 @@ const SignupForm = () => {
               <div className="w-full border-t border-gray-200" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">أو قم بإنشاء حساب جديد</span>
+              {/* <span className="px-2 bg-white text-gray-500">أو قم بإنشاء حساب جديد</span> */}
             </div>
           </div>
 
@@ -133,8 +138,8 @@ const SignupForm = () => {
               <div className="flex flex-col gap-2">
                 <FormInput type="text" placeholder="الاسم الكامل" label="الاسم الكامل" name="fullname" />
                 <FormInput type="text" placeholder="بريد إلكتروني" label="بريد إلكتروني" name="email" />
-                <FormInput type="tel" placeholder="رقم الهاتف" label="رقم الهاتف" name="phone" />
-                <div className="space-y-1">
+                {/* <FormInput type="tel" placeholder="رقم الهاتف" label="رقم الهاتف" name="phone" /> */}
+                {/* <div className="space-y-1">
                   <label className="text-sm font-medium text-gray-700 block text-right">الجنس</label>
                   <select
                     {...form.register("gender")}
@@ -143,7 +148,7 @@ const SignupForm = () => {
                     <option value="male">ذكر</option>
                     <option value="female">أنثى</option>
                   </select>
-                </div>
+                </div> */}
                 <FormInput password type="password" placeholder="كلمة المرور" label="كلمة المرور" name="password" />
                 <FormInput
                   password
@@ -163,17 +168,6 @@ const SignupForm = () => {
             </form>
           </Form>
         </div>
-      </div>
-
-      {/* Right Side - Image */}
-      <div className="relative lg:block hidden h-full w-full bg-gray-100">
-        <div className="inset-0 absolute bg-black/40 w-full h-full z-20"></div>
-        <img
-          src="/LOGO-H-WHITE.svg"
-          alt="A'atene"
-          className="w-fit z-30 object-cover absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-        />
-        <img src="/signuo.png" className="w-full h-full z-10 object-cover absolute inset-0" alt="Signup background" />
       </div>
     </div>
   );

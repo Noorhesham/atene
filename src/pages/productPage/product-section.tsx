@@ -24,7 +24,6 @@ import ProductTags from "@/components/ProductTags";
 \ */
 const ProductSection = ({ product }: { product: ProductSectionProps }) => {
   const [selectedVariation, setSelectedVariation] = useState<Variation | null>(null);
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   console.log(product.cross_sells, "cross_sells");
   // Get the current price based on selected variation
   const currentPrice = selectedVariation?.price || product.price;
@@ -98,7 +97,7 @@ const ProductSection = ({ product }: { product: ProductSectionProps }) => {
             {/* Description */}
             <div className="mt-5 min-h-44 mb-6">
               <div
-                className={`text-[#414141] text-base overflow-hidden ${!isDescriptionExpanded ? "line-clamp-4" : ""}`}
+                className={`text-[#414141] text-base overflow-hidden `}
                 dangerouslySetInnerHTML={{ __html: product.shortDescription }}
               />
               {/* {product.description.length > 200 && (
@@ -163,20 +162,7 @@ const ProductSection = ({ product }: { product: ProductSectionProps }) => {
         </div>
         {/* Product Tabs */}
         <TabsProduct product={product} />
-        <div className=" mt-4  mb-6">
-          <div
-            className={`text-[#414141] text-base overflow-hidden ${!isDescriptionExpanded ? "line-clamp-5" : ""}`}
-            dangerouslySetInnerHTML={{ __html: product.description || "" }}
-          />
-          {product.description.length > 200 && (
-            <button
-              onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-              className="text-primary font-semibold mt-2 text-sm hover:underline"
-            >
-              {isDescriptionExpanded ? "عرض أقل" : "اقرأ المزيد"}
-            </button>
-          )}
-        </div>
+
         <div className="flex flex-col mt-6 gap-4 ">
           <h2 className="text-lg lg:text-2xl font-bold text-right">استكشف المزيد من عمليات البحث ذات الصلة</h2>
           <ProductTags asLink tags={product.tags} selectedTags={product.tags} handleTagChange={() => {}} />

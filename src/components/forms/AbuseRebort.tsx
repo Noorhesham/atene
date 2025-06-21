@@ -40,14 +40,14 @@ const AbuseReport = ({ closeModal }: { closeModal: () => void }) => {
             initial={{ x: -50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 50, opacity: 0 }}
-            className="p-6 bg-white rounded-lg space-y-4 max-w-md w-full"
+            className="p-6 bg-white rounded-lg  max-w-md w-full"
           >
             <div className="space-y-2 text-right">
-              <h3 className="text-xl font-semibold">الإبلاغ عن إساءة</h3>
-              <p className="text-gray-500 text-sm">ما الذي نقدر ان نساعدك بيه ؟</p>
+              <h3 className=" lg:text-3xl font-bold">الإبلاغ عن إساءة</h3>
+              <p className="text-gray-500 text-base font-[400]">ما الذي نقدر ان نساعدك بيه ؟</p>
             </div>
 
-            <RadioGroup dir="rtl" value={value} onValueChange={setValue} className="space-y-3">
+            <RadioGroup dir="rtl" value={value} onValueChange={setValue} className="flex flex-col gap-5  my-4 lg:my-8">
               {reportOptions.map((option) => (
                 <div
                   key={option.value}
@@ -56,7 +56,7 @@ const AbuseReport = ({ closeModal }: { closeModal: () => void }) => {
                   <RadioGroupItem value={option.value} id={option.value} />
                   <Label
                     htmlFor={option.value}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer w-full text-right"
+                    className="text-sm text-[#666666] font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer w-full text-right"
                   >
                     {option.label}
                   </Label>
@@ -64,7 +64,12 @@ const AbuseReport = ({ closeModal }: { closeModal: () => void }) => {
               ))}
             </RadioGroup>
 
-            <MainButton disabled={!value} text="الصفحة الرئيسية" onClick={handleNext} />
+            <MainButton
+              className="!bg-gradient-to-r  from-[#5E8CBE] to-[#3B5D80] "
+              disabled={!value}
+              text="الصفحة الرئيسية"
+              onClick={handleNext}
+            />
           </motion.div>
         ) : (
           <AbuseReportDetails closeModal={closeModal} key="step2" onBack={handleBack} reportType={value} />

@@ -77,7 +77,7 @@ const StoreProfile: React.FC<StoreProfileProps> = ({
       {/* Store Info */}
       <MaxWidthWrapper className="relative flex justify-between z-30 px-4 pt-14 pb-6">
         <div className="flex flex-col gap-4">
-          <div className="absolute -top-20 right-8 h-32 w-32 rounded-full border-4 border-white overflow-hidden bg-white">
+          <div className="absolute -top-20 right-8 h-40  shadow-lg w-40  rounded-full border-4 border-white overflow-hidden bg-white">
             <img src={avatar} alt={name} className="w-full h-full object-cover" />
           </div>
           <div className="flex  w-full gap-10 mt-4 items-center mb-6">

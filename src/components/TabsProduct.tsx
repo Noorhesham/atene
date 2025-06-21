@@ -6,9 +6,11 @@ import ReviewForm from "./reviews/ReviewForm";
 import ReviewCard from "./reviews/ReviewCard";
 import { ProductSectionProps } from "@/types/product";
 import StoreReviews from "./reviews/StoreReviews";
+import { useState } from "react";
 
 export function TabsProduct({ product }: { product: ProductSectionProps }) {
   console.log(product);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   // Convert rate_stats to the format expected by ReviewSummary
   const ratingLabels: Record<string, string> = {
@@ -50,7 +52,7 @@ export function TabsProduct({ product }: { product: ProductSectionProps }) {
                 <div className="col-span-1 md:col-span-2 lg:col-span-3 shadow-sm py-4 px-4 rounded-2xl border-gray-300 border">
                   <h2 className="font-bold my-4 text-xl">المعلومات</h2>
                   <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-                    <div className="flex gap-4 flex-col">
+                    <div className="flex gap-1 flex-col">
                       <Card variant="secondary" className="justify-between !border-none flex items-center">
                         <span className="font-bold">إعلان /نموذج رقم</span>
                         <span># {product.sku || "لا يوجد"}</span>
@@ -121,6 +123,20 @@ export function TabsProduct({ product }: { product: ProductSectionProps }) {
               </p> */}
             </motion.div>
           </AnimatePresence>
+        </div>{" "}
+        <div className=" mt-4  mb-6">
+          <div
+            className={`text-[#414141] text-base overflow-hidden ${!isDescriptionExpanded ? "line-clamp-5" : ""}`}
+            dangerouslySetInnerHTML={{ __html: product.description || "" }}
+          />
+          {product.description.length > 200 && (
+            <button
+              onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+              className="text-primary font-semibold mt-2 text-sm hover:underline"
+            >
+              {isDescriptionExpanded ? "عرض أقل" : "اقرأ المزيد"}
+            </button>
+          )}
         </div>
       </TabsContent>
       <TabsContent value="reviews">

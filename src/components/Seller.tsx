@@ -5,14 +5,16 @@ import { Button } from "./ui/button";
 import { Star, Clock, ShieldCheck, ShoppingCart, Flag, Plus } from "lucide-react";
 import type React from "react";
 import { formatDate } from "@/utils/cn";
+import ModalCustom from "./ModalCustom";
+import AbuseReport from "./forms/AbuseRebort";
 
 interface SellerCardProps {
   store: Store;
 }
 
 const InfoItem: React.FC<{ icon: React.ElementType; text: string | number }> = ({ icon: Icon, text }) => (
-  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-    <Icon className="h-4 w-4 text-gray-500 dark:text-gray-500" />
+  <div className="flex items-center gap-2 text-sm text-[#414141]">
+    <Icon className="h-4 w-4 text-[#414141]" />
     <span>{text}</span>
   </div>
 );
@@ -48,15 +50,20 @@ export default function SellerCard({ store }: SellerCardProps) {
             <Plus className="w-4 h-4 ml-1" />
             تابع
           </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            className="bg-gradient-to-b from-[#FF0000] to-[#CC0000] hover:from-[#E60000] hover:to-[#B30000]
-             text-white rounded-full px-4 py-1.5  h-auto text-sm  font-medium transition-all duration-200 flex items-center gap-2"
-          >
-            <Flag className="w-5 h-5" />
-            بلغ عن إساءة
-          </Button>
+          <ModalCustom
+            btn={
+              <Button
+                variant="destructive"
+                size="sm"
+                className="bg-gradient-to-b from-[#FF0000] to-[#CC0000] hover:from-[#E60000] hover:to-[#B30000]
+               text-white rounded-full px-4 py-1.5  h-auto text-sm  font-medium transition-all duration-200 flex items-center gap-2"
+              >
+                <Flag className="w-5 h-5" />
+                بلغ عن إساءة
+              </Button>
+            }
+            content={<AbuseReport />}
+          />
         </div>
       </div>
 
