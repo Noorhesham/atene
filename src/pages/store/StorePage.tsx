@@ -2,13 +2,15 @@ import React, { useState } from "react";
 import StoreProfile from "@/components/StoreProfile";
 import MaxWidthWrapper from "@/components/MaxwidthWrapper";
 import StoreHighlights from "@/components/StoreHighlights";
-import { Facebook, Instagram, Link2, Grid } from "lucide-react";
+import { Facebook, Instagram, Link2, Grid, QrCode, Copy } from "lucide-react";
 import StoreSidebar from "@/components/StoreSidebar";
 import StoreReviews from "@/components/reviews/StoreReviews";
 import ProductCard from "@/components/ProductCard";
-import CrossSellBundle from "@/components/cross-sell-bundle";
 import StoreProducts from "@/components/StoreProducts";
+import ModalCustom from "@/components/ModalCustom";
+import type { CrossSellProduct } from "@/types/product";
 import toast from "react-hot-toast";
+import { QRCodeSVG } from "qrcode.react";
 
 const TikTokIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -38,31 +40,34 @@ const sampleStories = [
 ];
 
 const StorePage = () => {
-  // Tab state
   const [activeTab, setActiveTab] = useState("overview");
 
-  const handleCopyLink = (url: string, label: string) => {
-    navigator.clipboard
-      .writeText(url)
-      .then(() => {
-        toast.success(`تم نسخ رابط ${label} بنجاح!`, {
-          duration: 2000,
-          position: "top-center",
-          style: {
-            direction: "rtl",
-          },
-        });
-      })
-      .catch(() => {
-        toast.error("حدث خطأ أثناء نسخ الرابط", {
-          duration: 2000,
-          position: "top-center",
-          style: {
-            direction: "rtl",
-          },
-        });
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      toast.success("تم النسخ بنجاح!", {
+        position: "top-center",
+        style: { direction: "rtl" },
       });
+    });
   };
+
+  const socialLinks = [
+    { icon: <Link2 className="w-5 h-5 text-gray-600" />, label: "Website", url: "https://www.etnix.com.au" },
+    { icon: <Grid className="w-5 h-5 text-gray-600" />, label: "Grid", url: "https://www.etnix.com.au/grid" },
+    {
+      icon: <Facebook className="w-5 h-5 text-gray-600" />,
+      label: "Facebook",
+      url: "https://www.facebook.com/Etnix.byron",
+    },
+    {
+      icon: <Instagram className="w-5 h-5 text-gray-600" />,
+      label: "Instagram",
+      url: "https://www.instagram.com/etnix.byron",
+    },
+    { icon: <TikTokIcon />, label: "TikTok", url: "https://www.tiktok.com/@etnix.byron" },
+  ];
+
+  const qrCodeValue = "0xec7842178520bb71f30523bcce4c10adc7e1cec4";
 
   // Data for StoreProfile component
   const profileData = {
@@ -111,21 +116,6 @@ const StorePage = () => {
     orders_count: 27,
   };
 
-  const socialLinks = [
-    { icon: <Link2 className="w-5 h-5 text-gray-600" />, label: "Website", url: "https://www.etnix.com.au" },
-    { icon: <Grid className="w-5 h-5 text-gray-600" />, label: "Grid", url: "https://www.etnix.com.au/grid" },
-    {
-      icon: <Facebook className="w-5 h-5 text-gray-600" />,
-      label: "Facebook",
-      url: "https://www.facebook.com/Etnix.byron",
-    },
-    {
-      icon: <Instagram className="w-5 h-5 text-gray-600" />,
-      label: "Instagram",
-      url: "https://www.instagram.com/etnix.byron",
-    },
-    { icon: <TikTokIcon />, label: "TikTok", url: "https://www.tiktok.com/@etnix.byron" },
-  ];
   const stats = [
     { icon: "/clock.svg", title: "مواعيد العمل", value: "1PM - 9PM" },
     { icon: "/Stories-heart.svg", title: "مفضلة", value: "30" },
@@ -176,56 +166,37 @@ const StorePage = () => {
   // Dummy data for offers/bundles
   const bundleOffers = [
     {
-      currentProduct: {
-        id: "1",
-        name: "مضرب تنس Wilson",
-        cover: "/Frame 1000005447 (1).png",
-        price: 720.54,
-      },
-      bundle: {
-        cross_sells: [
-          {
-            id: 2,
-            name: "حذاء رياضي",
-            cover: "/Frame 1000005447 (2).png",
-            price: 300,
-            price_after_discount: 250,
-            slug: "sports-shoes",
-          },
-          {
-            id: 3,
-            name: "كرات تنس",
-            cover: "/Frame 1000005447 (4).png",
-            price: 150,
-            price_after_discount: 120,
-            slug: "tennis-balls",
-          },
-        ],
-        final_price: 999.99,
-        cross_sells_price: 1170.54, // Added missing property (sum of all original prices)
-      },
+      id: "1",
+      name: "مضرب تنس Wilson",
+      cover: "/Frame 1000005447 (1).png",
+      price: 720.54,
+      price_after_discount: 600,
+      slug: "wilson-tennis",
     },
     {
-      currentProduct: {
-        id: "2",
-        name: "مضرب تنس Wilson احترافي",
-        cover: "/Frame 1000005447 (5).png",
-        price: 920.54,
-      },
-      bundle: {
-        cross_sells: [
-          {
-            id: 4,
-            name: "حقيبة تنس",
-            cover: "/Frame 1000005447 (6).png",
-            price: 400,
-            price_after_discount: 350,
-            slug: "tennis-bag",
-          },
-        ],
-        final_price: 1199.99,
-        cross_sells_price: 1320.54, // Added missing property (sum of all original prices)
-      },
+      id: 2,
+      name: "حذاء رياضي",
+      cover: "/Frame 1000005447 (2).png",
+      price: 300,
+      price_after_discount: 250,
+      slug: "sports-shoes",
+    },
+    {
+      id: 3,
+      name: "كرات تنس",
+      cover: "/Frame 1000005447 (4).png",
+      price: 150,
+      price_after_discount: 120,
+      slug: "tennis-balls",
+    },
+
+    {
+      id: "2",
+      name: "مضرب تنس Wilson احترافي",
+      cover: "/Frame 1000005447 (5).png",
+      price: 920.54,
+      price_after_discount: 800,
+      slug: "wilson-tennis-pro",
     },
   ];
 
@@ -348,16 +319,69 @@ const StorePage = () => {
               <div className="bg-white rounded-xl shadow-md p-3 border border-gray-100">
                 <div className="flex items-center justify-end gap-2">
                   <span className="text-sm text-[#3C5D80] font-bold">اختصارات المتجر:</span>
-                  {socialLinks.map((link, index) => (
-                    <button
-                      key={index}
-                      aria-label={link.label}
-                      onClick={() => handleCopyLink(link.url, link.label)}
-                      className="flex items-center text-[#3C5D80] justify-center w-10 h-10 rounded-lg border bg-gray-50 hover:bg-gray-100 transition-colors"
-                    >
-                      {link.icon}
-                    </button>
-                  ))}
+                  <div className="flex items-center gap-3">
+                    {socialLinks.map((link, index) => (
+                      <a
+                        key={index}
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={link.label}
+                        className="flex items-center text-[#3C5D80] justify-center w-10 h-10 rounded-lg border bg-gray-50 hover:bg-gray-100 transition-colors"
+                      >
+                        {link.icon}
+                      </a>
+                    ))}
+                    <ModalCustom
+                      btn={
+                        <button
+                          className="flex items-center text-[#3C5D80] justify-center w-10 h-10 rounded-lg border bg-gray-50 hover:bg-gray-100 transition-colors"
+                          aria-label="عرض رمز QR"
+                        >
+                          <QrCode className="w-5 h-5 text-gray-600" />
+                        </button>
+                      }
+                      content={
+                        <div dir="rtl" className=" py-3 w-full">
+                          <div className="flex flex-col sm:flex-row gap-6">
+                            {" "}
+                            <div className="flex-shrink-0 w-36 h-36 sm:w-48 sm:h-48">
+                              <QRCodeSVG
+                                value={`https://example.com/product/${Math.random().toString(36).substring(2, 15)}`}
+                                size={192}
+                                level="H"
+                                includeMargin={true}
+                                className="w-full h-full"
+                              />
+                            </div>
+                            <div className="flex-grow space-y-4 text-right">
+                              <p className="text-sm text-gray-700 leading-relaxed">
+                                سماعة استريو logitech crystal audio للبيع كالجديدة استخدام بسيط جدا وارد الخارج بنصف
+                                الثمن سعرها 8000 بدون فصال نهائي لعدم تضيع الوقت
+                              </p>
+                              <div className="text-sm">
+                                <span className="text-gray-600">منتج من </span>
+                                <a href="#" className="text-blue-600 font-semibold hover:underline">
+                                  d-jewellry
+                                </a>
+                                <span className="text-gray-800 font-bold"> عمان</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div
+                            onClick={() => handleCopy(qrCodeValue)}
+                            className="mt-6 bg-blue-50 p-3 rounded-lg flex items-center justify-between cursor-pointer hover:bg-blue-100 transition-colors"
+                          >
+                            <span className="font-mono text-sm text-gray-700 tracking-wider">{qrCodeValue}</span>
+                            <div className="flex items-center gap-2 text-blue-600">
+                              <Copy className="w-4 h-4" />
+                              <span className="text-sm font-semibold">نسخ</span>
+                            </div>
+                          </div>
+                        </div>
+                      }
+                    />
+                  </div>
                 </div>
               </div>
               <StoreSidebar />
@@ -384,13 +408,9 @@ const StorePage = () => {
         )}
 
         {activeTab === "offers" && (
-          <div className="bg-white rounded-lg shadow-sm p-6 space-y-8">
+          <div className="bg-white my-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 rounded-lg shadow-sm  space-y-8">
             {bundleOffers.map((offer) => (
-              <CrossSellBundle
-                key={offer.currentProduct.id}
-                bundle={offer.bundle}
-                currentProduct={offer.currentProduct}
-              />
+              <ProductItemCard product={offer as unknown as CrossSellProduct} />
             ))}
           </div>
         )}
@@ -401,3 +421,29 @@ const StorePage = () => {
 };
 
 export default StorePage;
+const ProductItemCard = ({ product }: { product: CrossSellProduct }) => (
+  <div className="flex flex-col items-center w-[214.36px]">
+    {/* Image Container */}
+    <div className="w-full h-[214.36px] ">
+      <img src={product.cover || "/placeholder.png"} alt={product.name} className="w-full h-full object-cover" />
+    </div>
+
+    {/* Content */}
+    <div className="w-full text-center">
+      {/* Title */}
+      <h3 className="text-[23.58px] font-bold text-[#616161]  mb-2">{product.name}</h3>
+
+      {/* Description */}
+      <p className="text-[14.29px] text-[#616161] mb-3 leading-tight">
+        توصيل مشاوير اون لاين جميع انواع الحلويات الشرقية والغربية بسعر مغري جدا ومتاح التوصيل
+      </p>
+
+      {/* Price */}
+      <div className="flex items-center justify-center gap-2 text-right">
+        <span className="text-[#00B53F] text-[24px] font-bold">{product.price_after_discount.toFixed(2)} ₪</span>
+        <span className="text-[#616161] text-sm">بدلاً من</span>
+        <span className="text-[#FF3B3B] text-[16px] line-through">{product.price.toFixed(2)} ₪</span>
+      </div>
+    </div>
+  </div>
+);
