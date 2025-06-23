@@ -408,7 +408,7 @@ const StorePage = () => {
         )}
 
         {activeTab === "offers" && (
-          <div className="bg-white my-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 rounded-lg shadow-sm  space-y-8">
+          <div className="bg-white my-3 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 rounded-lg shadow-sm  space-y-8">
             {bundleOffers.map((offer) => (
               <ProductItemCard product={offer as unknown as CrossSellProduct} />
             ))}
@@ -422,7 +422,7 @@ const StorePage = () => {
 
 export default StorePage;
 const ProductItemCard = ({ product }: { product: CrossSellProduct }) => (
-  <div className="flex flex-col items-center w-[214.36px]">
+  <div className="flex flex-col items-center ">
     {/* Image Container */}
     <div className="w-full h-[214.36px] ">
       <img src={product.cover || "/placeholder.png"} alt={product.name} className="w-full h-full object-cover" />
