@@ -607,7 +607,7 @@ const HomePage = () => {
       </div>
 
       {/* Latest Articles Section */}
-      <div className="py-12 md:py-16">
+      <div className="">
         <MaxWidthWrapper>
           <div className="flex flex-col md:flex-row justify-between items-center mb-8 px-4" dir="rtl">
             <h2 className="text-3xl font-bold text-gray-800 self-start">آخر المقالات</h2>
@@ -635,7 +635,7 @@ const HomePage = () => {
       </div>
 
       {/* Customer Reviews Section */}
-      <div className="py-12 md:py-16">
+      <div className="">
         <MaxWidthWrapper>
           <h2 className="text-3xl font-bold text-right mb-8 text-gray-800 px-4">آراء مستخدمين أعطيني</h2>
           <FavouritesSlider items={reviews} type="reviews" slidesPerView={3} />
