@@ -10,6 +10,7 @@ import MessagePage from "./pages/messages/MessagePage";
 import StorePage from "./pages/store/StorePage";
 import SingleProduct from "./pages/singleProduct/Product";
 import { Toaster } from "react-hot-toast";
+import HomePage from "./pages/home/HomePage";
 
 function App() {
   return (
@@ -17,7 +18,7 @@ function App() {
       <Toaster position="top-center" reverseOrder={false} />
       <NavbarWithState />
       <Routes>
-        <Route path="/" element={<ProductPage />} />
+        <Route path="/" element={<HomePage />} />
         <Route path="/products" element={<ProductPage />} />
         <Route path="/products/:slug" element={<SingleProduct />} />
         <Route path="/login" element={<Login />} />

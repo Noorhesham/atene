@@ -19,7 +19,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   return (
     <Link to={`/products/${product.slug}`} className="group block text-right">
       <div className="relative overflow-hidden rounded-lg shadow-sm border border-gray-200">
-        <div className="relative h-[250px] overflow-hidden">
+        <div className="relative h-[360px] overflow-hidden">
           {product.cover || (product.images && product.images.length > 0) ? (
             <img
               src={product.cover || product.images?.[0]?.src}
@@ -45,7 +45,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         </button>
       </div>
       <div className="mt-3 px-1">
-        <h3 className="font-semibold text-sm text-gray-800 truncate">{product.title}</h3>
+        <h3 className="font-semibold text-sm lg:text-[22px] text-[#395A7D] truncate">{product.title}</h3>
         {product.seller && <p className="text-xs text-gray-500 mt-0.5">{product.seller}</p>}
         <div className="flex items-center gap-1 mt-1">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -57,7 +57,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
             />
           ))}
         </div>
-        <p className="text-sm font-bold text-gray-800 mt-1">{product.price ? `${product.price}₪` : ""}</p>
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-bold text-[#389C54]  mt-1">{product.price ? `${product.price}₪` : ""}</p>
+          <p className="text-sm font-bold text-[#395A7D]  line-through mt-1">
+            {product.originalPrice ? `${product.originalPrice}₪` : ""}
+          </p>
+        </div>
       </div>
     </Link>
   );

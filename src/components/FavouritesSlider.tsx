@@ -3,15 +3,15 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
-import { ChevronLeft, ChevronRight, Clock, MessageCircle, Star, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, Star } from "lucide-react";
 import SellerActions from "./SellerActions";
 
 interface FavouriteItem {
   id: string;
-  title: string;
+  title?: string;
   image: string;
   category?: string;
-  type: "product" | "job" | "service";
+  type: "product" | "job" | "service" | "reviews";
   rating?: number;
   price?: number;
   originalPrice?: number;
@@ -24,26 +24,35 @@ interface FavouriteItem {
 
 interface FavouritesSliderProps {
   items: FavouriteItem[];
-  type: "products" | "jobs" | "services";
+  type: "products" | "jobs" | "services" | "reviews";
+  slidesPerView?: number;
 }
 
-const FavouritesSlider: React.FC<FavouritesSliderProps> = ({ items, type }) => {
+const FavouritesSlider: React.FC<FavouritesSliderProps> = ({ items, type, slidesPerView }) => {
   const getSlideContent = (item: FavouriteItem) => {
     switch (type) {
       case "products":
         return (
           <div className="bg-white overflow-hidden h-full">
             <div className="aspect-square shadow-md rounded-lg overflow-hidden">
-              <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+              <img src={item.image} alt={item.title || ""} className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
-              <h3 className="text-lg font-[600] text-right mb-2 line-clamp-2">{item.title}</h3>
+              <div className="flex justify-between items-start">
+                <h3 className="text-lg font-[600] text-[#616161] text-right  line-clamp-2">{item.title || ""}</h3>
+                <div className="flex">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star key={star} className="w-2 h-2 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+              </div>
+              <p className="text-[14.29px] text-[#616161]">خيار باسعار وجودة مناسبة</p>
               {item.price && (
                 <div className="flex justify-start gap-2 items-center">
                   <span className="text-sm font-bold">${item.price}</span>
-                  {item.originalPrice && (
+                  {/* {item.originalPrice && (
                     <span className="text-sm text-gray-500 line-through">${item.originalPrice}</span>
-                  )}
+                  )} */}
                 </div>
               )}
             </div>
@@ -54,12 +63,12 @@ const FavouritesSlider: React.FC<FavouritesSliderProps> = ({ items, type }) => {
         return (
           <div className="bg-white overflow-hidden h-full">
             <div className="aspect-square shadow-md rounded-lg overflow-hidden">
-              <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+              <img src={item.image} alt={item.title || ""} className="w-full h-full object-cover" />
             </div>
             <div className="p-2">
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
-                  <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                  <img src={item.image} alt={item.title || ""} className="w-full h-full object-cover" />
                 </div>
                 <div className="flex flex-col  gap-1 items-start justify-between mb-1">
                   <h3 className="font-semibold text-xs">اسم الشركة</h3>
@@ -86,12 +95,12 @@ const FavouritesSlider: React.FC<FavouritesSliderProps> = ({ items, type }) => {
       case "services":
         return (
           <div className="bg-white  rounded-lg shadow-sm overflow-hidden h-full">
-            <div className="p-1">
+            <div className="p-">
               <div className=" flex flex-col  gap-4">
-                <div className="w-full h-[230px] rounded overflow-hidden flex-shrink-0">
-                  <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                <div className="w-full h-[228px] rounded overflow-hidden flex-shrink-0">
+                  <img src={item.image} alt={item.title || ""} className="w-full h-full object-cover" />
                 </div>
-                <div className="flex-1 text-right">
+                <div className="flex-1 pb-6 p-1 text-right">
                   <div className="flex items-start justify-between mb-1">
                     <div className="flex flex-col items-start justify-between mb-1">
                       {item.author?.name && <h3 className="font-semibold text-sm">{item.author.name}</h3>}
@@ -109,10 +118,31 @@ const FavouritesSlider: React.FC<FavouritesSliderProps> = ({ items, type }) => {
                     </div>
                   </div>
                   <p className="text-[9px] text-gray-600 line-clamp-2">{item.description}</p>
-                  <SellerActions />
+                  <div className="my-5">
+                    <SellerActions />
+                  </div>
                 </div>
               </div>
             </div>
+          </div>
+        );
+
+      case "reviews":
+        return (
+          <div
+            className="bg-white rounded-lg shadow-md p-6 text-center h-full flex flex-col items-center justify-center"
+            dir="rtl"
+          >
+            <div className="flex mb-4">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  className={`w-5 h-5 ${i < (item.rating || 0) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
+                />
+              ))}
+            </div>
+            {item.author?.name && <h3 className="font-semibold text-lg mb-2">{item.author.name}</h3>}
+            <p className="text-gray-600 text-sm leading-relaxed">{item.description}</p>
           </div>
         );
 
@@ -125,20 +155,32 @@ const FavouritesSlider: React.FC<FavouritesSliderProps> = ({ items, type }) => {
     <div className="relative overflow-hidden" dir="rtl">
       <Swiper
         modules={[Navigation, Autoplay]}
-        spaceBetween={16}
-        slidesPerView={1.2}
+        spaceBetween={46}
+        slidesPerView={slidesPerView || 1.2}
         breakpoints={{
+          320: {
+            slidesPerView: 1.2,
+            spaceBetween: 16,
+          },
+          480: {
+            slidesPerView: 1.8,
+            spaceBetween: 20,
+          },
           640: {
             slidesPerView: 2.2,
+            spaceBetween: 24,
           },
           768: {
-            slidesPerView: 3.2,
+            slidesPerView: 2.8,
+            spaceBetween: 30,
           },
           1024: {
-            slidesPerView: 4.2,
+            slidesPerView: slidesPerView || 4.2,
+            spaceBetween: 46,
           },
           1280: {
-            slidesPerView: 5.2,
+            slidesPerView: slidesPerView || 5.2,
+            spaceBetween: 46,
           },
         }}
         navigation={{
@@ -149,7 +191,7 @@ const FavouritesSlider: React.FC<FavouritesSliderProps> = ({ items, type }) => {
           delay: 3000,
           disableOnInteraction: false,
         }}
-        className="!overflow-visible"
+        className="!overflow-visible !py-5"
       >
         {items.map((item) => (
           <SwiperSlide key={item.id} className="h-auto">
