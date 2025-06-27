@@ -599,7 +599,6 @@ const HomePage = () => {
             <div className="flex-1 flex flex-col items-center md:items-start w-full">
               <div className="flex items-center gap-4">
                 <img src="/LOGO-H-WHITE.svg" alt="A'atene Logo" className="w-32 md:w-40 h-auto" />
-                <img src="/ad.svg" alt="A'atene A" className="w-16 h-16 md:w-20 md:h-20" />
               </div>
               <h2 className="text-3xl md:text-4xl font-bold mt-4 max-w-md text-center md:text-right">
                 إلقاء نظرة على أبعاد البيع الفريدة لدينا
