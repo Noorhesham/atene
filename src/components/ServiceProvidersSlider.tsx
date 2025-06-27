@@ -87,11 +87,11 @@ const ServiceProvidersSlider = () => {
                   <h3 className="text-[#202224] font-bold text-sm sm:text-base mb-1">{provider.name}</h3>
                   <p className="text-[#202224] text-xs sm:text-sm mb-3">{provider.email}</p>
                   <button
-                    className="w-full bg-white text-[#287CDA] border border-[#287CDA] py-1.5 sm:py-2.5 rounded-lg 
-                    flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors text-xs sm:text-sm"
+                    className=" px-8 mx-auto bg-white text-[#287CDA] border border-[#287CDA] py-1.5 sm:py-2.5 rounded-lg 
+                    flex items-center justify-center w-fit gap-2 hover:bg-gray-50 transition-colors text-xs sm:text-sm"
                   >
-                    <span className="font-semibold">تواصل معي</span>
                     <Mail className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="font-semibold">تواصل معي</span>
                   </button>
                 </div>
               </div>

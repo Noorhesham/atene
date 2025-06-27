@@ -90,7 +90,7 @@ const FeaturedSellersSlider = () => {
   const [swiper, setSwiper] = useState<SwiperCore | null>(null);
 
   return (
-    <MaxWidthWrapper noPadding className="w-full " dir="rtl">
+    <MaxWidthWrapper  className="w-full " dir="rtl">
       <div className="flex justify-between items-center mb-6 px-4">
         <h2 className="text-2xl lg:text-4xl font-bold text-[#395A7D] ">البائعين المميزين</h2>
         <div className="flex gap-2">

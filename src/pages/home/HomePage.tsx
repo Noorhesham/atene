@@ -398,7 +398,7 @@ const HomePage = () => {
               </h2>
             </div>
             <button
-              className="bg-[#23A6F0] text-white self-start md:self-auto md:absolute md:bottom-8 lg:bottom-10 
+              className="bg-[#23A6F0] text-white md:left-10 self-start md:absolute md:bottom-8 lg:bottom-10 
               text-xs sm:text-sm lg:text-[19px] hover:bg-gray-100 transition-colors 
               px-3 sm:px-4 md:px-6 lg:px-8 py-1.5 sm:py-2 h-fit rounded-full w-fit font-semibold"
             >
@@ -486,14 +486,21 @@ const HomePage = () => {
           >
             {/* Backgrounds */}
             <div className="absolute inset-0 w-full bg-[#1D4F8B]"></div>
-            <div
-              className="absolute top-0 left-0 w-full md:w-[60%] h-full bg-[#287CDA]"
-              style={{
-                borderTopLeftRadius: "1rem",
-                borderBottomLeftRadius: "1rem",
-                borderBottomRightRadius: "0px",
-              }}
-            ></div>
+            <div className="absolute top-0 -left-20 w-full md:w-[60%] h-full">
+              <svg
+                className="w-full h-full"
+                width="522"
+                height="251"
+                viewBox="0 0 522 251"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M519.232 15.211C523.119 8.54447 518.31 0.173828 510.593 0.173828H10C4.47717 0.173828 0 4.65098 0 10.1738V240.174C0 245.697 4.47717 250.174 10 250.174H511.827C519.259 250.174 524.094 242.354 520.773 235.705L463.157 120.355C461.65 117.338 461.766 113.764 463.465 110.85L519.232 15.211Z"
+                  fill="#277AD6"
+                />
+              </svg>
+            </div>
 
             {/* Content */}
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between h-full md:px-12 gap-8">
