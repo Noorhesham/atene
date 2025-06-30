@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { HeartIcon, Phone, SendHorizonalIcon, Star } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import CustomBreadcrumb from "../../components/CustomBreadcrumb";
 import MaxWidthWrapper from "../../components/MaxwidthWrapper";
 import ProductSwiper from "../../components/ProductSwiper";
@@ -15,6 +16,9 @@ import { ProductSectionProps, Variation } from "@/types/product";
 import { formatPhoneNumber } from "@/utils/cn";
 import CrossSellBundle from "@/components/cross-sell-bundle";
 import ProductTags from "@/components/ProductTags";
+import { conversationAPI } from "@/utils/api/store";
+import toast from "react-hot-toast";
+import { useAuth } from "@/context/AuthContext";
 
 /**
  * ProductSection - Main product display section
@@ -24,7 +28,12 @@ import ProductTags from "@/components/ProductTags";
 \ */
 const ProductSection = ({ product }: { product: ProductSectionProps }) => {
   const [selectedVariation, setSelectedVariation] = useState<Variation | null>(null);
+  const [isCreatingChat, setIsCreatingChat] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  console.log(user, "user");
   console.log(product.cross_sells, "cross_sells");
+
   // Get the current price based on selected variation
   const currentPrice = selectedVariation?.price || product.price;
   const currentOriginalPrice = product.originalPrice;
@@ -48,6 +57,50 @@ const ProductSection = ({ product }: { product: ProductSectionProps }) => {
     { label: product.title, href: `/products/${product.id}` },
   ];
   const formattedNumber = formatPhoneNumber(product.store.phone);
+
+  // Function to handle chat with store
+  const handleChatWithStore = async () => {
+    try {
+      setIsCreatingChat(true);
+
+      // Check if user is logged in
+      if (!user) {
+        toast.error("يرجى تسجيل الدخول للمراسلة");
+        navigate("/login");
+        return;
+      }
+
+      // Create conversation with the store
+      const response = await conversationAPI.createConversation({
+        type: "direct",
+        participants: [
+          {
+            type: "store",
+            id: product.store.id,
+          },
+        ],
+      });
+      console.log(response, "response");
+      if (response.status) {
+        // Navigate to chat page with the conversation
+        navigate("/chat", {
+          state: {
+            conversationId: response.conversation.id,
+            storeName: product.store.name,
+            storeAvatar: product.store.logo,
+          },
+        });
+        toast.success("تم إنشاء المحادثة بنجاح");
+      } else {
+        throw new Error(response.message || "فشل في إنشاء المحادثة");
+      }
+    } catch (error) {
+      console.error("Error creating conversation:", error);
+      toast.error("فشل في إنشاء المحادثة. حاول مرة أخرى.");
+    } finally {
+      setIsCreatingChat(false);
+    }
+  };
 
   return (
     <section dir="rtl">
@@ -98,7 +151,7 @@ const ProductSection = ({ product }: { product: ProductSectionProps }) => {
             <div className="mt-5 min-h-44 mb-6">
               <div
                 className={`text-[#414141] text-base overflow-hidden `}
-                dangerouslySetInnerHTML={{ __html: product.shortDescription }}
+                dangerouslySetInnerHTML={{ __html: product.shortDescription || "" }}
               />
               {/* {product.description.length > 200 && (
                 <button
@@ -136,9 +189,12 @@ const ProductSection = ({ product }: { product: ProductSectionProps }) => {
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full hover:bg-primary hover:text-white duration-200 border-[#0D6EFD] text-[#0D6EFD]  font-bold text-lg rounded-full"
+                onClick={handleChatWithStore}
+                disabled={isCreatingChat}
+                className="w-full hover:bg-primary hover:text-white duration-200 border-[#0D6EFD] text-[#0D6EFD] font-bold text-lg rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span className=" ">دردش</span> <SendHorizonalIcon className="h-12 w-12" />
+                <span className="mr-2">{isCreatingChat ? "جاري إنشاء المحادثة..." : "دردش"}</span>
+                <SendHorizonalIcon className="h-12 w-12" />
               </Button>
             </div>
 
@@ -165,16 +221,16 @@ const ProductSection = ({ product }: { product: ProductSectionProps }) => {
 
         <div className="flex flex-col mt-6 gap-4 ">
           <h2 className="text-lg lg:text-2xl font-bold text-right">استكشف المزيد من عمليات البحث ذات الصلة</h2>
-          <ProductTags asLink tags={product.tags} selectedTags={product.tags} handleTagChange={() => {}} />
+          <ProductTags asLink tags={product.tags || []} selectedTags={product.tags || []} handleTagChange={() => {}} />
         </div>
         {/* Similar Products */}
         <SimilarProducts products={product.similar} />
 
         {/* Category Scroll */}
-        {product.categories.length > 0 && (
+        {product.category && (
           <div className="flex flex-col gap-2 mt-8">
             <h2 className="text-2xl font-bold text-right">استكشاف الفئات</h2>
-            <CategoryScroll categories={product.categories} />
+            <CategoryScroll categories={[product.category]} />
           </div>
         )}
       </MaxWidthWrapper>

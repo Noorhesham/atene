@@ -1,130 +1,200 @@
-import React, { useRef, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Form } from "@/components/ui/form";
-import ChatInput from "@/components/inputs/ChatInput";
-import { Send, Paperclip, Mic } from "lucide-react";
-
-// Define the schema for chat message validation using Zod
-const messageSchema = z.object({
-  message: z.string().min(1, "الرسالة مطلوبة"),
-});
-
-type MessageFormData = z.infer<typeof messageSchema>;
+import React, { useState, useRef } from "react";
+import { Send, Paperclip, Smile, X } from "lucide-react";
+import { messageAPI } from "@/utils/api/store";
 
 interface ChatFormProps {
-  selectedPerson: string | null;
+  conversationId: number;
+  onMessageSent?: () => void;
 }
 
-const ChatForm: React.FC<ChatFormProps> = ({ selectedPerson }) => {
+const ChatForm: React.FC<ChatFormProps> = ({ conversationId, onMessageSent }) => {
+  const [message, setMessage] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
-  // Setup form with react-hook-form
-  const form = useForm<MessageFormData>({
-    resolver: zodResolver(messageSchema),
-    defaultValues: {
-      message: "",
-    },
-  });
-
-  const { handleSubmit, reset, watch } = form;
-  const messageValue = watch("message");
-
-  // Handle file selection
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const filesArray = Array.from(e.target.files);
-      setSelectedFiles((prevFiles) => [...prevFiles, ...filesArray]);
+  // Get current user info with validation
+  const getCurrentUser = () => {
+    try {
+      const userStr = localStorage.getItem("user");
+      if (!userStr) {
+        throw new Error("User data not found");
+      }
+      const user = JSON.parse(userStr);
+      if (!user || !user.id) {
+        throw new Error("Invalid user data");
+      }
+      return user;
+    } catch (err) {
+      console.error("Error getting user data:", err);
+      throw new Error("يرجى تسجيل الدخول مرة أخرى");
     }
   };
 
-  // Remove a selected file
-  const removeFile = (index: number) => {
-    setSelectedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Check file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        setError("حجم الملف يجب أن يكون أقل من 10 ميجابايت");
+        return;
+      }
+      setSelectedFile(file);
+      setError(null);
+    }
   };
 
-  // Open file dialog
-  const openFileDialog = () => {
-    fileInputRef.current?.click();
+  const removeSelectedFile = () => {
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
-  // Handle sending a message
-  const onSubmit = (data: MessageFormData) => {
-    if (!selectedPerson) return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-    // In a real app, this would send to an API with the message and any files
-    console.log(`Sending message to ${selectedPerson}: ${data.message}`);
-    console.log("With files:", selectedFiles);
+    // Don't send if no message and no file
+    if (!message.trim() && !selectedFile) {
+      return;
+    }
 
-    // Reset the form and selected files
-    reset();
-    setSelectedFiles([]);
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Get current user with validation
+      const currentUser = getCurrentUser();
+
+      if (!currentUser || !currentUser.id) {
+        throw new Error("يرجى تسجيل الدخول مرة أخرى");
+      }
+
+      const response = await messageAPI.sendMessage({
+        conversation_id: conversationId,
+        participant_type: "user",
+        participant_id: currentUser.id,
+        body: message.trim() || undefined,
+        file: selectedFile || undefined,
+      });
+
+      console.log("Message sent successfully:", response);
+
+      // Reset form
+      setMessage("");
+      setSelectedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+
+      // Notify parent component that message was sent
+      if (onMessageSent) {
+        onMessageSent();
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "فشل في إرسال الرسالة. حاول مرة أخرى.";
+      setError(errorMessage);
+      console.error("Error sending message:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
   };
 
   return (
-    <>
-      {/* Selected Files Preview */}
-      {selectedFiles.length > 0 && (
-        <div className="px-4 py-2 border-t flex flex-wrap gap-2">
-          {selectedFiles.map((file, index) => (
-            <div key={index} className="relative w-16 h-16 rounded overflow-hidden bg-gray-100">
-              {file.type.startsWith("image/") ? (
-                <img src={URL.createObjectURL(file)} alt={file.name} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-sm text-gray-500">
-                  {file.name.slice(0, 6)}...
-                </div>
-              )}
-              <button
-                type="button"
-                className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs"
-                onClick={() => removeFile(index)}
-              >
-                ×
-              </button>
-            </div>
-          ))}
+    <div className="border-t border-gray-200 p-4 bg-white">
+      {/* Error Message */}
+      {error && (
+        <div className="mb-2 p-2 bg-red-100 border border-red-300 text-red-700 rounded-md text-sm">{error}</div>
+      )}
+
+      {/* Selected File Preview */}
+      {selectedFile && (
+        <div className="mb-2 p-2 bg-gray-100 rounded-md flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Paperclip className="w-4 h-4 text-gray-500" />
+            <span className="text-sm text-gray-700 truncate max-w-xs">{selectedFile.name}</span>
+            <span className="text-xs text-gray-500">({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)</span>
+          </div>
+          <button onClick={removeSelectedFile} className="p-1 hover:bg-gray-200 rounded" aria-label="إزالة الملف">
+            <X className="w-4 h-4 text-gray-500" />
+          </button>
         </div>
       )}
 
-      {/* Input Area with Form */}
-      <div className="border-t bg-white p-2">
-        <Form {...form}>
-          <form onSubmit={handleSubmit(onSubmit)} className="flex items-center">
-            <input
-              type="file"
-              ref={fileInputRef}
-              className="hidden"
-              multiple
-              accept="image/*"
-              onChange={handleFileSelect}
-            />
-            <div className="flex items-center gap-1">
-              <button type="button" className="p-2 text-gray-500 hover:text-gray-700" onClick={openFileDialog}>
-                <Paperclip className="h-6 w-6 text-gray-500" />
-              </button>
-              <button type="button" className="p-2 text-gray-500 hover:text-gray-700">
-                <Mic className="h-6 w-6 text-gray-500" />
-              </button>
-            </div>
+      <form onSubmit={handleSubmit} className="flex items-end gap-2">
+        {/* File Upload */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          onChange={handleFileSelect}
+          className="hidden"
+          accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt"
+          aria-label="اختيار ملف للإرفاق"
+        />
 
-            <div className="flex-1 mx-2">
-              <ChatInput name="message" placeholder="نص الرسالة ..." />
-            </div>
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+          aria-label="إرفاق ملف"
+          disabled={isLoading}
+        >
+          <Paperclip className="w-5 h-5" />
+        </button>
 
-            <button
-              type="submit"
-              className="p-2 text-blue-500 hover:text-blue-700 bg-[#F1F1F5] rounded-full"
-              disabled={!messageValue && selectedFiles.length === 0}
-            >
-              <Send className="h-6 w-6 text-primary" />
-            </button>
-          </form>
-        </Form>
+        {/* Message Input */}
+        <div className="flex-1 relative">
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="اكتب رسالتك..."
+            className="w-full p-3 pr-12 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            rows={1}
+            style={{ minHeight: "44px", maxHeight: "120px" }}
+            dir="rtl"
+            disabled={isLoading}
+          />
+
+          {/* Emoji Button */}
+          <button
+            type="button"
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            aria-label="إضافة رموز تعبيرية"
+            disabled={isLoading}
+          >
+            <Smile className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Send Button */}
+        <button
+          type="submit"
+          disabled={(!message.trim() && !selectedFile) || isLoading}
+          className="p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+          aria-label="إرسال الرسالة"
+        >
+          {isLoading ? (
+            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <Send className="w-5 h-5" />
+          )}
+        </button>
+      </form>
+
+      {/* File Type Info */}
+      <div className="mt-2 text-xs text-gray-500 text-center">
+        يمكنك إرفاق الصور، الفيديوهات، الملفات الصوتية، PDF، Word، أو ملفات نصية (حد أقصى 10 MB)
       </div>
-    </>
+    </div>
   );
 };
 
