@@ -6,85 +6,6 @@ import { getAllFavorites } from "@/utils/api/product";
 import { useAuth } from "@/context/AuthContext";
 import { Loader2 } from "lucide-react";
 
-// Static data for favorites (commented out - using API now)
-// const favouriteProducts = [
-//   {
-//     id: "1",
-//     title: "LAROSAC",
-//     image: "/Frame 1000005447 (1).png",
-//     price: 200,
-//     originalPrice: 230,
-//     type: "product" as const,
-//   },
-//   {
-//     id: "2",
-//     title: "ZARA",
-//     image: "/Frame 1000005447 (2).png",
-//     price: 150,
-//     originalPrice: 180,
-//     type: "product" as const,
-//   },
-//   {
-//     id: "3",
-//     title: "H&M",
-//     image: "/Frame 1000005447 (4).png",
-//     price: 120,
-//     originalPrice: 150,
-//     type: "product" as const,
-//   },
-// ];
-
-// const marketingProducts = [
-//   {
-//     id: "1",
-//     title: "متجر الأزياء",
-//     image: "/Frame 1000005447 (5).png",
-//     type: "product" as const,
-//     description: "متجر متخصص في الأزياء النسائية",
-//   },
-//   {
-//     id: "2",
-//     title: "متجر الإلكترونيات",
-//     image: "/Frame 1000005447 (6).png",
-//     type: "product" as const,
-//     description: "متجر متخصص في الإلكترونيات",
-//   },
-// ];
-
-// const jobOffers = [
-//   {
-//     id: "1",
-//     title: "مصمم جرافيك",
-//     image: "/Frame 1000005447 (7).png",
-//     type: "job" as const,
-//     description: "مطلوب مصمم جرافيك للعمل بدوام كامل",
-//   },
-//   {
-//     id: "2",
-//     title: "مطور ويب",
-//     image: "/Frame 1000005447 (8).png",
-//     type: "job" as const,
-//     description: "مطلوب مطور ويب للعمل عن بعد",
-//   },
-// ];
-
-// const services = [
-//   {
-//     id: "1",
-//     title: "تصميم مواقع",
-//     image: "/Frame 1000005447 (9).png",
-//     type: "service" as const,
-//     description: "خدمات تصميم وتطوير المواقع",
-//   },
-//   {
-//     id: "2",
-//     title: "تسويق إلكتروني",
-//     image: "/Frame 1000005520.png",
-//     type: "service" as const,
-//     description: "خدمات التسويق الإلكتروني",
-//   },
-// ];
-
 interface FavoriteItem {
   id: string;
   title?: string;
@@ -101,32 +22,27 @@ interface FavoriteItem {
   };
 }
 
-interface FavoriteAPIItem {
-  favs_id: string;
+interface APIFavoriteProduct {
+  id: number;
+  slug: string;
+  name: string;
+  cover: string;
+  is_favorite: boolean;
+  in_compare: boolean;
+  price: number;
+  price_after_discount: number;
+  discount_present: number;
+  description?: string; // Optional for store type
+}
+
+interface APIFavoriteItem {
+  id: number;
   favs_type: "product" | "store" | "service" | "job";
-  product?: {
-    title?: string;
-    cover?: string;
-    images?: Array<{ src: string }>;
-    price?: number;
-    original_price?: number;
-  };
-  store?: {
-    name?: string;
-    logo?: string;
-    cover?: string;
-    description?: string;
-  };
-  service?: {
-    title?: string;
-    image?: string;
-    description?: string;
-  };
-  job?: {
-    title?: string;
-    image?: string;
-    description?: string;
-  };
+  favs: APIFavoriteProduct;
+}
+
+interface APIResponse {
+  favorites: APIFavoriteItem[];
 }
 
 const Favourites = () => {
@@ -147,49 +63,45 @@ const Favourites = () => {
         const response = await getAllFavorites();
 
         // Transform API response to match our component structure
-        const transformedFavorites: FavoriteItem[] = response.favorites.map((fav: any) => {
-          if (fav.favs_type === "product" && fav.product) {
-            const product = fav.product as FavoriteAPIItem["product"];
+        const transformedFavorites: FavoriteItem[] = response.favorites.map((fav: APIFavoriteItem) => {
+          if (fav.favs_type === "product" && fav.favs) {
             return {
-              id: fav.favs_id,
-              title: product?.title || "منتج غير معروف",
-              image: product?.cover || product?.images?.[0]?.src || "/placeholder.png",
-              price: product?.price,
-              originalPrice: product?.original_price,
+              id: fav.id.toString(),
+              title: fav.favs.name,
+              image: fav.favs.cover,
+              price: fav.favs.price_after_discount,
+              originalPrice: fav.favs.price,
               type: "product" as const,
             };
-          } else if (fav.favs_type === "store" && fav.store) {
-            const store = fav.store as FavoriteAPIItem["store"];
+          } else if (fav.favs_type === "store" && fav.favs) {
             return {
-              id: fav.favs_id,
-              title: store?.name || "متجر غير معروف",
-              image: store?.logo || store?.cover || "/placeholder.png",
+              id: fav.id.toString(),
+              title: fav.favs.name,
+              image: fav.favs.cover,
               type: "product" as const, // Map store to product type for display
-              description: store?.description,
+              description: fav.favs.description,
             };
-          } else if (fav.favs_type === "service" && fav.service) {
-            const service = fav.service as FavoriteAPIItem["service"];
+          } else if (fav.favs_type === "service" && fav.favs) {
             return {
-              id: fav.favs_id,
-              title: service?.title || "خدمة غير معروفة",
-              image: service?.image || "/placeholder.png",
+              id: fav.id.toString(),
+              title: fav.favs.name,
+              image: fav.favs.cover,
               type: "service" as const,
-              description: service?.description,
+              description: fav.favs.description,
             };
-          } else if (fav.favs_type === "job" && fav.job) {
-            const job = fav.job as FavoriteAPIItem["job"];
+          } else if (fav.favs_type === "job" && fav.favs) {
             return {
-              id: fav.favs_id,
-              title: job?.title || "وظيفة غير معروفة",
-              image: job?.image || "/placeholder.png",
+              id: fav.id.toString(),
+              title: fav.favs.name,
+              image: fav.favs.cover,
               type: "job" as const,
-              description: job?.description,
+              description: fav.favs.description,
             };
           }
 
           // Fallback for unknown types
           return {
-            id: fav.favs_id,
+            id: fav.id.toString(),
             title: "عنصر غير معروف",
             image: "/placeholder.png",
             type: "product" as const,

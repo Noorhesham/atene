@@ -15,11 +15,19 @@ interface FavoriteResponse {
 interface FavoritesResponse {
   favorites: Array<{
     id: number;
-    favs_type: "product" | "store";
-    favs_id: string;
-    created_at: string;
-    product?: unknown;
-    store?: unknown;
+    favs_type: "product" | "store" | "service" | "job";
+    favs: {
+      id: number;
+      slug: string;
+      name: string;
+      cover: string;
+      is_favorite: boolean;
+      in_compare: boolean;
+      price: number;
+      price_after_discount: number;
+      discount_present: number;
+      description?: string;
+    };
   }>;
 }
 
