@@ -2,6 +2,9 @@ import { Link } from "react-router-dom";
 import { ProductSectionProps } from "@/types/product";
 import { Heart, Star } from "lucide-react";
 import { DefaultProductImage } from "./ui/default-product-image";
+import { useState, useEffect } from "react";
+import { addToFavorites, removeFromFavorites, checkFavorite } from "@/utils/api/product";
+import { useAuth } from "@/context/AuthContext";
 
 interface ProductCardProps {
   product: Partial<ProductSectionProps> & {
@@ -12,6 +15,63 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
+  const { user } = useAuth();
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Check if product is favorite on component mount
+  useEffect(() => {
+    if (user && product.id) {
+      checkFavorite({
+        favs_type: "product",
+        favs_id: product.id.toString(),
+      })
+        .then((response) => {
+          setIsFavorite(response.is_favorite);
+        })
+        .catch((error) => {
+          console.error("Error checking favorite status:", error);
+        });
+    }
+  }, [user, product.id]);
+
+  const handleFavoriteToggle = async (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigation to product page
+    e.stopPropagation();
+
+    if (!user) {
+      // You might want to show a login modal or redirect to login
+      console.log("User must be logged in to add favorites");
+      return;
+    }
+
+    if (!product.id) {
+      console.error("Product ID is required");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const favoriteData = {
+        favs_type: "product" as const,
+        favs_id: product.id.toString(),
+      };
+
+      if (isFavorite) {
+        await removeFromFavorites(favoriteData);
+        setIsFavorite(false);
+      } else {
+        await addToFavorites(favoriteData);
+        setIsFavorite(true);
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!product) {
     return null;
   }
@@ -40,8 +100,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
             </span>
           )}
         </div>
-        <button className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm p-1.5 rounded-full text-gray-600 hover:text-red-500 hover:bg-white transition-colors">
-          <Heart className={`w-5 h-5 ${product.isFavorite ? "fill-red-500 text-red-500" : ""}`} />
+        <button
+          onClick={handleFavoriteToggle}
+          disabled={isLoading}
+          className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm p-1.5 rounded-full text-gray-600 hover:text-red-500 hover:bg-white transition-colors disabled:opacity-50"
+          aria-label={isFavorite ? "إزالة من المفضلة" : "إضافة إلى المفضلة"}
+        >
+          <Heart className={`w-5 h-5 ${isFavorite ? "fill-red-500 text-red-500" : ""}`} />
         </button>
       </div>
       <div className="mt-3 px-1">

@@ -9,6 +9,7 @@ import Favourites from "./pages/favourites/Favourites";
 import MessagePage from "./pages/messages/MessagePage";
 import StorePage from "./pages/store/StorePage";
 import SingleProduct from "./pages/singleProduct/Product";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { Toaster } from "react-hot-toast";
 import HomePage from "./pages/home/HomePage";
 
@@ -24,8 +25,22 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/report" element={<Report />} />
-        <Route path="/favourites" element={<Favourites />} />
-        <Route path="/chat" element={<MessagePage />} />
+        <Route
+          path="/favourites"
+          element={
+            <ProtectedRoute>
+              <Favourites />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/chat"
+          element={
+            <ProtectedRoute>
+              <MessagePage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/store/:id" element={<StorePage />} />
       </Routes>
       <Footer />

@@ -24,7 +24,8 @@ export interface Participant {
   participant_data: {
     id: number;
     name: string;
-    avatar: string;
+    avatar: string | null;
+    slug?: string; // For stores
   };
   unread_messages_count: number;
   created_at: string;
@@ -177,18 +178,18 @@ export const messageAPI = {
     body?: string;
     file?: File;
   }) => {
-    const formData = new FormData();
-    formData.append("conversation_id", data.conversation_id.toString());
-    formData.append("participant_type", data.participant_type);
-    formData.append("participant_id", data.participant_id.toString());
+    // const formData = new FormData();
+    // formData.append("conversation_id", data.conversation_id.toString());
+    // formData.append("participant_type", data.participant_type);
+    // formData.append("participant_id", data.participant_id.toString());
 
-    if (data.body) {
-      formData.append("body", data.body);
-    }
+    // if (data.body) {
+    //   formData.append("body", data.body);
+    // }
 
-    if (data.file) {
-      formData.append("file", data.file);
-    }
+    // if (data.file) {
+    //   formData.append("file", data.file);
+    // }
 
     const token = localStorage.getItem("token");
     const headers: Record<string, string> = {};
@@ -199,7 +200,7 @@ export const messageAPI = {
     const response = await fetch(`${API_BASE_URL}/messages`, {
       method: "POST",
       headers,
-      body: formData,
+      body: JSON.stringify(data),
     });
 
     if (!response.ok) {

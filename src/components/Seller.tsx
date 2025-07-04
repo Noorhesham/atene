@@ -2,11 +2,14 @@
 
 import type { Store } from "@/types/product";
 import { Button } from "./ui/button";
-import { Star, Clock, ShieldCheck, ShoppingCart, Flag, Plus } from "lucide-react";
+import { Star, Clock, ShieldCheck, ShoppingCart, Flag, Plus, UserMinus } from "lucide-react";
 import type React from "react";
 import { formatDate } from "@/utils/cn";
 import ModalCustom from "./ModalCustom";
 import AbuseReport from "./forms/AbuseRebort";
+import { useState, useEffect } from "react";
+import { followStore, unfollowStore, checkFollowing } from "@/utils/api/product";
+import { useAuth } from "@/context/AuthContext";
 
 interface SellerCardProps {
   store: Store;
@@ -20,6 +23,60 @@ const InfoItem: React.FC<{ icon: React.ElementType; text: string | number }> = (
 );
 
 export default function SellerCard({ store }: SellerCardProps) {
+  const { user } = useAuth();
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Check if user is following this store on component mount
+  useEffect(() => {
+    if (user && store.id) {
+      checkFollowing({
+        followed_type: "store",
+        followed_id: store.id,
+      })
+        .then((response) => {
+          setIsFollowing(response.is_following);
+        })
+        .catch((error) => {
+          console.error("Error checking following status:", error);
+        });
+    }
+  }, [user, store.id]);
+
+  const handleFollowToggle = async () => {
+    if (!user) {
+      console.log("User must be logged in to follow stores");
+      return;
+    }
+
+    if (!store.id) {
+      console.error("Store ID is required");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const followData = {
+        followed_type: "store" as const,
+        followed_id: store.id,
+      };
+
+      if (isFollowing) {
+        await unfollowStore(followData);
+        setIsFollowing(false);
+      } else {
+        await followStore(followData);
+        setIsFollowing(true);
+      }
+    } catch (error) {
+      console.error("Error toggling follow:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   console.log(store);
   return (
     <div
@@ -43,12 +100,16 @@ export default function SellerCard({ store }: SellerCardProps) {
         {/* Action Buttons */}
         <div className="flex items-center gap-2 self-start sm:self-center">
           <Button
+            onClick={handleFollowToggle}
+            disabled={isLoading}
             variant="default"
             size="sm"
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-1.5 h-auto text-sm"
+            className={`${
+              isFollowing ? "bg-gray-600 hover:bg-gray-700" : "bg-blue-600 hover:bg-blue-700"
+            } text-white rounded-full px-4 py-1.5 h-auto text-sm disabled:opacity-50`}
           >
-            <Plus className="w-4 h-4 ml-1" />
-            تابع
+            {isFollowing ? <UserMinus className="w-4 h-4 ml-1" /> : <Plus className="w-4 h-4 ml-1" />}
+            {isFollowing ? "إلغاء المتابعة" : "تابع"}
           </Button>
           <ModalCustom
             btn={
@@ -62,7 +123,9 @@ export default function SellerCard({ store }: SellerCardProps) {
                 بلغ عن إساءة
               </Button>
             }
-            content={<AbuseReport />}
+            content={<AbuseReport closeModal={() => setIsModalOpen(false)} />}
+            isOpen={isModalOpen}
+            onOpenChange={setIsModalOpen}
           />
         </div>
       </div>

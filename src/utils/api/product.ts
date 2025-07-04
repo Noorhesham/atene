@@ -1,5 +1,40 @@
 import { API_BASE_URL, API_ENDPOINTS } from "@/constants/api";
 import { ProductsResponse, SingleProductResponse, ReviewsResponse } from "@/types/product";
+import toast from "react-hot-toast";
+
+interface FavoriteRequest {
+  favs_type: "product" | "store";
+  favs_id: string;
+}
+
+interface FavoriteResponse {
+  success: boolean;
+  message: string;
+}
+
+interface FavoritesResponse {
+  favorites: Array<{
+    id: number;
+    favs_type: "product" | "store";
+    favs_id: string;
+    created_at: string;
+    product?: unknown;
+    store?: unknown;
+  }>;
+}
+
+interface FavoriteCheckResponse {
+  is_favorite: boolean;
+}
+
+// Helper function to get auth headers
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("token");
+  return {
+    "Content-Type": "application/json",
+    ...(token && { Authorization: `Bearer ${token}` }),
+  };
+};
 
 interface SearchParams {
   query?: string;
@@ -58,7 +93,7 @@ export const searchProducts = async (params: SearchParams = {}): Promise<Product
   return response.json();
 };
 
-export const getSearchPageData = async (): Promise<any> => {
+export const getSearchPageData = async (): Promise<unknown> => {
   const response = await fetch(`${API_ENDPOINTS.PRODUCTS_SEARCH_PAGE}`);
   return response.json();
 };
@@ -79,4 +114,158 @@ export const getProductReviews = async (slug: string): Promise<ReviewsResponse> 
     throw new Error("Failed to fetch product reviews");
   }
   return response.json();
+};
+
+// Favorites API functions
+export const addToFavorites = async (favoriteData: FavoriteRequest): Promise<FavoriteResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/favorites/add`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(favoriteData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to add to favorites");
+    }
+
+    toast.success("تمت الإضافة إلى المفضلة");
+    return data;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "فشل في الإضافة إلى المفضلة";
+    toast.error(message);
+    throw error;
+  }
+};
+
+export const removeFromFavorites = async (favoriteData: FavoriteRequest): Promise<FavoriteResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/favorites/remove`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(favoriteData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to remove from favorites");
+    }
+
+    toast.success("تمت الإزالة من المفضلة");
+    return data;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "فشل في الإزالة من المفضلة";
+    toast.error(message);
+    throw error;
+  }
+};
+
+export const getAllFavorites = async (): Promise<FavoritesResponse> => {
+  const response = await fetch(`${API_BASE_URL}/favorites`, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch favorites");
+  }
+
+  const data = await response.json();
+  console.log(data, "data");
+  return data;
+};
+
+export const checkFavorite = async (favoriteData: FavoriteRequest): Promise<FavoriteCheckResponse> => {
+  const response = await fetch(`${API_BASE_URL}/favorites/check`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(favoriteData),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to check favorite status");
+  }
+
+  const data = await response.json();
+  console.log(data, "data");
+  return data;
+};
+
+// Following API functions
+interface FollowRequest {
+  followed_type: "store" | "user";
+  followed_id: number;
+}
+
+interface FollowResponse {
+  success: boolean;
+  message: string;
+}
+
+interface FollowCheckResponse {
+  is_following: boolean;
+}
+
+export const followStore = async (followData: FollowRequest): Promise<FollowResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/followings/follow`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(followData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to follow store");
+    }
+
+    toast.success("تمت متابعة المتجر بنجاح");
+    return data;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "فشل في متابعة المتجر";
+    toast.error(message);
+    throw error;
+  }
+};
+
+export const unfollowStore = async (followData: FollowRequest): Promise<FollowResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/followings/unfollow`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(followData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to unfollow store");
+    }
+
+    toast.success("تم إلغاء متابعة المتجر");
+    return data;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "فشل في إلغاء متابعة المتجر";
+    toast.error(message);
+    throw error;
+  }
+};
+
+export const checkFollowing = async (followData: FollowRequest): Promise<FollowCheckResponse> => {
+  const response = await fetch(`${API_BASE_URL}/followings/check`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(followData),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to check following status");
+  }
+
+  const data = await response.json();
+  console.log(data, "data");
+  return data;
 };

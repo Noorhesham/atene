@@ -2,17 +2,21 @@ import LoginForm from "@/components/forms/LoginForm";
 import MaxWidthWrapper from "@/components/MaxwidthWrapper";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Login = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get the intended destination from location state, default to products page
+  const from = location.state?.from?.pathname || "/products";
 
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
-      navigate("/products");
+      navigate(from, { replace: true });
     }
-  }, [isAuthenticated, isLoading, navigate]);
+  }, [isAuthenticated, isLoading, navigate, from]);
 
   // Don't render anything while checking authentication
   if (isLoading) {

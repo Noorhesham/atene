@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import { registerUser } from "@/utils/api/auth";
 import type { RegisterCredentials } from "@/types/auth";
 import { useAuth } from "@/context/AuthContext";
+import { Link } from "react-router-dom";
 
 // Define error types
 interface ValidationError {
@@ -24,7 +25,7 @@ const signupSchema = z
     email: z.string().min(1, "البريد الإلكتروني مطلوب"),
     password: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
     confirmPassword: z.string().min(6, "تأكيد كلمة المرور مطلوب"),
-    // phone: z.string().min(1, "رقم الهاتف مطلوب"),
+    phone: z.string().min(1, "رقم الهاتف مطلوب"),
     // gender: z.enum(["male", "female"], {
     //   required_error: "الجنس مطلوب",
     // }),
@@ -47,7 +48,7 @@ const SignupForm = () => {
       email: "",
       password: "",
       confirmPassword: "",
-      // phone: "",
+      phone: "",
       // gender: "male",
     },
   });
@@ -115,7 +116,9 @@ const SignupForm = () => {
         <div className="w-full max-w-md space-y-8">
           <div className="text-right">
             <h2 className="text-3xl font-bold mb-2">اشتراك</h2>
-            <p className="text-gray-500 text-sm">لديك حساب بالفعل؟ · تسجيل الدخول</p>
+            <Link to="/login" className="text-gray-500 text-sm">
+              لديك حساب بالفعل؟ · تسجيل الدخول
+            </Link>
           </div>
 
           {/* Google Sign In Button */}
@@ -138,7 +141,7 @@ const SignupForm = () => {
               <div className="flex flex-col gap-2">
                 <FormInput type="text" placeholder="الاسم الكامل" label="الاسم الكامل" name="fullname" />
                 <FormInput type="text" placeholder="بريد إلكتروني" label="بريد إلكتروني" name="email" />
-                {/* <FormInput type="tel" placeholder="رقم الهاتف" label="رقم الهاتف" name="phone" /> */}
+                <FormInput type="tel" placeholder="رقم الهاتف" label="رقم الهاتف" name="phone" />
                 {/* <div className="space-y-1">
                   <label className="text-sm font-medium text-gray-700 block text-right">الجنس</label>
                   <select
