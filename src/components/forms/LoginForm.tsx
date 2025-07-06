@@ -42,7 +42,10 @@ const LoginForm = () => {
 
   const { mutate: loginMutation, isPending } = useMutation({
     mutationFn: async (credentials: LoginFormData) => {
-      const response = await loginUser({ login: credentials.login, password: credentials.password });
+      const response = await loginUser({
+        login: credentials.login,
+        password: credentials.password,
+      });
       await login(response.token); // Use the auth context login function
       return response;
     },

@@ -192,7 +192,7 @@ const People: React.FC<PeopleProps> = ({ onSelectConversation, selectedConversat
             const otherParticipant = getOtherParticipant(conversation);
             const isSelected = selectedConversationId === conversation.id;
             const hasUnreadMessages = (otherParticipant?.unread_messages_count || 0) > 0;
-
+            console.log(otherParticipant);
             // Check if the other participant is a store (has slug field)
             const isStore = "slug" in (otherParticipant?.participant_data || {});
 
@@ -201,7 +201,7 @@ const People: React.FC<PeopleProps> = ({ onSelectConversation, selectedConversat
                 key={conversation.id}
                 onClick={() => onSelectConversation(conversation)}
                 className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
-                  isSelected ? "bg-blue-50" : ""
+                  isSelected ? "bg-[#213851]" : ""
                 }`}
               >
                 <div className="flex justify-between items-center w-full">
@@ -218,10 +218,12 @@ const People: React.FC<PeopleProps> = ({ onSelectConversation, selectedConversat
 
                   {/* Middle Section: Name, Subtitle, Buttons */}
                   <div className="flex flex-col mx-3 flex-grow text-right">
-                    <h3 className="font-bold text-lg text-gray-800">
+                    <h3 className={`font-bold text-lg ${isSelected ? "text-white" : "text-gray-800"}`}>
                       {conversation.name || otherParticipant?.participant_data.name}
                     </h3>
-                    <p className="text-sm text-gray-500">{isStore ? "السعر شامل التوصيل" : "عميل"}</p>
+                    <p className={`text-sm ${isSelected ? "text-gray-300" : "text-gray-500"}`}>
+                      {isStore ? "السعر شامل التوصيل" : "عميل"}
+                    </p>
                     <div className="flex items-center ml-auto self-end gap-2 mt-2">
                       <button className="text-[12px] bg-[#E6F5F2] text-[#38A169] font-semibold rounded-full px-4 py-1.5">
                         مطلوب مساعدة
@@ -234,14 +236,15 @@ const People: React.FC<PeopleProps> = ({ onSelectConversation, selectedConversat
 
                   {/* Left Section: Time and status indicator */}
                   <div className="flex flex-col items-center justify-center space-y-2">
-                    <span className="text-xs text-gray-400 whitespace-nowrap">
+                    <span className={`text-xs whitespace-nowrap ${isSelected ? "text-gray-300" : "text-gray-400"}`}>
                       {formatTime(conversation.updated_at)}
                     </span>
-                    {hasUnreadMessages ? (
+                    {hasUnreadMessages && <div className="w-2.5 h-2.5 bg-blue-500 rounded-full"></div>}
+                    {/* {hasUnreadMessages>0 ? (
                       <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></div>
                     ) : (
                       <div className="w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
-                    )}
+                    )} */}
                   </div>
                 </div>
               </div>

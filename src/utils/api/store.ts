@@ -191,8 +191,12 @@ export const messageAPI = {
     //   formData.append("file", data.file);
     // }
 
+    console.log("Sending message with data:", data);
+
     const token = localStorage.getItem("token");
-    const headers: Record<string, string> = {};
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
@@ -202,7 +206,7 @@ export const messageAPI = {
       headers,
       body: JSON.stringify(data),
     });
-
+    console.log(response);
     if (!response.ok) {
       const errorData = await response.json();
       console.log(errorData);

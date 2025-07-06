@@ -105,34 +105,19 @@ const ChatForm: React.FC<ChatFormProps> = ({ conversationId, onMessageSent }) =>
       )}
 
       <form onSubmit={handleSubmit} className="flex items-center gap-2" dir="rtl">
-        <input
-          ref={fileInputRef}
-          type="file"
-          onChange={handleFileSelect}
-          className="hidden"
-          accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt"
-          aria-label="اختيار ملف للإرفاق"
-        />
-
+        {" "}
         <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="p-2 text-blue-500 hover:bg-gray-100 rounded-full transition-colors"
-          aria-label="إرفاق ملف"
-          disabled={isLoading}
+          type="submit"
+          disabled={(!message.trim() && !selectedFile) || isLoading}
+          className="p-2 w-10 h-10 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center flex-shrink-0"
+          aria-label="إرسال الرسالة"
         >
-          <Image className="w-6 h-6" />
-        </button>
-
-        <button
-          type="button"
-          className="p-2 text-blue-500 hover:bg-gray-100 rounded-full transition-colors"
-          aria-label="إرسال رسالة صوتية"
-          disabled={isLoading}
-        >
-          <Mic className="w-6 h-6" />
-        </button>
-
+          {isLoading ? (
+            <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <Send className="w-6 h-6 " />
+          )}
+        </button>{" "}
         <div className="flex-1 relative">
           <input
             type="text"
@@ -145,18 +130,30 @@ const ChatForm: React.FC<ChatFormProps> = ({ conversationId, onMessageSent }) =>
             disabled={isLoading}
           />
         </div>
-
+        <input
+          ref={fileInputRef}
+          type="file"
+          onChange={handleFileSelect}
+          className="hidden"
+          accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt"
+          aria-label="اختيار ملف للإرفاق"
+        />
         <button
-          type="submit"
-          disabled={(!message.trim() && !selectedFile) || isLoading}
-          className="p-2 w-10 h-10 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center flex-shrink-0"
-          aria-label="إرسال الرسالة"
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="p-2 text-blue-500 hover:bg-gray-100 rounded-full transition-colors"
+          aria-label="إرفاق ملف"
+          disabled={isLoading}
         >
-          {isLoading ? (
-            <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <Send className="w-6 h-6" />
-          )}
+          <Image className="w-6 h-6" />
+        </button>
+        <button
+          type="button"
+          className="p-2 text-blue-500 hover:bg-gray-100 rounded-full transition-colors"
+          aria-label="إرسال رسالة صوتية"
+          disabled={isLoading}
+        >
+          <Mic className="w-6 h-6" />
         </button>
       </form>
     </div>

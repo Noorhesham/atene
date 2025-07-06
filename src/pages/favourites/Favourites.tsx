@@ -2,7 +2,7 @@ import MainHeading from "@/components/MainHeading";
 import MaxWidthWrapper from "@/components/MaxwidthWrapper";
 import FavouritesSlider from "@/components/FavouritesSlider";
 import React, { useState, useEffect } from "react";
-import { getAllFavorites } from "@/utils/api/product";
+import { getAllFavorites, type FavoritesResponse } from "@/utils/api/product";
 import { useAuth } from "@/context/AuthContext";
 import { Loader2 } from "lucide-react";
 
@@ -20,29 +20,6 @@ interface FavoriteItem {
     name: string;
     avatar?: string;
   };
-}
-
-interface APIFavoriteProduct {
-  id: number;
-  slug: string;
-  name: string;
-  cover: string;
-  is_favorite: boolean;
-  in_compare: boolean;
-  price: number;
-  price_after_discount: number;
-  discount_present: number;
-  description?: string; // Optional for store type
-}
-
-interface APIFavoriteItem {
-  id: number;
-  favs_type: "product" | "store" | "service" | "job";
-  favs: APIFavoriteProduct;
-}
-
-interface APIResponse {
-  favorites: APIFavoriteItem[];
 }
 
 const Favourites = () => {
@@ -63,8 +40,8 @@ const Favourites = () => {
         const response = await getAllFavorites();
 
         // Transform API response to match our component structure
-        const transformedFavorites: FavoriteItem[] = response.favorites.map((fav: APIFavoriteItem) => {
-          if (fav.favs_type === "product" && fav.favs) {
+        const transformedFavorites: FavoriteItem[] = response.favorites.map((fav) => {
+          if (fav.favs_type === "product") {
             return {
               id: fav.id.toString(),
               title: fav.favs.name,
@@ -73,7 +50,7 @@ const Favourites = () => {
               originalPrice: fav.favs.price,
               type: "product" as const,
             };
-          } else if (fav.favs_type === "store" && fav.favs) {
+          } else if (fav.favs_type === "store") {
             return {
               id: fav.id.toString(),
               title: fav.favs.name,
@@ -81,7 +58,7 @@ const Favourites = () => {
               type: "product" as const, // Map store to product type for display
               description: fav.favs.description,
             };
-          } else if (fav.favs_type === "service" && fav.favs) {
+          } else if (fav.favs_type === "service") {
             return {
               id: fav.id.toString(),
               title: fav.favs.name,
@@ -89,7 +66,7 @@ const Favourites = () => {
               type: "service" as const,
               description: fav.favs.description,
             };
-          } else if (fav.favs_type === "job" && fav.favs) {
+          } else if (fav.favs_type === "job") {
             return {
               id: fav.id.toString(),
               title: fav.favs.name,

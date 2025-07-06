@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { MoreHorizontal, ArrowLeft } from "lucide-react";
+import { MoreHorizontal, ArrowLeft, Flag, Trash } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import ChatForm from "./ChatForm";
 import { messageAPI, type Conversation } from "@/utils/api/store";
 import { useAuth } from "@/context/AuthContext";
@@ -43,9 +50,21 @@ const Chat: React.FC<ChatProps> = ({ selectedConversation, onBack }) => {
   const { user } = useAuth();
   const [shouldScroll, setShouldScroll] = useState(false);
 
+  // Handle reporting abuse
+  const handleReportAbuse = () => {
+    // TODO: Implement report abuse functionality
+    console.log("Report abuse for conversation:", selectedConversation?.id);
+  };
+
+  // Handle deleting chat
+  const handleDeleteChat = () => {
+    // TODO: Implement delete chat functionality
+    console.log("Delete chat:", selectedConversation?.id);
+  };
+
   // Get the other participant in the conversation
   const getOtherParticipant = (conversation: Conversation) => {
-    const currentUserId = user?.id;
+    const currentUserId = user?.user?.id;
     return conversation?.participants?.find((p) => p.participant_data.id !== currentUserId);
   };
 
@@ -82,7 +101,8 @@ const Chat: React.FC<ChatProps> = ({ selectedConversation, onBack }) => {
       const data: MessagesResponse = await response.json();
 
       if (data.status) {
-        setMessages(data.messages);
+        // Reverse the messages array to show oldest first, newest last
+        setMessages(data.messages.reverse());
       } else {
         setError("Failed to load messages");
       }
@@ -118,8 +138,8 @@ const Chat: React.FC<ChatProps> = ({ selectedConversation, onBack }) => {
   // Mark messages as seen when conversation is opened
   useEffect(() => {
     if (selectedConversation && messages.length > 0) {
-      const currentUserId = user?.id;
-      const unseenMessages = messages.filter((msg) => msg.sender_id !== currentUserId);
+      const currentUserId = user?.user?.id;
+      const unseenMessages = messages.filter((msg) => msg.sender_data.participant_id !== currentUserId);
 
       unseenMessages.forEach(async (msg) => {
         try {
@@ -156,16 +176,31 @@ const Chat: React.FC<ChatProps> = ({ selectedConversation, onBack }) => {
     }
   };
 
+  // Get participant avatar by participant_id
+  const getParticipantAvatar = (participantId: number) => {
+    const participant = selectedConversation?.participants?.find((p) => p.participant_data.id === participantId);
+    return participant?.participant_data.avatar || "/placeholder.png";
+  };
+
   // Render message content
   const renderMessageContent = (message: MessageData) => {
-    const currentUserId = user?.id;
-    const isOwnMessage = message.sender_id === currentUserId;
+    const currentUserId = user?.user?.id;
+    const isOwnMessage = message.sender_data.participant_id === currentUserId;
 
     return (
-      <div className={`flex ${isOwnMessage ? "justify-end" : "justify-start"} mb-4`} dir="rtl">
+      <div className={`flex ${isOwnMessage ? "justify-end" : "justify-start"} mb-4 gap-2`} dir="rtl">
+        {/* Avatar for other user's messages (on the right in RTL) */}
+        {!isOwnMessage && (
+          <img
+            src={getParticipantAvatar(message.sender_data.participant_id)}
+            alt="صورة المستخدم"
+            className="w-8 h-8 rounded-full object-cover flex-shrink-0 mt-1"
+          />
+        )}
+
         <div
           className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-            isOwnMessage ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-800"
+            isOwnMessage ? "bg-gray-200   text-gray-800 " : "  bg-blue-500 text-white "
           }`}
         >
           {message.file_url && (
@@ -177,7 +212,7 @@ const Chat: React.FC<ChatProps> = ({ selectedConversation, onBack }) => {
                   href={message.file_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-300 underline"
+                  className={`underline ${isOwnMessage ? "text-blue-200" : "text-blue-600"}`}
                 >
                   ملف مرفق
                 </a>
@@ -188,12 +223,21 @@ const Chat: React.FC<ChatProps> = ({ selectedConversation, onBack }) => {
           {message.body && <p className="text-sm">{message.body}</p>}
 
           <div className="flex items-center justify-between mt-1">
-            <span className={`text-xs ${isOwnMessage ? "text-blue-100" : "text-gray-500"}`}>
+            <span className={`text-xs ${!isOwnMessage ? "text-blue-100" : "text-gray-500"}`}>
               {formatMessageTime(message.created_at)}
             </span>
             {isOwnMessage && <span className={`text-xs text-blue-100`}>✓</span>}
           </div>
         </div>
+
+        {/* Avatar for own messages (on the left in RTL) */}
+        {isOwnMessage && (
+          <img
+            src={user?.user?.avatar || "/placeholder.png"}
+            alt="صورتك"
+            className="w-8 h-8 rounded-full object-cover flex-shrink-0 mt-1"
+          />
+        )}
       </div>
     );
   };
@@ -208,6 +252,38 @@ const Chat: React.FC<ChatProps> = ({ selectedConversation, onBack }) => {
       {/* Chat Header */}
       <div className="border-b border-gray-200 p-4 bg-white">
         <div className="flex items-center justify-between">
+          {" "}
+          <div className="flex items-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="p-2 bg-indigo-100 text-indigo-600 hover:bg-indigo-200 rounded-full"
+                  aria-label="المزيد من الخيارات"
+                >
+                  <MoreHorizontal className="w-5 h-5 rotate-90" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <div dir="rtl">
+                  <DropdownMenuItem
+                    className="gap-2 text-red-600 focus:text-red-600 focus:bg-red-50"
+                    onClick={handleReportAbuse}
+                  >
+                    <Flag className="w-4 h-4" />
+                    <span>الإبلاغ عن إساءة</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="gap-2 text-red-600 focus:text-red-600 focus:bg-red-50"
+                    onClick={handleDeleteChat}
+                  >
+                    <Trash className="w-4 h-4" />
+                    <span>حذف الدردشة</span>
+                  </DropdownMenuItem>
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
           <div className="flex items-center gap-3">
             <button
               onClick={onBack}
@@ -215,26 +291,18 @@ const Chat: React.FC<ChatProps> = ({ selectedConversation, onBack }) => {
               aria-label="العودة للقائمة"
             >
               <ArrowLeft className="w-5 h-5 text-gray-600" />
-            </button>
+            </button>{" "}
+            <div>
+              <h3 className="font-semibold text-gray-800">
+                {selectedConversation?.name || otherParticipant?.participant_data?.name}
+              </h3>
+              <p className="text-sm text-gray-500   mr-auto w-fit">{isStore ? "متجر" : "عميل"}</p>
+            </div>
             <img
               src={otherParticipant?.participant_data.avatar || "/placeholder.png"}
               alt={otherParticipant?.participant_data.name || ""}
               className="w-10 h-10 rounded-full object-cover"
             />
-            <div>
-              <h3 className="font-semibold text-gray-800">
-                {selectedConversation?.name || otherParticipant?.participant_data?.name}
-              </h3>
-              <p className="text-sm text-gray-500">{isStore ? "متجر" : "عميل"}</p>
-            </div>
-          </div>
-          <div className="flex items-center">
-            <button
-              className="p-2 bg-indigo-100 text-indigo-600 hover:bg-indigo-200 rounded-full"
-              aria-label="المزيد من الخيارات"
-            >
-              <MoreHorizontal className="w-5 h-5" />
-            </button>
           </div>
         </div>
       </div>

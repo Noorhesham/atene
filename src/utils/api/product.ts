@@ -12,7 +12,7 @@ interface FavoriteResponse {
   message: string;
 }
 
-interface FavoritesResponse {
+export interface FavoritesResponse {
   favorites: Array<{
     id: number;
     favs_type: "product" | "store" | "service" | "job";
