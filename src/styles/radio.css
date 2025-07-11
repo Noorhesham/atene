@@ -1,0 +1,105 @@
+/* Radio Button Base Styles */
+input[type="radio"] {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  outline: none;
+  border: 1px solid #e7eaee;
+  border-radius: 50%;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Radio Button Checked State */
+input[type="radio"]:checked {
+  border-color: #395a7d;
+  background-color: #395a7d;
+}
+
+/* Radio Button Inner Circle */
+input[type="radio"]:checked::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: white;
+}
+
+/* Radio Button Focus State */
+input[type="radio"]:focus {
+  box-shadow: 0 0 0 2px rgba(57, 90, 125, 0.2);
+}
+
+/* Radio Button Disabled State */
+input[type="radio"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Radio Button Label */
+.radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+/* Radio Button Group */
+.radio-group {
+  display: grid;
+  gap: 8px;
+}
+
+/* Custom Radio Button Component */
+.custom-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.custom-radio__input {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #e7eaee;
+  border-radius: 50%;
+  background-color: white;
+  transition: all 0.2s ease;
+}
+
+.custom-radio__input::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: white;
+  transition: transform 0.2s ease;
+}
+
+.custom-radio__input--checked {
+  border-color: #395a7d;
+  background-color: #395a7d;
+}
+
+.custom-radio__input--checked::before {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* RTL Support */
+[dir="rtl"] .radio-label,
+[dir="rtl"] .custom-radio {
+  flex-direction: row-reverse;
+}

@@ -1,7 +1,26 @@
+"use client";
+
 import { useFormContext } from "react-hook-form";
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { InputProps } from "../forms/CustomForm";
+
+interface Option {
+  _id?: string;
+  name?: string;
+  label: string;
+  value: string;
+}
+
+interface FormSelectProps {
+  name: string;
+  label?: string;
+  placeholder?: string;
+  description?: string;
+  id?: string;
+  options?: Option[];
+  className?: string;
+  optional?: boolean;
+}
 
 const FormSelect = ({
   name,
@@ -9,55 +28,41 @@ const FormSelect = ({
   placeholder,
   description,
   id,
-  options,
-  selected,
+  options = [],
   className,
   optional,
-}: InputProps) => {
+}: FormSelectProps) => {
   const form = useFormContext();
-  const selectedValue = form.watch(name);
 
-  // Filter out the selected value from the options
-  const filteredOptions = options?.filter((p) => !selected?.includes(p._id));
   return (
     <FormField
       control={form.control}
       name={name}
-      render={({ field }) => {
-        const selected = options?.find((p) => p._id === form.getValues(name)?._id || p._id === selectedValue);
-        return (
-          <FormItem className={`${className || ""} relative w-full `} id={id || ""}>
-            <FormLabel className=" relative w-fit  capitalize">
-              {" "}
-              {!optional && <span className={`absolute -right-5 -top-[1px]  z-10   font-normal text-red-600`}>*</span>}
-              {label}
+      render={({ field }) => (
+        <FormItem className={className}>
+          {label && (
+            <FormLabel>
+              {!optional && <span className="text-red-600">*</span>} {label}
             </FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <FormControl>
-                <SelectTrigger className=" capitalize shadow-sm">
-                  <SelectValue placeholder={placeholder || "SELECT"}>{selected && selected.name}</SelectValue>
-                </SelectTrigger>
-              </FormControl>
+          )}
+          <FormControl>
+            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+              <SelectTrigger id={id}>
+                <SelectValue placeholder={placeholder} />
+              </SelectTrigger>
               <SelectContent>
-                {filteredOptions &&
-                  filteredOptions
-                    .filter((option) => option !== form.getValues(name))
-                    .map((option, i) => (
-                      <SelectItem
-                        className=" capitalize"
-                        key={i + `${option.label} ${option.value}`}
-                        value={option._id || option.value || option}
-                      >
-                        {option.label || option.name || option}
-                      </SelectItem>
-                    ))}
+                {options.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
-            <FormDescription>{description}</FormDescription>
-            <FormMessage />
-          </FormItem>
-        );
-      }}
+          </FormControl>
+          {description && <FormDescription>{description}</FormDescription>}
+          <FormMessage />
+        </FormItem>
+      )}
     />
   );
 };

@@ -5,9 +5,19 @@ import StarterKit from "@tiptap/starter-kit";
 import Heading from "@tiptap/extension-heading";
 import Highlight from "@tiptap/extension-highlight";
 import Link from "@tiptap/extension-link";
-import ToolBar from "../ToolBar";
+import ToolBar from "./ToolBar";
 
-const RichText = ({ description, onChange }: { description: string; onChange: (value: string) => void }) => {
+interface RichTextProps {
+  description: string;
+  onChange: (value: string) => void;
+  name: string;
+  label: string;
+  placeholder: string;
+  rows: number;
+  className?: string;
+}
+
+const RichText = ({ description, onChange, name, label, placeholder, rows, className }: RichTextProps) => {
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -26,7 +36,7 @@ const RichText = ({ description, onChange }: { description: string; onChange: (v
     content: description,
     editorProps: {
       attributes: {
-        class: "rounded-lg border min-h-[150px] p-2 border-input",
+        class: className || "rounded-lg border min-h-[150px] p-2 border-input",
       },
     },
     onUpdate({ editor }) {
@@ -35,7 +45,7 @@ const RichText = ({ description, onChange }: { description: string; onChange: (v
   });
 
   return (
-    <div className="w-full mb-2">
+    <div className="w-full mb-2 border border-input rounded-md">
       <ToolBar editor={editor} />
       <EditorContent editor={editor} />
     </div>

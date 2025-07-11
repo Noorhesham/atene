@@ -138,10 +138,10 @@ const Favourites = () => {
       <div className="space-y-8">
         {/* المنتجات المفضلة */}
         {productFavorites.length > 0 && (
-          <div className="flex flex-col gap-4">
-            <div className="flex justify-between items-center">
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-between items-center">
               <MainHeading text="المنتجات المفضلة" />
-              <p className="text-primary cursor-pointer hover:underline">المزيد</p>
+            <p className="text-primary cursor-pointer hover:underline">المزيد</p>
             </div>
             <FavouritesSlider items={productFavorites} type="products" />
           </div>
@@ -149,10 +149,10 @@ const Favourites = () => {
 
         {/* المتاجر المفضلة */}
         {storeFavorites.length > 0 && (
-          <div className="flex flex-col gap-4">
-            <div className="flex justify-between items-center">
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-between items-center">
               <MainHeading text="المتاجر المفضلة" />
-              <p className="text-primary cursor-pointer hover:underline">المزيد</p>
+            <p className="text-primary cursor-pointer hover:underline">المزيد</p>
             </div>
             <FavouritesSlider items={storeFavorites} type="products" />
           </div>
@@ -160,10 +160,10 @@ const Favourites = () => {
 
         {/* الوظائف المفضلة */}
         {jobFavorites.length > 0 && (
-          <div className="flex flex-col gap-4">
-            <div className="flex justify-between items-center">
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-between items-center">
               <MainHeading text="الوظائف المفضلة" />
-              <p className="text-primary cursor-pointer hover:underline">المزيد</p>
+            <p className="text-primary cursor-pointer hover:underline">المزيد</p>
             </div>
             <FavouritesSlider items={jobFavorites} type="jobs" />
           </div>
@@ -171,10 +171,10 @@ const Favourites = () => {
 
         {/* الخدمات المفضلة */}
         {serviceFavorites.length > 0 && (
-          <div className="flex flex-col gap-4">
-            <div className="flex justify-between items-center">
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-between items-center">
               <MainHeading text="الخدمات المفضلة" />
-              <p className="text-primary cursor-pointer hover:underline">المزيد</p>
+            <p className="text-primary cursor-pointer hover:underline">المزيد</p>
             </div>
             <FavouritesSlider items={serviceFavorites} type="services" />
           </div>
@@ -185,7 +185,7 @@ const Favourites = () => {
           <div className="text-center p-8">
             <p className="text-gray-600">لا توجد عناصر في المفضلة</p>
             <p className="text-gray-400 text-sm mt-2">ابدأ بإضافة منتجات أو متاجر إلى المفضلة</p>
-          </div>
+        </div>
         )}
       </div>
     </MaxWidthWrapper>
