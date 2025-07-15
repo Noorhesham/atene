@@ -67,13 +67,13 @@ const ModalCustom = ({
           <DialogFooter className="pb-10 flex items-center sm:flex-col">
             <div className="flex gap-2 items-center">
               {functionalbtn && functionalbtn}
-              <DialogClose className="mx-auto flex items-center gap-5">
+              <DialogClose asChild className="mx-auto flex items-center gap-5">
                 {cancelBtn && (
                   <Button
                     type="button"
-                    className="text-xs flex-grow mr-auto self-end mx-0 hover:bg-main2 hover:text-white rounded-full flex items-center gap-2 px-6 border border-main2 bg-white text-main2"
+                    className="text-xs flex-grow mr-auto self-end mx-0 hover:bg-main2 hover:text-white flex items-center gap-2 px-6 border border-main2 bg-white text-main2"
                   >
-                    cancel
+                    الغاء
                   </Button>
                 )}
               </DialogClose>

@@ -10,6 +10,7 @@ import RichText from "./RichText";
 import { PhotoInput } from "./PhotoInput";
 import Starrating from "../reviews/Rate";
 import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from "../ui/select";
+import CalendarInput from "./CalendarInput";
 
 interface FormInputProps {
   control?: Control<any>;
@@ -104,7 +105,7 @@ const FormInput = ({
             check && "flex items-center "
           } relative`}
         >
-          {!switchToggle && label !== "" && (
+          {!switchToggle && label !== "" && !date && (
             <div className={` ${flex ? "w-fit" : "w-full"} flex justify-between  items-center gap-2`}>
               <FormLabel className={`uppercase  text-nowrap relative w-fit text-[18px] ${check && "text-nowrap mt-2"}`}>
                 {" "}
@@ -177,6 +178,8 @@ const FormInput = ({
                     ))}
                   </SelectContent>
                 </Select>
+              ) : date ? (
+                <CalendarInput control={control} name={name} label={label} />
               ) : (
                 <div className=" flex flex-col gap-2 w-full items-start">
                   {type === "file" && formContext.getValues(name) && !(formContext.getValues(name) instanceof File) && (

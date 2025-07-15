@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { format, isBefore } from "date-fns";
@@ -25,6 +25,7 @@ const CalendarInput = ({
   monthOnly?: boolean;
   disableOldDates?: boolean;
 }) => {
+  const [date, setDate] = useState<Date | null>(null);
   const [open, setOpen] = useState(false);
 
   return (
@@ -67,7 +68,7 @@ const CalendarInput = ({
                   <Calendar
                     className="relative w-full"
                     mode="single"
-                    captionLayout="dropdown"
+                    captionLayout="dropdown-buttons"
                     fromYear={1990}
                     toYear={new Date().getFullYear() + 50} // Allow 50 years in the future
                     selected={field.value}

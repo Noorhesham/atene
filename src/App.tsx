@@ -17,6 +17,8 @@ import UsersManagement from "./pages/dashboard/users/UsersManagement";
 import DashboardHome from "./components/(dashboard)/components/DashBoardHome";
 import OrdersPage from "./components/(dashboard)/orders/OrdersPage";
 import ProductCreationExample from "./components/productCreation/ProductCreationExample";
+import CouponsPage from "./components/(dashboard)/coupons/CouponsPage";
+import StoreCreationForm from "./components/(dashboard)/Store/StoreCreation";
 
 // Layout components using Outlet pattern
 const PublicLayout = () => (
@@ -69,6 +71,7 @@ function App() {
           <Route path="orders" element={<OrdersPage />} />
           <Route path="users" element={<User />} />
           <Route path="stores" element={<StoresManagement />} />
+          <Route path="coupons" element={<CouponsManagement />} />
           <Route path="products" element={<ProductsManagement />} />
           <Route path="sections" element={<SectionsManagement />} />
           <Route path="reports" element={<ReportsManagement />} />
@@ -87,7 +90,8 @@ const User = () => (
     <UsersManagement />
   </div>
 );
-const StoresManagement = () => <div>Stores Management</div>;
+const StoresManagement = () => <StoreCreationForm />;
+const CouponsManagement = () => <CouponsPage />;
 const ProductsManagement = () => <ProductCreationExample />;
 const SectionsManagement = () => <div>Sections Management</div>;
 const ReportsManagement = () => <div>Reports Management</div>;

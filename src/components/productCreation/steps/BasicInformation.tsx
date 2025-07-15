@@ -44,7 +44,7 @@ const BasicInformation = () => {
           صور المنتج
           <span className="text-red-500">*</span>
         </FormLabel>
-        <ImageUploader />
+        <ImageUploader name="images" />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormInput placeholder="اكتب اسم المنتج" label="اسم المنتج" name="productName" />
