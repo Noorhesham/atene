@@ -91,7 +91,7 @@ const SingleProduct = () => {
           sizes: colorAttribute?.options.map((opt) => opt.title) || [],
           weights: storageAttribute?.options.map((opt) => opt.title) || [],
           reviews: mappedReviews,
-          rate_stats: reviewsData?.rate_stats,
+          rate_stats: reviewsData?.rate_stats || {},
           specifications: data.product.specifications,
           store: data.store,
           similar: data.similar,
@@ -101,7 +101,7 @@ const SingleProduct = () => {
           sku: data.product.sku,
           condition: data.product.condition,
           status: data.product.status,
-          cross_sells: data.product.cross_sells.map((p) => ({
+          cross_sells: data.product.cross_sells?.map((p) => ({
             id: p.id.toString(),
             title: p.name,
             images: [
@@ -112,7 +112,7 @@ const SingleProduct = () => {
           })),
           cross_sells_price: data.product.cross_sells_price,
           final_price: data.product.price,
-          tags: data.product.tags,
+            tags: data.product.tags || [],
           categories: data.categories,
           slug: data.product.slug,
         }}

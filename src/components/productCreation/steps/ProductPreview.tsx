@@ -38,12 +38,15 @@ const ProductPreview = () => {
 
   const productName = watch("productName");
   const price = watch("price");
-  const images = watch("images") || [];
+  const imagesData = watch("images");
+  const images = Array.isArray(imagesData) ? imagesData : [];
   const shortDescription = watch("shortDescription");
-  const relatedProducts = watch("relatedProducts") || [];
+  const relatedProductsData = watch("relatedProducts");
+  const relatedProducts = Array.isArray(relatedProductsData) ? relatedProductsData : [];
 
   const hasContent = productName || price || images.length > 0;
-  const primaryImage = images.find((img: ProductImage) => img.isPrimary)?.preview || images[0]?.preview;
+  const primaryImage =
+    images.length > 0 ? images.find((img: ProductImage) => img.isPrimary)?.preview || images[0]?.preview : null;
 
   // Get related product details from mock data
   const selectedRelatedProducts = mockProducts.filter((product) => relatedProducts.includes(product.id));

@@ -3,17 +3,18 @@ import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessa
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { EyeIcon, EyeOffIcon, ImageIcon } from "lucide-react";
 import { Control } from "react-hook-form";
 import { useFormContext } from "react-hook-form";
 import RichText from "./RichText";
-import { PhotoInput } from "./PhotoInput";
 import Starrating from "../reviews/Rate";
 import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from "../ui/select";
 import CalendarInput from "./CalendarInput";
+import MediaCenter from "./MediaCenter";
+import { ApiMediaFile } from "@/hooks/useUsersQuery";
 
 interface FormInputProps {
-  control?: Control<any>;
+  control?: Control<Record<string, unknown>>;
   name: string;
   label?: string;
   width?: string;
@@ -46,10 +47,11 @@ interface FormInputProps {
   monthOnly?: boolean;
   noSwitch?: boolean;
   currency?: boolean;
-  single?: boolean;
   flex?: boolean;
   error?: string;
   info?: string;
+  multiple?: boolean;
+  maxFiles?: number;
 }
 
 const FormInput = ({
@@ -59,7 +61,6 @@ const FormInput = ({
   type = "text",
   icon,
   phone,
-  single,
   className,
   switchToggle = false,
   desc,
@@ -80,8 +81,11 @@ const FormInput = ({
   error,
   info,
   flex,
+  multiple = false,
+  maxFiles = 10,
 }: FormInputProps) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [isMediaCenterOpen, setIsMediaCenterOpen] = useState(false);
   const formContext = useFormContext();
 
   // Use provided control prop or get it from context
@@ -92,6 +96,40 @@ const FormInput = ({
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleMediaSelect = (file: ApiMediaFile) => {
+    if (control && name) {
+      const form = formContext;
+      if (form) {
+        if (multiple) {
+          // For multiple selection, work with arrays
+          const currentValue = form.getValues(name) || [];
+          const currentArray = Array.isArray(currentValue) ? currentValue : [];
+
+          // Check if file is already selected
+          const fileIndex = currentArray.findIndex((fileName: string) => fileName === file.file_name);
+
+          if (fileIndex >= 0) {
+            // Remove if already selected
+            const newArray = currentArray.filter((_: string, index: number) => index !== fileIndex);
+            form.setValue(name, newArray, { shouldValidate: true });
+          } else {
+            // Add to array (check maxFiles limit)
+            if (currentArray.length < maxFiles) {
+              const newArray = [...currentArray, file.file_name];
+              form.setValue(name, newArray, { shouldValidate: true });
+            } else {
+              // Optional: Show a toast or alert about max files limit
+              console.warn(`Maximum of ${maxFiles} files allowed`);
+            }
+          }
+        } else {
+          // For single selection, store as string
+          form.setValue(name, file.file_name, { shouldValidate: true });
+        }
+      }
+    }
   };
 
   return (
@@ -136,7 +174,7 @@ const FormInput = ({
             <FormControl className={`  w-full  ${switchToggle ? "" : "   duration-200"} `}>
               {area ? (
                 <RichText
-                  description={field.value || ""}
+                  description={(field.value as string) || ""}
                   onChange={field.onChange}
                   name={name}
                   label={label || ""}
@@ -147,15 +185,84 @@ const FormInput = ({
                   rows={4}
                 />
               ) : photo ? (
-                <div className=" w-fit ml-auto">
-                  <PhotoInput single={single} mediaType={mediaType} name={field.name} />
+                <div className="w-fit ml-auto">
+                  <MediaCenter
+                    open={isMediaCenterOpen}
+                    onOpenChange={setIsMediaCenterOpen}
+                    onSelect={handleMediaSelect}
+                    multiple={multiple}
+                    acceptedTypes={mediaType === "image" ? ["image/*"] : ["image/*", "video/*"]}
+                    trigger={
+                      <div className="cursor-pointer">
+                        {field.value ? (
+                          multiple ? (
+                            // Multiple images display
+                            <div className="grid grid-cols-2 gap-2 p-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary">
+                              {Array.isArray(field.value) && (field.value as string[]).length > 0 ? (
+                                <>
+                                  {(field.value as string[]).slice(0, 3).map((fileName: string, index: number) => (
+                                    <img
+                                      key={index}
+                                      src={
+                                        fileName?.startsWith("http")
+                                          ? fileName
+                                          : `https://aatene.com/storage/${fileName}`
+                                      }
+                                      alt={`Selected media ${index + 1}`}
+                                      className="w-14 h-14 object-cover rounded"
+                                    />
+                                  ))}
+                                  {(field.value as string[]).length > 3 && (
+                                    <div className="w-14 h-14 bg-gray-100 rounded flex items-center justify-center text-xs font-medium">
+                                      +{(field.value as string[]).length - 3}
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                <div className="col-span-2 flex flex-col items-center justify-center h-32">
+                                  <ImageIcon className="mx-auto h-8 w-8 text-gray-400" />
+                                  <p className="mt-2 text-sm text-gray-500">اختر صور متعددة</p>
+                                  <p className="text-xs text-gray-400">حد أقصى {maxFiles} صور</p>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            // Single image display
+                            <img
+                              src={
+                                (field.value as string)?.startsWith("http")
+                                  ? (field.value as string)
+                                  : `https://aatene.com/storage/${field.value as string}`
+                              }
+                              alt="Selected media"
+                              className="w-32 h-32 object-cover rounded-lg border-2 border-dashed border-gray-300 hover:border-primary"
+                            />
+                          )
+                        ) : (
+                          <div className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center hover:border-primary">
+                            <div className="text-center">
+                              <ImageIcon className="mx-auto h-8 w-8 text-gray-400" />
+                              <p className="mt-2 text-sm text-gray-500">
+                                {multiple ? `اختر صور متعددة (حد أقصى ${maxFiles})` : "اختر صورة"}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    }
+                  />
                 </div>
               ) : switchToggle ? (
                 <div className="flex mx-auto   mt-3 gap-2 items-center ">
                   <Label className=" uppercase md:text-sm  text-xs text-muted-foreground" htmlFor="sale">
                     {label2 || ""}
                   </Label>
-                  <Switch disabled={disabled} className="" checked={field.value} onCheckedChange={field.onChange} />
+                  <Switch
+                    disabled={disabled}
+                    className=""
+                    checked={field.value as boolean}
+                    onCheckedChange={field.onChange}
+                  />
                   <Label className="md:text-sm uppercase flex-grow  text-xs  text-muted-foreground" htmlFor="sale">
                     {label || ""}
                   </Label>
@@ -166,7 +273,7 @@ const FormInput = ({
                   <Starrating OnSetRating={field.onChange} MaxRating={5} />
                 </div>
               ) : select && options ? (
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select value={field.value as string} onValueChange={field.onChange}>
                   <SelectTrigger className=" w-full">
                     <SelectValue placeholder="اختر..." />
                   </SelectTrigger>
@@ -213,7 +320,7 @@ const FormInput = ({
                     } ${error ? "border-red-500" : ""}`}
                     placeholder={placeholder}
                     {...field}
-                    value={type === "file" ? null : field.value}
+                    value={type === "file" ? "" : (field.value as string) || ""}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       const value = e.target.value;
                       if (e.target.type === "file") {
@@ -226,7 +333,7 @@ const FormInput = ({
                 </div>
               )}
             </FormControl>
-            {password && field.value && (
+            {password && (field.value as string) && (
               <span
                 className=" absolute left-4 top-1/2 -translate-y-1/2  cursor-pointer hover:text-gray-900 text-gray-800"
                 onClick={togglePasswordVisibility}

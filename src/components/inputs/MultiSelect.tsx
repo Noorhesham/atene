@@ -20,6 +20,28 @@ import {
 import { useFormContext } from "react-hook-form";
 import { FormLabel } from "@/components/ui/form";
 
+// Helper function to ensure values are strings - moved outside component to prevent re-creation
+const ensureStringArray = (values: unknown[]): string[] => {
+  if (!Array.isArray(values)) return [];
+
+  return values.map((val) => {
+    if (typeof val === "string") return val;
+    if (typeof val === "number") return val.toString();
+    if (typeof val === "object" && val !== null) {
+      const obj = val as Record<string, unknown>;
+
+      // Try different possible properties
+      if (obj.value !== undefined) return String(obj.value);
+      if (obj.id !== undefined) return String(obj.id);
+      if (obj.label !== undefined) return String(obj.label);
+
+      // Fallback to string conversion
+      return String(val);
+    }
+    return String(val);
+  });
+};
+
 const multiSelectVariants = cva(
   "m-1 transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 duration-300",
   {
@@ -46,7 +68,8 @@ interface MultiSelectProps
     icon?: React.ComponentType<{ className?: string }>;
   }[];
   onValueChange: (value: string[]) => void;
-  defaultValue: string[];
+  defaultValue?: string[];
+  value?: string[];
   placeholder?: string;
   animation?: number;
   maxCount?: number;
@@ -64,6 +87,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
       onValueChange,
       variant,
       defaultValue = [],
+      value,
       placeholder = "اختر...",
       animation = 0,
       maxCount = 3,
@@ -78,11 +102,61 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
     ref
   ) => {
     const form = useFormContext();
-    const [selectedValues, setSelectedValues] = React.useState<string[]>(
-      form && name ? form.getValues(name) || defaultValue : defaultValue
-    );
+    const [selectedValues, setSelectedValues] = React.useState<string[]>(() => {
+      if (value !== undefined) return ensureStringArray(value);
+      if (form && name) {
+        const formValue = form.getValues(name);
+        return ensureStringArray(formValue || defaultValue);
+      }
+      return ensureStringArray(defaultValue);
+    });
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
     const [isAnimating, setIsAnimating] = React.useState(false);
+
+    // Sync selectedValues with value prop, form values or defaultValue changes
+    React.useEffect(() => {
+      let newValues: string[] = [];
+
+      if (value !== undefined) {
+        newValues = ensureStringArray(value);
+      } else if (form && name) {
+        const formValue = form.getValues(name);
+        if (formValue && Array.isArray(formValue)) {
+          newValues = ensureStringArray(formValue);
+        } else {
+          newValues = ensureStringArray(defaultValue);
+        }
+      } else {
+        newValues = ensureStringArray(defaultValue);
+      }
+
+      // Only update if values actually changed
+      setSelectedValues((prev) => {
+        if (JSON.stringify(prev) !== JSON.stringify(newValues)) {
+          return newValues;
+        }
+        return prev;
+      });
+    }, [value, form, name, defaultValue]);
+
+    // Watch for form value changes (only if form and name exist)
+    React.useEffect(() => {
+      if (!form || !name) return;
+
+      const subscription = form.watch((watchedValue) => {
+        if (watchedValue[name] && Array.isArray(watchedValue[name])) {
+          const newValues = ensureStringArray(watchedValue[name]);
+          setSelectedValues((prev) => {
+            if (JSON.stringify(prev) !== JSON.stringify(newValues)) {
+              return newValues;
+            }
+            return prev;
+          });
+        }
+      });
+
+      return () => subscription.unsubscribe();
+    }, [form, name]);
 
     const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
       if (event.key === "Enter") {
@@ -102,18 +176,22 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
       const newSelectedValues = selectedValues.includes(value)
         ? selectedValues.filter((v) => v !== value)
         : [...selectedValues, value];
-      setSelectedValues(newSelectedValues);
-      onValueChange(newSelectedValues);
+
+      const ensuredValues = ensureStringArray(newSelectedValues);
+
+      setSelectedValues(ensuredValues);
+      onValueChange(ensuredValues);
       if (form && name) {
-        form.setValue(name, newSelectedValues, { shouldValidate: true });
+        form.setValue(name, ensuredValues, { shouldValidate: true });
       }
     };
 
     const handleClear = () => {
-      setSelectedValues([]);
-      onValueChange([]);
+      const emptyArray: string[] = [];
+      setSelectedValues(emptyArray);
+      onValueChange(emptyArray);
       if (form && name) {
-        form.setValue(name, [], { shouldValidate: true });
+        form.setValue(name, emptyArray, { shouldValidate: true });
       }
     };
 
@@ -135,10 +213,11 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
         handleClear();
       } else {
         const allValues = options.map((option) => option.value);
-        setSelectedValues(allValues);
-        onValueChange(allValues);
+        const ensuredValues = ensureStringArray(allValues);
+        setSelectedValues(ensuredValues);
+        onValueChange(ensuredValues);
         if (form && name) {
-          form.setValue(name, allValues, { shouldValidate: true });
+          form.setValue(name, ensuredValues, { shouldValidate: true });
         }
       }
     };
@@ -164,7 +243,11 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                 <div className="flex justify-between items-center w-full">
                   <div className="flex flex-wrap items-center">
                     {selectedValues.slice(0, maxCount).map((value) => {
-                      const option = options.find((o) => o.value === value);
+                      const option = options.find((o) => {
+                        const optionValue = String(o.value);
+                        const selectedValue = String(value);
+                        return optionValue === selectedValue;
+                      });
                       const IconComponent = option?.icon;
                       return (
                         <Badge
@@ -176,7 +259,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                           style={{ animationDuration: `${animation}s` }}
                         >
                           {IconComponent && <IconComponent className="h-4 w-4 mr-2" />}
-                          {option?.label}
+                          {option?.label || `Unknown (${value})`}
                           <XCircle
                             className="ml-2 h-4 w-4 cursor-pointer"
                             onClick={(event) => {
@@ -260,11 +343,12 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                   <span>تحديد الكل</span>
                 </CommandItem>
                 {options.map((option) => {
-                  const isSelected = selectedValues.includes(option.value);
+                  const optionValueString = String(option.value);
+                  const isSelected = selectedValues.includes(optionValueString);
                   return (
                     <CommandItem
                       key={option.value}
-                      onSelect={() => toggleOption(option.value)}
+                      onSelect={() => toggleOption(optionValueString)}
                       className="cursor-pointer"
                     >
                       <div

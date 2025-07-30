@@ -8,11 +8,10 @@ import FormInput from "@/components/inputs/FormInput";
 import { Controller, useFieldArray } from "react-hook-form";
 import { Switch } from "@/components/ui/switch";
 import ModalCustom from "@/components/ModalCustom";
-import { v4 as uuidv4 } from "uuid";
+import { API_ENDPOINTS, FetchFunction } from "@/constants/api";
 
 interface VariantImage {
-  id: string;
-  file: File;
+  file_name: string;
   preview: string;
 }
 
@@ -158,22 +157,52 @@ const VariantsForm = () => {
     name: "variants",
   });
 
-  const handleImageUpload = (index: number, files: FileList | null) => {
+  const handleImageUpload = async (index: number, files: FileList | null) => {
     if (!files) return;
 
-    const images = Array.from(files).map((file) => ({
-      id: uuidv4(),
-      file,
-      preview: URL.createObjectURL(file),
-    }));
+    const uploadToMediaCenter = async (file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("type", "gallery");
 
-    const currentVariants = watch("variants") || [];
-    const updatedVariants = [...currentVariants];
-    updatedVariants[index] = {
-      ...updatedVariants[index],
-      images,
+      try {
+        const response = await FetchFunction<{
+          status: boolean;
+          message: string;
+          data: { url: string; file_name: string };
+        }>(`${API_ENDPOINTS.MEDIA_CENTER}/add-new`, "POST", formData);
+
+        if (response.status) {
+          return { url: response.data.url, file_name: response.data.file_name };
+        }
+        throw new Error(response.message);
+      } catch (error) {
+        console.error("Upload failed:", error);
+        throw error;
+      }
     };
-    setValue("variants", updatedVariants);
+
+    try {
+      const uploadPromises = Array.from(files).map(async (file) => {
+        const { url, file_name } = await uploadToMediaCenter(file);
+        return {
+          file_name: file_name,
+          preview: url,
+        };
+      });
+
+      const images = await Promise.all(uploadPromises);
+
+      const currentVariants = watch("variants") || [];
+      const updatedVariants = [...currentVariants];
+      updatedVariants[index] = {
+        ...updatedVariants[index],
+        images,
+      };
+      setValue("variants", updatedVariants);
+    } catch (error) {
+      console.error("Failed to upload variant images:", error);
+    }
   };
 
   const handleConfirmAttributes = (attributes: string[]) => {
@@ -403,7 +432,7 @@ const VariantsForm = () => {
                           <div className="absolute top-full left-0 mt-2 bg-white border border-[#E7EAEE] rounded-lg p-2 shadow-lg z-20">
                             <div className="flex gap-2 flex-wrap">
                               {watch(`variants.${index}.images`).map((img: VariantImage) => (
-                                <div key={img.id} className="relative w-16 h-16 group">
+                                <div key={img.file_name} className="relative w-16 h-16 group">
                                   <img
                                     src={img.preview}
                                     alt="Variant preview"
@@ -413,7 +442,9 @@ const VariantsForm = () => {
                                     type="button"
                                     onClick={() => {
                                       const currentImages = watch(`variants.${index}.images`);
-                                      const filteredImages = currentImages.filter((i: VariantImage) => i.id !== img.id);
+                                      const filteredImages = currentImages.filter(
+                                        (i: VariantImage) => i.file_name !== img.file_name
+                                      );
                                       setValue(`variants.${index}.images`, filteredImages);
                                     }}
                                     className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"

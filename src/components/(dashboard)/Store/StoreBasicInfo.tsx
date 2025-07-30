@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormContext, useFieldArray } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import FormInput from "@/components/inputs/FormInput"; // Your custom component
@@ -20,34 +20,30 @@ const StoreBasicInfo = () => {
     control,
     formState: { errors },
   } = useFormContext();
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "contacts",
-  });
 
   return (
     <Card className="p-6 space-y-3">
       <h2 className="text-xl font-semibold text-gray-900">البيانات الأساسية</h2>
 
       {/* Store Name */}
-      <FormInput name="storeName" label="اسم المتجر " placeholder="اسم المتجر" />
+      <FormInput name="name" label="اسم المتجر " placeholder="اسم المتجر" />
 
       {/* Store Identity */}
       <div className="space-y-3">
-        <h3 className="font-semibold text-gray-800">هوية متجرك </h3>
-        <p className="text-sm text-gray-500">بناء هوية متجرك من خلال إضافة شعار وصورة غلاف</p>
-        <ImageUploader isMultiple={false} name="storeIdentity.cover" />
+        <h3 className="font-semibold text-gray-800">شعار المتجر</h3>
+        <p className="text-sm text-gray-500">إضافة شعار المتجر</p>
+        <FormInput photo name="logo" />
       </div>
       <div className="space-y-3">
-        <h3 className="font-semibold text-gray-800">بنر يمكنك اضافة حتي ١٠ بنارات</h3>
-        <p className="text-sm text-gray-500">المقاسات المفضلة 680 X 180 </p>{" "}
-        <ImageUploader name="storeIdentity.cover" />
+        <h3 className="font-semibold text-gray-800">صورة الغلاف</h3>
+        <p className="text-sm text-gray-500">المقاسات المفضلة 680 X 180</p>
+        <FormInput photo name="cover" />
       </div>
 
       {/* Store Description */}
       {/* <FormInput area name="storeDescription" label="وصف المتجر" placeholder="اكتب وصف متجرك..." /> */}
       <FormField
-        name="storeDescription"
+        name="description"
         control={control}
         render={({ field }) => (
           <FormItem className="space-y-1">
@@ -63,7 +59,7 @@ const StoreBasicInfo = () => {
                 placeholder="اكتب الوصف  لمتجرك..."
                 {...field}
                 rows={4}
-                className={`${errors.storeDescription ? "border-red-500" : ""} h-32`}
+                className={`${errors.description ? "border-red-500" : ""} h-32`}
               />
             </FormControl>
             <FormMessage />{" "}
@@ -87,25 +83,18 @@ const StoreBasicInfo = () => {
       {/* Email and Address */}
       <FormInput name="email" type="email" label="البريد الالكتروني" placeholder="example@info.com" />
       <MapAddressInput name="address" label="العنوان" />
-      {/* Currency and Owner */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FormInput select name="currency" label="عملة المتجر" options={[{ value: "SAR", label: "ريال سعودي" }]} />
-        <FormInput select name="owner" label="المالك" options={[{ value: "kyras adel", label: "كيراس عادل" }]} />
+      {/* Currency, Owner and Phone */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <FormInput select name="currency_id" label="عملة المتجر" options={[{ value: "1", label: "ريال سعودي" }]} />
+        <FormInput select name="owner_id" label="المالك" options={[{ value: "1", label: "كيراس عادل" }]} />
+        <FormInput name="phone" label="رقم الهاتف" placeholder="01234567890" />
       </div>
 
       <div className="space-y-1 ">
         <FormLabel className="text-[18px]">مميزات المتجر</FormLabel>
         <div className="grid px-4 bg-gray-100 grid-cols-1 lg:grid-cols-2 gap-4">
           <div>
-            <FormInput
-              flex
-              select
-              name="type"
-              className=" "
-              label="النوع"
-              options={typeOptions}
-              placeholder="خواتم"
-            />
+            <FormInput flex select name="type" className=" " label="النوع" options={typeOptions} placeholder="خواتم" />
           </div>
           <FormField
             control={control}

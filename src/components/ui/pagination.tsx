@@ -1,5 +1,6 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { cn } from "@/utils/cn";
+import React from "react";
+import { Button } from "./button";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 
 interface PaginationProps {
   currentPage: number;
@@ -8,54 +9,73 @@ interface PaginationProps {
 }
 
 export function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
-  const renderPageNumbers = () => {
-    const pages = [];
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-    // Adjust start if we're near the end
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+  const pages = React.useMemo(() => {
+    const items: (number | string)[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) {
+        items.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 5; i++) {
+          items.push(i);
+        }
+        items.push("...");
+        items.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        items.push(1);
+        items.push("...");
+        for (let i = totalPages - 4; i <= totalPages; i++) {
+          items.push(i);
+        }
+      } else {
+        items.push(1);
+        items.push("...");
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          items.push(i);
+        }
+        items.push("...");
+        items.push(totalPages);
+      }
     }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(
-        <button
-          key={i}
-          onClick={() => onPageChange(i)}
-          className={cn(
-            "w-8 h-8 flex items-center justify-center rounded-md text-sm transition-colors",
-            currentPage === i ? "bg-[#287CDA] text-white" : "text-gray-600 hover:bg-gray-100"
-          )}
-        >
-          {i}
-        </button>
-      );
-    }
-
-    return pages;
-  };
+    return items;
+  }, [currentPage, totalPages]);
 
   return (
-    <div className="flex items-center justify-center gap-2 mt-8">
-      <button
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage >= totalPages}
-        className="w-8 h-8 flex items-center justify-center rounded-md text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-        aria-label="الصفحة التالية"
+    <div className="flex items-center justify-center gap-2" dir="ltr">
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="h-8 w-8"
       >
         <ChevronLeft className="h-4 w-4" />
-      </button>
-      {renderPageNumbers()}
-      <button
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage <= 1}
-        className="w-8 h-8 flex items-center justify-center rounded-md text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-        aria-label="الصفحة السابقة"
+      </Button>
+      {pages.reverse().map((page, i) => (
+        <React.Fragment key={i}>
+          {page === "..." ? (
+            <span className="px-2">...</span>
+          ) : (
+            <Button
+              variant={currentPage === page ? "default" : "outline"}
+              onClick={() => onPageChange(page as number)}
+              className={`h-8 w-8 ${currentPage === page ? "bg-main text-white" : ""}`}
+            >
+              {page}
+            </Button>
+          )}
+        </React.Fragment>
+      ))}
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="h-8 w-8"
       >
         <ChevronRight className="h-4 w-4" />
-      </button>
+      </Button>
     </div>
   );
 }

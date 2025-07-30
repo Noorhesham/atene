@@ -17,3 +17,26 @@ export interface AuthResponse {
     fullname: string;
   };
 }
+export interface Role {
+  name: string;
+  id: number;
+  guard_name: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: null | string;
+}
+
+export  interface User {
+  user: {
+    roles: Role[];
+    id: number;
+    email: string;
+    fullname: string;
+    avatar: string;
+    gender: string;
+    is_active: number;
+    phone: string | null;
+    referral_code: string | null;
+    last_login_at: string;
+  };
+}

@@ -26,8 +26,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import MaxWidthDashboard from "./(dashboard)/components/MaxWidthDashboard";
+import { useAuth } from "@/context/AuthContext";
 
 const DashboardNavbar = () => {
+  const { user } = useAuth();
+  const isAdmin = user?.user.roles.map((role) => role.name === "superadmin");
+  const preLink = isAdmin ? "/admin" : "/dashboard";
   return (
     <nav className="w-full bg-[#C8D7E8] border-b border-gray-200 shadow-sm" dir="rtl">
       <MaxWidthDashboard className="bg-[#C8D7E8]">
@@ -67,17 +71,17 @@ const DashboardNavbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem>
-                    <Link to="/dashboard/stores" className="w-full">
+                    <Link to={`${preLink}/stores`} className="w-full">
                       إدارة المتاجر
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/dashboard/stores/add" className="w-full">
+                    <Link to={`${preLink}/stores/add`} className="w-full">
                       إضافة متجر
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/dashboard/stores/pending" className="w-full">
+                    <Link to={`${preLink}/stores/pending`} className="w-full">
                       المتاجر المعلقة
                     </Link>
                   </DropdownMenuItem>
@@ -98,17 +102,17 @@ const DashboardNavbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem>
-                    <Link to="/dashboard/orders" className="w-full">
+                    <Link to={`${preLink}/orders`} className="w-full">
                       جميع الطلبات
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/dashboard/orders/pending" className="w-full">
+                    <Link to={`${preLink}/orders/pending`} className="w-full">
                       الطلبات المعلقة
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/dashboard/orders/completed" className="w-full">
+                    <Link to={`${preLink}/orders/completed`} className="w-full">
                       الطلبات المكتملة
                     </Link>
                   </DropdownMenuItem>
@@ -129,17 +133,17 @@ const DashboardNavbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem>
-                    <Link to="/dashboard/products" className="w-full">
+                    <Link to={`${preLink}/products`} className="w-full">
                       إدارة المنتجات
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/dashboard/products/add" className="w-full">
+                    <Link to={`${preLink}/products/add`} className="w-full">
                       إضافة منتج
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/dashboard/categories" className="w-full">
+                    <Link to={`${preLink}/categories`} className="w-full">
                       الفئات
                     </Link>
                   </DropdownMenuItem>
@@ -160,17 +164,17 @@ const DashboardNavbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem>
-                    <Link to="/dashboard/users" className="w-full">
+                    <Link to={`${preLink}/users`} className="w-full">
                       إدارة المستخدمين
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/dashboard/reports" className="w-full">
+                    <Link to={`${preLink}/reports`} className="w-full">
                       التقارير
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/dashboard/settings" className="w-full">
+                    <Link to={`${preLink}/settings`} className="w-full">
                       الإعدادات
                     </Link>
                   </DropdownMenuItem>

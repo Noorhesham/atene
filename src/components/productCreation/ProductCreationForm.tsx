@@ -1,12 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, ChevronLeft, MinusCircle, PlusCircle } from "lucide-react";
 import toast from "react-hot-toast";
+import { useParams, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import { ApiProduct, useAdminEntity } from "@/hooks/useUsers";
 
 // Import step components
 import BasicInformation from "./steps/BasicInformation";
@@ -21,27 +24,29 @@ type VariantType = {
   color?: string;
   size?: string;
   price: string;
-  images: Array<{
-    id: string;
-    file: File;
-    preview: string;
-  }>;
+  images: string[];
   isActive: boolean;
+};
+
+type UpSellProduct = {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  image: string;
+  stock: number;
+};
+
+type ProductSpecification = {
+  icon: string;
+  title: string;
 };
 
 const variantSchema = z.object({
   color: z.string().optional(),
   size: z.string().optional(),
   price: z.string().min(1, "يرجى إدخال السعر"),
-  images: z
-    .array(
-      z.object({
-        id: z.string(),
-        file: z.instanceof(File),
-        preview: z.string(),
-      })
-    )
-    .min(1, "يرجى إضافة صورة واحدة على الأقل للمنتج المتغير"),
+  images: z.array(z.string()).min(1, "يرجى إضافة صورة واحدة على الأقل للمنتج المتغير"),
   isActive: z.boolean(),
 });
 
@@ -50,19 +55,13 @@ const productFormSchema = z.object({
   productName: z.string().min(3, "اسم المنتج يجب أن يكون 3 أحرف على الأقل"),
   price: z.union([z.string().min(1, "السعر يجب أن يكون أكبر من 0"), z.number().min(1, "السعر يجب أن يكون أكبر من 0")]),
   categories: z.array(z.string()).min(1, "يجب اختيار فئة واحدة على الأقل"),
-  productStatus: z.string().min(1, "حالة المنتج مطلوبة"),
+  productStatus: z.enum(["new", "used", "refurbished"], {
+    errorMap: () => ({ message: "يرجى اختيار حالة صحيحة للمنتج" }),
+  }),
   shortDescription: z.string().min(10, "الوصف الموجز يجب أن يكون 10 أحرف على الأقل"),
   fullDescription: z.string().min(20, "الوصف الكامل يجب أن يكون 20 حرف على الأقل"),
-  images: z
-    .array(
-      z.object({
-        id: z.string(),
-        file: z.instanceof(File),
-        preview: z.string(),
-        isPrimary: z.boolean(),
-      })
-    )
-    .min(1, "يجب إضافة صورة واحدة على الأقل"),
+  cover: z.string().min(1, "صورة الغلاف مطلوبة"),
+  images: z.array(z.string()).min(1, "يجب إضافة صورة واحدة على الأقل"),
 
   // Second form fields with clearer messages
   storeVisibility: z.string().min(1, "يرجى اختيار المتجر الذي سيتم عرض المنتج فيه"),
@@ -88,7 +87,7 @@ const productFormSchema = z.object({
   variants: z
     .array(variantSchema)
     .optional()
-    .superRefine((variants: VariantType[] | undefined, ctx) => {
+    .superRefine((variants, ctx) => {
       interface FormData {
         hasVariations: boolean;
         variantAttributes: string[] | undefined;
@@ -112,7 +111,7 @@ const productFormSchema = z.object({
         }
 
         let isValid = true;
-        variants.forEach((variant: VariantType, index: number) => {
+        variants.forEach((variant, index: number) => {
           (formData.variantAttributes || []).forEach((attr: string) => {
             if (attr === "color" && !variant.color) {
               ctx.addIssue({
@@ -166,7 +165,6 @@ interface StepConfig {
   fields: Array<keyof ProductFormData>;
 }
 
-// --- NEW ACCORDION STEP COMPONENT ---
 const AccordionStep = ({
   title,
   isOpen,
@@ -193,9 +191,22 @@ const AccordionStep = ({
   </div>
 );
 
-const ProductCreationForm = () => {
+const ProductCreationForm = ({
+  product,
+  disableCreate,
+}: {
+  product: ApiProduct | null | undefined;
+  disableCreate: boolean;
+}) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const isEditMode = !!product;
+
+  // Use the create/update methods from the hook
+  const { create: createProduct, update: updateProduct } = useAdminEntity("products");
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productFormSchema),
@@ -203,9 +214,10 @@ const ProductCreationForm = () => {
       productName: "",
       price: "",
       categories: [],
-      productStatus: "draft",
+      productStatus: "new",
       shortDescription: "",
       fullDescription: "",
+      cover: "",
       images: [],
       // Second form default values
       storeVisibility: "",
@@ -234,12 +246,53 @@ const ProductCreationForm = () => {
 
   const { formState } = form;
 
+  // Populate form with existing product data in edit mode
+  useEffect(() => {
+    if (product) {
+      form.reset({
+        productName: product.name || "",
+        price: product.price?.toString() || "",
+        categories: product.category_id ? [product.category_id.toString()] : [],
+        productStatus: (product.condition as "new" | "used" | "refurbished") || "new",
+        shortDescription: product.short_description || "",
+        fullDescription: product.description || "",
+        cover: product.cover || "",
+        images: product.gallary || [],
+        storeVisibility: product.store_id?.toString() || "",
+        keywords: product.tags?.map((tag: { value: string }) => ({ value: tag.value })) || [],
+        productAttributes: product.specifications || [],
+        hasDelivery: false,
+        productType: product.type || "",
+        mainCategory: product.category_id?.toString() || "",
+        subCategory: product.section_id?.toString() || "",
+        city: "",
+        neighborhood: "",
+        hasVariations: product.type === "variation",
+        variantAttributes: [],
+        variants: [],
+        relatedProducts: [],
+        upsellProducts: product.upSells || [],
+        upsellDiscountPrice: product.cross_sells_price,
+        upsellDiscountEndDate: undefined,
+      });
+    }
+  }, [isEditMode, product, form]);
+
   const steps: StepConfig[] = [
     {
       id: 1,
       title: "المعلومات الأساسية",
       component: <BasicInformation />,
-      fields: ["productName", "price", "categories", "productStatus", "shortDescription", "fullDescription", "images"],
+      fields: [
+        "productName",
+        "price",
+        "categories",
+        "productStatus",
+        "shortDescription",
+        "fullDescription",
+        "cover",
+        "images",
+      ],
     },
     {
       id: 2,
@@ -319,57 +372,73 @@ const ProductCreationForm = () => {
         return;
       }
 
-      // Log detailed form data
-      console.group("Form Data Submission");
-      console.log("Basic Information:", {
-        productName: data.productName,
-        price: data.price,
-        categories: data.categories,
-        productStatus: data.productStatus,
-        shortDescription: data.shortDescription,
-        fullDescription: data.fullDescription,
-        images: data.images.map((img) => ({
-          id: img.id,
-          fileName: img.file.name,
-          size: img.file.size,
-          type: img.file.type,
-        })),
-      });
+      // Prepare API payload matching the skeleton structure
+      const productData = product as ApiProduct & {
+        sku?: string;
+        review_rate?: number;
+        review_count?: number;
+      };
 
-      console.log("Product Details:", {
-        storeVisibility: data.storeVisibility,
-        keywords: data.keywords,
-        productAttributes: data.productAttributes,
-        hasDelivery: data.hasDelivery,
-        productType: data.productType,
-        mainCategory: data.mainCategory,
-        subCategory: data.subCategory,
-        city: data.city,
-        neighborhood: data.neighborhood,
-      });
+      const apiPayload = {
+        sku: isEditMode ? productData?.sku : `SKU${Date.now()}`, // Generate SKU for new products
+        name: data.productName,
+        short_description: data.shortDescription,
+        description: data.fullDescription,
+        cover: data.cover || "", // Cover image
+        gallary: data.images, // All images as gallery (now just filenames)
+        type: data.hasVariations ? ("variation" as const) : ("simple" as const),
+        condition: data.productStatus,
+        category_id: parseInt(data.categories[0]) || 1,
+        section_id: parseInt(data.subCategory) || 1,
+        review_rate: isEditMode ? productData?.review_rate || 0 : 0,
+        review_count: isEditMode ? productData?.review_count || 0 : 0,
+        price: parseFloat(data.price.toString()),
+        cross_sells_price: data.upsellDiscountPrice || 0,
+        crossSells: [], // TODO: Map from crossSells data
+        upSells:
+          data.upsellProducts?.map((up: UpSellProduct) => ({
+            id: up.id,
+            name: up.name,
+            price: up.price,
+            image: up.image,
+          })) || [],
+        tags: data.keywords?.map((k: { value: string }) => k.value) || [],
+        specifications:
+          data.productAttributes?.map((attr: ProductSpecification) => ({
+            icon: attr.icon,
+            title: attr.title,
+          })) || [],
+        variations: data.hasVariations
+          ? data.variants?.map((variant: VariantType, index: number) => ({
+              id: index + 1,
+              price: parseFloat(variant.price),
+              image: variant.images[0] || "",
+              attributeOptions: [
+                // TODO: Map attribute options based on variant attributes
+              ],
+            })) || []
+          : [],
+      };
 
-      if (data.hasVariations) {
-        console.log(
-          "Variants:",
-          data.variants?.map((variant) => ({
-            ...variant,
-            images: variant.images.map((img) => ({
-              id: img.id,
-              fileName: img.file.name,
-              size: img.file.size,
-              type: img.file.type,
-            })),
-          }))
-        );
+      console.log("API Payload:", apiPayload);
+
+      // Submit to API
+      if (isEditMode) {
+        await updateProduct(parseInt(id as string), apiPayload);
+        toast.success("تم تحديث المنتج بنجاح!");
+      } else {
+        await createProduct(apiPayload);
+        toast.success("تم إنشاء المنتج بنجاح!");
       }
-      console.groupEnd();
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      toast.success("تم إنشاء المنتج بنجاح!");
+      // Invalidate cache and navigate
+      await queryClient.invalidateQueries({
+        queryKey: ["admin", "products"],
+      });
+      navigate("/admin/products");
     } catch (error) {
       console.error("Form submission error:", error);
-      toast.error("حدث خطأ أثناء إنشاء المنتج");
+      toast.error(isEditMode ? "حدث خطأ أثناء تحديث المنتج" : "حدث خطأ أثناء إنشاء المنتج");
     } finally {
       setIsSubmitting(false);
     }
@@ -379,26 +448,36 @@ const ProductCreationForm = () => {
     <section className="w-full">
       {" "}
       <div className="mx-auto w-full p-4 sm:p-6 lg:p-8  min-h-screen" dir="rtl">
-        <div className="flex flex-col gap-8">
-          <div className="flex flex-col gap-6">
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <span>المنتجات</span>
-              <span>/</span>
-              <span className="text-gray-900">إنشاء منتج جديد</span>
+        {!disableCreate ? (
+          <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-6">
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <span>المنتجات</span>
+                <span>/</span>
+                <span className="text-gray-900">{isEditMode ? "تعديل المنتج" : "إنشاء منتج جديد"}</span>
+              </div>
             </div>
+            <ProgressSteps steps={steps} currentStep={currentStep} />
           </div>
-          <ProgressSteps steps={steps} currentStep={currentStep} />
-        </div>
+        ) : null}
         <FormProvider {...form}>
           <form onSubmit={handleSubmit}>
             {" "}
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-semibold text-gray-900">إنشاء منتج جديد</h1>
-              <Button type="submit" className="bg-blue-600 text-white hover:bg-blue-700 px-6" disabled={isSubmitting}>
-                {isSubmitting ? "جاري الحفظ..." : "حفظ المنتج"}
-              </Button>
+              <h1 className="text-2xl font-semibold text-gray-900">
+                {isEditMode ? "تعديل المنتج" : "إنشاء منتج جديد"}
+              </h1>
+              {!disableCreate && (
+                <Button type="submit" className="bg-blue-600 text-white hover:bg-blue-700 px-6" disabled={isSubmitting}>
+                  {isSubmitting ? "جاري الحفظ..." : isEditMode ? "تحديث المنتج" : "حفظ المنتج"}
+                </Button>
+              )}
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start mt-8">
+            <div
+              className={`grid grid-cols-1 ${
+                disableCreate ? "lg:grid-cols-1" : "lg:grid-cols-3"
+              } gap-6 items-start mt-8`}
+            >
               {" "}
               {/* Form Accordion Column */}
               <div className="lg:col-span-2">
@@ -415,57 +494,59 @@ const ProductCreationForm = () => {
                     </AccordionStep>
                   ))}
                 </div>
-
-            
               </div>
               {/* Preview Column */}
-              <div className="lg:col-span-1 lg:sticky top-6">
-                <ProductPreview />
-              </div>
+              {!disableCreate && (
+                <div className="lg:col-span-1 lg:sticky top-6">
+                  <ProductPreview />
+                </div>
+              )}
             </div>
           </form>
         </FormProvider>
       </div>
-      <div className="sticky bottom-0 w-full bg-white border-t border-[#E7EAEE] py-4 px-6 shadow-[0px_-4px_12px_0px_rgba(0,0,0,0.04)]">
-        <div className="flex items-center justify-between max-w-[1440px] mx-auto">
-          <div className="flex items-center gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={prevStep}
-              disabled={currentStep === 1}
-              className="flex items-center gap-2 bg-white border-[#E7EAEE] text-[#101828] h-11 px-4 py-2.5 text-sm font-medium hover:bg-gray-50"
-            >
-              <ChevronRight className="w-5 h-5" /> السابق
-            </Button>
-            {currentStep < steps.length && (
+      {!disableCreate && (
+        <div className="sticky bottom-0 w-full bg-white border-t border-[#E7EAEE] py-4 px-6 shadow-[0px_-4px_12px_0px_rgba(0,0,0,0.04)]">
+          <div className="flex items-center justify-between max-w-[1440px] mx-auto">
+            <div className="flex items-center gap-3">
               <Button
                 type="button"
-                onClick={nextStep}
-                className="flex items-center gap-2 bg-[#2E5DB0] hover:bg-[#264B8B] text-white h-11 px-4 py-2.5 text-sm font-medium"
+                variant="outline"
+                onClick={prevStep}
+                disabled={currentStep === 1}
+                className="flex items-center gap-2 bg-white border-[#E7EAEE] text-[#101828] h-11 px-4 py-2.5 text-sm font-medium hover:bg-gray-50"
               >
-                التالي <ChevronLeft className="w-5 h-5" />
+                <ChevronRight className="w-5 h-5" /> السابق
               </Button>
-            )}
-          </div>
-          <div className="flex items-center gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              className="flex items-center gap-2 bg-white border-[#E7EAEE] text-[#101828] h-11 px-4 py-2.5 text-sm font-medium hover:bg-gray-50"
-            >
-              حفظ كمسودة
-            </Button>
-            <Button
-              type="submit"
-              className="bg-[#2E5DB0] hover:bg-[#264B8B] text-white h-11 px-4 py-2.5 text-sm font-medium"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "جاري الحفظ..." : "إنشاء المنتج"}
-            </Button>
+              {currentStep < steps.length && (
+                <Button
+                  type="button"
+                  onClick={nextStep}
+                  className="flex items-center gap-2 bg-[#2E5DB0] hover:bg-[#264B8B] text-white h-11 px-4 py-2.5 text-sm font-medium"
+                >
+                  التالي <ChevronLeft className="w-5 h-5" />
+                </Button>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex items-center gap-2 bg-white border-[#E7EAEE] text-[#101828] h-11 px-4 py-2.5 text-sm font-medium hover:bg-gray-50"
+              >
+                حفظ كمسودة
+              </Button>
+              <Button
+                type="submit"
+                className="bg-[#2E5DB0] hover:bg-[#264B8B] text-white h-11 px-4 py-2.5 text-sm font-medium"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "جاري الحفظ..." : isEditMode ? "تحديث المنتج" : "إنشاء المنتج"}
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </section>
   );
 };

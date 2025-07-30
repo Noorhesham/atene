@@ -15,6 +15,9 @@ const categories = [
 const statusOptions = [
   { value: "draft", label: "مسودة" },
   { value: "published", label: "منشور" },
+  { value: "new", label: "جديد" },
+  { value: "used", label: "مستعمل" },
+  { value: "refurbished", label: "مجدد" },
 ];
 
 const BasicInformation = () => {
@@ -41,10 +44,14 @@ const BasicInformation = () => {
       </div>
       <div>
         <FormLabel className="flex text-[18px] items-center gap-1 mb-2">
-          صور المنتج
+          صورة الغلاف
           <span className="text-red-500">*</span>
         </FormLabel>
-        <ImageUploader name="images" />
+        <FormInput photo name="cover" />
+      </div>
+      <div>
+        <FormLabel className="flex text-[18px] items-center gap-1 mb-2">صور المنتج الإضافية</FormLabel>
+        <FormInput photo name="images" multiple={true} />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormInput placeholder="اكتب اسم المنتج" label="اسم المنتج" name="productName" />

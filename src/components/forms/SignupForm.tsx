@@ -21,7 +21,8 @@ interface ValidationError {
 
 const signupSchema = z
   .object({
-    fullname: z.string().min(1, "الاسم الكامل مطلوب"),
+    first_name: z.string().min(1, "الاسم الكامل مطلوب"),
+    last_name: z.string().min(1, "الاسم الكامل مطلوب"),
     email: z.string().min(1, "البريد الإلكتروني مطلوب"),
     password: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
     confirmPassword: z.string().min(6, "تأكيد كلمة المرور مطلوب"),
@@ -44,7 +45,8 @@ const SignupForm = () => {
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      fullname: "",
+      first_name: "",
+      last_name: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -139,7 +141,10 @@ const SignupForm = () => {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="flex flex-col gap-2">
-                <FormInput type="text" placeholder="الاسم الكامل" label="الاسم الكامل" name="fullname" />
+                <div className="flex gap-2">
+                  <FormInput type="text" placeholder="الاسم الاول" label="الاسم الاول" name="first_name" />
+                  <FormInput type="text" placeholder="الاسم الاخير" label="الاسم الاخير" name="last_name" />
+                </div>
                 <FormInput type="text" placeholder="بريد إلكتروني" label="بريد إلكتروني" name="email" />
                 <FormInput type="tel" placeholder="رقم الهاتف" label="رقم الهاتف" name="phone" />
                 {/* <div className="space-y-1">

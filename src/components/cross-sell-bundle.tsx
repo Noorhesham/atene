@@ -45,7 +45,10 @@ export default function CrossSellBundle({ bundle, currentProduct }: CrossSellBun
   };
 
   // Calculate total original price (including current product)
-  const totalOriginalPrice = cross_sells.reduce((sum, product) => sum + product.price, currentProduct.price);
+  let totalOriginalPrice = 0;
+  if (cross_sells && cross_sells.length > 0) {
+    totalOriginalPrice = cross_sells.reduce((sum, product) => sum + product.price, currentProduct.price);
+  } else return null;
   console.log(cross_sells, "currentProduct");
   return (
     <div dir="rtl" className="dark:bg-gray-900 w-full flex flex-col md:flex-row justify-center overflow-x-auto py-4">

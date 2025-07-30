@@ -24,7 +24,7 @@ const DashboardHome = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 " dir="rtl">
+    <div className="min-h-screen w-full bg-gray-50 " dir="rtl">
       <MaxWidthDashboard className="w-full mx-auto">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
