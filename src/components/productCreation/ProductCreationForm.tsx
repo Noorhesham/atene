@@ -7,9 +7,9 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, ChevronLeft, MinusCircle, PlusCircle } from "lucide-react";
 import toast from "react-hot-toast";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { ApiProduct, useAdminEntity } from "@/hooks/useUsers";
+import { ApiProduct } from "@/types";
 
 // Import step components
 import BasicInformation from "./steps/BasicInformation";
@@ -19,6 +19,8 @@ import RelatedProducts from "./steps/AdvancedSettings";
 import ProductPreview from "./steps/ProductPreview";
 import ProgressSteps from "./steps/ProgressSteps";
 import UpSell from "./steps/UpSell";
+import { useAuth } from "@/context/AuthContext";
+import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
 
 type VariantType = {
   color?: string;
@@ -26,20 +28,6 @@ type VariantType = {
   price: string;
   images: string[];
   isActive: boolean;
-};
-
-type UpSellProduct = {
-  id: string;
-  name: string;
-  category: string;
-  price: number;
-  image: string;
-  stock: number;
-};
-
-type ProductSpecification = {
-  icon: string;
-  title: string;
 };
 
 const variantSchema = z.object({
@@ -54,8 +42,11 @@ const productFormSchema = z.object({
   // First form fields
   productName: z.string().min(3, "اسم المنتج يجب أن يكون 3 أحرف على الأقل"),
   price: z.union([z.string().min(1, "السعر يجب أن يكون أكبر من 0"), z.number().min(1, "السعر يجب أن يكون أكبر من 0")]),
-  categories: z.array(z.string()).min(1, "يجب اختيار فئة واحدة على الأقل"),
-  productStatus: z.enum(["new", "used", "refurbished"], {
+  category_id: z.string().min(1, "يجب اختيار فئة واحدة على الأقل"),
+  status: z.enum(["not_active", "active"], {
+    errorMap: () => ({ message: "يرجى اختيار حالة صحيحة للمنتج" }),
+  }),
+  condition: z.enum(["new", "used", "refurbished"], {
     errorMap: () => ({ message: "يرجى اختيار حالة صحيحة للمنتج" }),
   }),
   shortDescription: z.string().min(10, "الوصف الموجز يجب أن يكون 10 أحرف على الأقل"),
@@ -65,8 +56,8 @@ const productFormSchema = z.object({
 
   // Second form fields with clearer messages
   storeVisibility: z.string().min(1, "يرجى اختيار المتجر الذي سيتم عرض المنتج فيه"),
-  keywords: z.array(z.object({ value: z.string() })).optional(),
-  productAttributes: z
+  tags: z.array(z.object({ value: z.string() })).optional(),
+  specifications: z
     .array(
       z.object({
         icon: z.string().min(1, "يرجى اختيار أيقونة للصفة"),
@@ -139,21 +130,10 @@ const productFormSchema = z.object({
   // Fourth form fields
   relatedProducts: z.array(z.string()).optional(),
 
-  // Fifth form fields - Upsell
-  upsellProducts: z
-    .array(
-      z.object({
-        id: z.string(),
-        name: z.string(),
-        category: z.string(),
-        price: z.number(),
-        image: z.string(),
-        stock: z.number(),
-      })
-    )
-    .optional(),
-  upsellDiscountPrice: z.number().optional(),
-  upsellDiscountEndDate: z.string().optional(),
+  upsellProducts: z.array(z.union([z.string(), z.number()])).optional(),
+  upsellDiscountPrice: z.union([z.string(), z.number()]).optional(),
+  upsellDiscountEndDate: z.union([z.string(), z.number()]).optional(),
+  crossSells: z.array(z.union([z.string(), z.number()])).optional(),
 });
 
 type ProductFormData = z.infer<typeof productFormSchema>;
@@ -202,31 +182,39 @@ const ProductCreationForm = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const isEditMode = !!product;
+  const { user, isLoading } = useAuth();
 
+  // Get section_id from search params
+  const searchParams = new URLSearchParams(location.search);
+  const sectionIdFromParams = searchParams.get("section_id");
+  console.log(user);
   // Use the create/update methods from the hook
-  const { create: createProduct, update: updateProduct } = useAdminEntity("products");
+  const { create: createProduct, update: updateProduct } = useAdminEntityQuery("products");
 
+  const isAdmin = user?.user?.user_type === "admin";
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productFormSchema),
     defaultValues: {
       productName: "",
       price: "",
-      categories: [],
-      productStatus: "new",
+      category_id: "",
+      status: "not_active",
+      condition: "new",
       shortDescription: "",
       fullDescription: "",
       cover: "",
       images: [],
       // Second form default values
       storeVisibility: "",
-      keywords: [],
-      productAttributes: [],
+      tags: [],
+      specifications: [],
       hasDelivery: false,
       productType: "",
       mainCategory: "",
-      subCategory: "",
+      subCategory: sectionIdFromParams || "",
       city: "",
       neighborhood: "",
       // Third form default values
@@ -240,6 +228,7 @@ const ProductCreationForm = ({
       upsellProducts: [],
       upsellDiscountPrice: undefined,
       upsellDiscountEndDate: undefined,
+      crossSells: [],
     },
     mode: "onChange",
   });
@@ -252,83 +241,45 @@ const ProductCreationForm = ({
       form.reset({
         productName: product.name || "",
         price: product.price?.toString() || "",
-        categories: product.category_id ? [product.category_id.toString()] : [],
-        productStatus: (product.condition as "new" | "used" | "refurbished") || "new",
+        category_id: product.category.id ? product.category.id.toString() : "",
+        condition: (product.condition as "new" | "used" | "refurbished") || "new",
         shortDescription: product.short_description || "",
         fullDescription: product.description || "",
+        specifications: product.specifications || [],
+        tags: product.tags?.map((tag: string) => ({ value: tag })) || [],
         cover: product.cover || "",
         images: product.gallary || [],
         storeVisibility: product.store_id?.toString() || "",
-        keywords: product.tags?.map((tag: { value: string }) => ({ value: tag.value })) || [],
-        productAttributes: product.specifications || [],
         hasDelivery: false,
         productType: product.type || "",
         mainCategory: product.category_id?.toString() || "",
-        subCategory: product.section_id?.toString() || "",
+        subCategory: sectionIdFromParams || product.section_id?.toString() || "",
         city: "",
         neighborhood: "",
         hasVariations: product.type === "variation",
-        variantAttributes: [],
-        variants: [],
+        variantAttributes: product.variations?.length > 0 ? ["color", "size"] : [], // Default attributes if variations exist
+        variants:
+          product.variations?.map((variation: { price?: number; image?: string }) => ({
+            color: "",
+            size: "",
+            price: variation.price?.toString() || "",
+            images: variation.image ? [variation.image] : [],
+            isActive: true,
+          })) || [],
         relatedProducts: [],
-        upsellProducts: product.upSells || [],
+        upsellProducts:
+          product.upSells?.map((item: string | number | { id: number }) =>
+            typeof item === "object" ? item.id : item
+          ) || [],
         upsellDiscountPrice: product.cross_sells_price,
         upsellDiscountEndDate: undefined,
+        crossSells:
+          product.crossSells?.map((item: string | number | { id: number }) =>
+            typeof item === "object" ? item.id : item
+          ) || [],
       });
     }
-  }, [isEditMode, product, form]);
-
-  const steps: StepConfig[] = [
-    {
-      id: 1,
-      title: "المعلومات الأساسية",
-      component: <BasicInformation />,
-      fields: [
-        "productName",
-        "price",
-        "categories",
-        "productStatus",
-        "shortDescription",
-        "fullDescription",
-        "cover",
-        "images",
-      ],
-    },
-    {
-      id: 2,
-      title: "تفاصيل المنتج",
-      component: <ProductDetails />,
-      fields: [
-        "storeVisibility",
-        "keywords",
-        "productAttributes",
-        "hasDelivery",
-        "productType",
-        "mainCategory",
-        "subCategory",
-        "city",
-        "neighborhood",
-      ],
-    },
-    {
-      id: 3,
-      title: "الاختلافات و الكميات",
-      component: <VariantsForm />,
-      fields: ["hasVariations", "variantAttributes", "variants"],
-    },
-    {
-      id: 4,
-      title: "منتجات مرتبطة",
-      component: <RelatedProducts />,
-      fields: ["relatedProducts"],
-    },
-    {
-      id: 5,
-      title: "منتجات مكملة",
-      component: <UpSell />,
-      fields: ["upsellProducts", "upsellDiscountPrice", "upsellDiscountEndDate"],
-    },
-  ];
+  }, [isEditMode, product, form, sectionIdFromParams]);
 
   const nextStep = async () => {
     const stepFields = steps[currentStep - 1].fields;
@@ -384,35 +335,25 @@ const ProductCreationForm = ({
         name: data.productName,
         short_description: data.shortDescription,
         description: data.fullDescription,
-        cover: data.cover || "", // Cover image
-        gallary: data.images, // All images as gallery (now just filenames)
+        cover: data.cover?.startsWith("http") ? data.cover : `${data.cover || ""}`, // Cover image
+        gallary: data.images || [], // All images as gallery
         type: data.hasVariations ? ("variation" as const) : ("simple" as const),
-        condition: data.productStatus,
-        category_id: parseInt(data.categories[0]) || 1,
-        section_id: parseInt(data.subCategory) || 1,
+        condition: data.condition,
+        category_id: parseInt(data.category_id) || 1,
+        section_id: parseInt(sectionIdFromParams || data.subCategory) || 1,
         review_rate: isEditMode ? productData?.review_rate || 0 : 0,
         review_count: isEditMode ? productData?.review_count || 0 : 0,
         price: parseFloat(data.price.toString()),
         cross_sells_price: data.upsellDiscountPrice || 0,
-        crossSells: [], // TODO: Map from crossSells data
-        upSells:
-          data.upsellProducts?.map((up: UpSellProduct) => ({
-            id: up.id,
-            name: up.name,
-            price: up.price,
-            image: up.image,
-          })) || [],
-        tags: data.keywords?.map((k: { value: string }) => k.value) || [],
-        specifications:
-          data.productAttributes?.map((attr: ProductSpecification) => ({
-            icon: attr.icon,
-            title: attr.title,
-          })) || [],
+        crossSells: data.crossSells || [],
+        upSells: data.upsellProducts || [],
+        tags: data.tags?.map((k: { value: string }) => k.value) || [],
+        specifications: data.specifications || [],
         variations: data.hasVariations
           ? data.variants?.map((variant: VariantType, index: number) => ({
               id: index + 1,
               price: parseFloat(variant.price),
-              image: variant.images[0] || "",
+              image: variant.images[0]?.startsWith("http") ? variant.images[0] : variant.images[0] || "",
               attributeOptions: [
                 // TODO: Map attribute options based on variant attributes
               ],
@@ -424,26 +365,92 @@ const ProductCreationForm = ({
 
       // Submit to API
       if (isEditMode) {
-        await updateProduct(parseInt(id as string), apiPayload);
-        toast.success("تم تحديث المنتج بنجاح!");
+        await updateProduct(parseInt(id as string), apiPayload as unknown as Partial<ApiProduct>);
       } else {
-        await createProduct(apiPayload);
-        toast.success("تم إنشاء المنتج بنجاح!");
+        await createProduct(apiPayload as unknown as Partial<ApiProduct>);
       }
 
       // Invalidate cache and navigate
       await queryClient.invalidateQueries({
-        queryKey: ["admin", "products"],
+        queryKey: [user?.user?.user_type === "merchant" ? "merchant" : "admin", "products"],
       });
-      navigate("/admin/products");
+      if (user?.user?.user_type === "merchant") {
+        navigate("/dashboard/products");
+      } else {
+        navigate("/admin/products");
+      }
     } catch (error) {
       console.error("Form submission error:", error);
-      toast.error(isEditMode ? "حدث خطأ أثناء تحديث المنتج" : "حدث خطأ أثناء إنشاء المنتج");
     } finally {
       setIsSubmitting(false);
     }
   });
   console.log(form.formState.errors);
+  if (isLoading) return <div>Loading...</div>;
+  const steps: StepConfig[] = [
+    {
+      id: 1,
+      title: "المعلومات الأساسية",
+      component: <BasicInformation />,
+      fields: isAdmin
+        ? [
+            "productName",
+            "price",
+            "category_id",
+            "condition",
+            "shortDescription",
+            "fullDescription",
+            "cover",
+            "images",
+            "status",
+          ]
+        : [
+            "productName",
+            "price",
+            "category_id",
+            "status",
+            "condition",
+            "shortDescription",
+            "fullDescription",
+            "cover",
+            "images",
+          ],
+    },
+    {
+      id: 2,
+      title: "تفاصيل المنتج",
+      component: <ProductDetails />,
+      fields: [
+        "storeVisibility",
+        "tags",
+        "specifications",
+        "hasDelivery",
+        "productType",
+        "mainCategory",
+        "subCategory",
+        "city",
+        "neighborhood",
+      ],
+    },
+    {
+      id: 3,
+      title: "الاختلافات و الكميات",
+      component: <VariantsForm />,
+      fields: ["hasVariations", "variantAttributes", "variants"],
+    },
+    {
+      id: 4,
+      title: "منتجات مرتبطة",
+      component: <RelatedProducts />,
+      fields: ["crossSells"],
+    },
+    {
+      id: 5,
+      title: "منتجات مكملة",
+      component: <UpSell />,
+      fields: ["upsellProducts", "upsellDiscountPrice", "upsellDiscountEndDate"],
+    },
+  ];
   return (
     <section className="w-full">
       {" "}
@@ -468,7 +475,14 @@ const ProductCreationForm = ({
                 {isEditMode ? "تعديل المنتج" : "إنشاء منتج جديد"}
               </h1>
               {!disableCreate && (
-                <Button type="submit" className="bg-blue-600 text-white hover:bg-blue-700 px-6" disabled={isSubmitting}>
+                <Button
+                  onClick={() => {
+                    handleSubmit();
+                  }}
+                  type="submit"
+                  className="bg-[#2E5DB0] hover:bg-[#264B8B] text-white h-11 px-4 py-2.5 text-sm font-medium"
+                  disabled={isSubmitting}
+                >
                   {isSubmitting ? "جاري الحفظ..." : isEditMode ? "تحديث المنتج" : "حفظ المنتج"}
                 </Button>
               )}
@@ -537,6 +551,9 @@ const ProductCreationForm = ({
                 حفظ كمسودة
               </Button>
               <Button
+                onClick={() => {
+                  handleSubmit();
+                }}
                 type="submit"
                 className="bg-[#2E5DB0] hover:bg-[#264B8B] text-white h-11 px-4 py-2.5 text-sm font-medium"
                 disabled={isSubmitting}

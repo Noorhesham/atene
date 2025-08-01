@@ -4,12 +4,13 @@ import { useFormContext } from "react-hook-form";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import FormInput from "@/components/inputs/FormInput"; // Your custom component
-import ImageUploader from "@/components/inputs/ImageUploader"; // Assuming a similar component exists
+
 import { FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { FormControl } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { FormMessage } from "@/components/ui/form";
 import MapAddressInput from "./MapAddressInput";
+import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
 const typeOptions = [{ value: "rings", label: "خواتم" }];
 const mainCategoryOptions = [{ value: "women-fashion", label: "أزياء - موضة نسائية" }];
 const subCategoryOptions = [{ value: "accessories", label: "اكسسوارات - مجوهرات" }];
@@ -20,7 +21,8 @@ const StoreBasicInfo = () => {
     control,
     formState: { errors },
   } = useFormContext();
-
+  const { data: currencies } = useAdminEntityQuery("currencies");
+  console.log(currencies);
   return (
     <Card className="p-6 space-y-3">
       <h2 className="text-xl font-semibold text-gray-900">البيانات الأساسية</h2>
@@ -37,7 +39,7 @@ const StoreBasicInfo = () => {
       <div className="space-y-3">
         <h3 className="font-semibold text-gray-800">صورة الغلاف</h3>
         <p className="text-sm text-gray-500">المقاسات المفضلة 680 X 180</p>
-        <FormInput photo name="cover" />
+        <FormInput photo name="cover" multiple mainCoverField="mainCover" maxFiles={10} />
       </div>
 
       {/* Store Description */}
@@ -85,7 +87,12 @@ const StoreBasicInfo = () => {
       <MapAddressInput name="address" label="العنوان" />
       {/* Currency, Owner and Phone */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <FormInput select name="currency_id" label="عملة المتجر" options={[{ value: "1", label: "ريال سعودي" }]} />
+        <FormInput
+          select
+          name="currency_id"
+          label="عملة المتجر"
+          options={currencies?.map((currency) => ({ value: currency.id.toString(), label: currency.name }))}
+        />
         <FormInput select name="owner_id" label="المالك" options={[{ value: "1", label: "كيراس عادل" }]} />
         <FormInput name="phone" label="رقم الهاتف" placeholder="01234567890" />
       </div>

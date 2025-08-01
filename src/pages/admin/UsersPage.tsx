@@ -13,6 +13,7 @@ import { Link } from "react-router-dom";
 import RolesAndPermissionsPage from "./roles/RolesPage";
 import { PaginatedList } from "@/components/admin/PaginatedList";
 import UserDetails from "./users/UserDetails";
+import Actions from "@/components/Actions";
 
 interface FilterCategory {
   id: string;
@@ -121,6 +122,10 @@ const UsersPage = () => {
     setSelectedUser(null); // Reset selected user when filter changes
   };
 
+  const handleUserDeleted = () => {
+    setSelectedUser(null);
+  };
+
   // Build query params for filtering
   const queryParams = React.useMemo(() => {
     const params: Record<string, string> = {};
@@ -195,10 +200,6 @@ const UsersPage = () => {
                   </div>
                 </div>
               </div>
-              <Button variant="outline" className="flex items-center gap-2 bg-white">
-                تصفية
-                <FilterIcon />
-              </Button>
             </div>
           </div>
           <div className="grid grid-cols-12 gap-6 items-start min-h-[calc(100vh-200px)]">
@@ -230,16 +231,33 @@ const UsersPage = () => {
             </div>
 
             {/* Left Panel: User Details Form */}
-            <div className="col-span-12 lg:col-span-7 bg-white rounded-lg">
-              <FormProvider {...form}>
-                {selectedUser ? (
-                  <UserDetails user={transformUserForDetails(selectedUser)} />
-                ) : (
-                  <div className="h-full flex items-center justify-center text-gray-500 p-8">
-                    {searchQuery.trim() !== "" ? "لا يوجد نتائج للبحث" : "الرجاء تحديد مستخدم لعرض التفاصيل"}
-                  </div>
-                )}
-              </FormProvider>
+            <div className="col-span-12 lg:col-span-7 space-y-4">
+              {selectedUser && (
+                <Actions
+                  title="إجراءات المستخدم"
+                  isActive={selectedUser.is_active === 1}
+                  entity={{
+                    id: selectedUser.id,
+                    name: `${selectedUser.first_name} ${selectedUser.last_name}`,
+                  }}
+                  entityType="users"
+                  deleteMessage={`هل أنت متأكد من حذف المستخدم "${selectedUser.first_name} ${selectedUser.last_name}"؟`}
+                  onDeleteSuccess={handleUserDeleted}
+                  className="bg-white rounded-lg"
+                />
+              )}
+
+              <div className="bg-white rounded-lg">
+                <FormProvider {...form}>
+                  {selectedUser ? (
+                    <UserDetails user={transformUserForDetails(selectedUser)} />
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-gray-500 p-8">
+                      {searchQuery.trim() !== "" ? "لا يوجد نتائج للبحث" : "الرجاء تحديد مستخدم لعرض التفاصيل"}
+                    </div>
+                  )}
+                </FormProvider>
+              </div>
             </div>
           </div>
         </>

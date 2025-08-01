@@ -3,18 +3,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { useFormContext } from "react-hook-form";
 import { Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import ImageUploader from "@/components/inputs/ImageUploader";
-import { MultiSelect } from "@/components/inputs/MultiSelect";
 import FormInput from "@/components/inputs/FormInput";
-
-const categories = [
-  { value: "electronics", label: "إلكترونيات" },
-  { value: "clothing", label: "ملابس" },
-];
+import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
+import { useSearchParams } from "react-router-dom";
 
 const statusOptions = [
-  { value: "draft", label: "مسودة" },
-  { value: "published", label: "منشور" },
+  { value: "not_active", label: "مسودة" },
+  { value: "active", label: "منشور" },
+];
+
+const conditionOptions = [
   { value: "new", label: "جديد" },
   { value: "used", label: "مستعمل" },
   { value: "refurbished", label: "مجدد" },
@@ -24,9 +22,18 @@ const BasicInformation = () => {
   const {
     control,
     formState: { errors },
-    setValue,
-    watch,
   } = useFormContext();
+  const searchParams = useSearchParams();
+  const sectionId = searchParams[0].get("section_id");
+  const { data: sections = [], isLoading } = useAdminEntityQuery("sections", {});
+  const { data: categories = [], isLoading: isLoadingCategories } = useAdminEntityQuery("categories-select");
+  if (isLoading || isLoadingCategories) return <div>Loading...</div>;
+  const categoryOptions = categories.data.map((cat) => ({
+    value: cat.id.toString(),
+    label: cat.name,
+  }));
+  const section = sections.find((section) => section.id.toString() === sectionId);
+  console.log(section, sections);
 
   return (
     <div className="space-y-6">
@@ -36,11 +43,13 @@ const BasicInformation = () => {
             <Package />
           </div>
           <div>
-            <h4 className="font-bold text-gray-800">الملابس والأحذية</h4>
-            <p className="text-xs text-gray-500">منتجات خاصة بالملابس و متعلقاتها</p>
+            <h4 className="font-bold text-gray-800">{section?.name}</h4>
+            <p className="text-xs text-gray-500">{section?.description}</p>
           </div>
         </div>
-        <Button variant="link">تغيير</Button>
+        <Button onClick={() => window.history.back()} variant="link" className="text-main hover:text-main/80">
+          تغيير
+        </Button>
       </div>
       <div>
         <FormLabel className="flex text-[18px] items-center gap-1 mb-2">
@@ -58,22 +67,29 @@ const BasicInformation = () => {
         <FormInput placeholder="اكتب السعر" label="السعر" name="price" type="number" />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <MultiSelect
-            name="categories"
-            label="الفئات"
-            defaultValue={watch("categories")}
-            options={categories}
-            onValueChange={(value) => setValue("categories", value)}
-          />
-        </div>
+        <FormInput
+          select
+          placeholder="اختر الفئة"
+          label="الفئة"
+          name="category_id"
+          options={categoryOptions}
+          error={errors.category_id?.message as string}
+        />
         <FormInput
           select
           placeholder="اختر حالة المنتج"
           label="حالة المنتج"
-          name="productStatus"
+          name="status"
           options={statusOptions}
-          error={errors.productStatus?.message as string}
+          error={errors.status?.message as string}
+        />
+        <FormInput
+          select
+          placeholder="اختر حالة المنتج"
+          label="حالة المنتج"
+          name="condition"
+          options={conditionOptions}
+          error={errors.condition?.message as string}
         />
       </div>
       <div className="">

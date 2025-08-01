@@ -7,10 +7,11 @@ import { useFormContext } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
 import FormInput from "@/components/inputs/FormInput";
 import SpecificationsInput from "@/components/inputs/SpecificationsInput";
+import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
 
 type FormValues = {
-  keywords: { value: string }[];
-  productAttributes: { icon: string; title: string }[];
+  tags: { value: string }[];
+  specifications: { icon: string; title: string }[];
   hasDelivery: boolean;
   storeVisibility: string;
   productType: string;
@@ -21,27 +22,25 @@ type FormValues = {
 };
 
 // --- MOCK DATA ---
-const storeOptions = [{ value: "main", label: "المتجر الرئيسي" }];
 const typeOptions = [{ value: "rings", label: "خواتم" }];
 const mainCategoryOptions = [{ value: "women-fashion", label: "أزياء - موضة نسائية" }];
 const subCategoryOptions = [{ value: "accessories", label: "اكسسوارات - مجوهرات" }];
 const cityOptions = [{ value: "cairo", label: "القاهرة" }];
 const neighborhoodOptions = [{ value: "maadi", label: "المعادي" }];
 
-
-
 // --- STEP 2: PRODUCT DETAILS COMPONENT ---
 const ProductDetails = () => {
   const { control } = useFormContext<FormValues>();
   const [keywordInput, setKeywordInput] = useState("");
-
+  const { data: stores = [], isLoading } = useAdminEntityQuery("stores", {});
+  const storeOptions = stores.map((store) => ({ value: store.id.toString(), label: store.name }));
   const {
     fields: keywordFields,
     append: appendKeyword,
     remove: removeKeyword,
   } = useFieldArray({
     control,
-    name: "keywords",
+    name: "tags",
   });
 
   const handleAddKeyword = () => {
@@ -50,7 +49,8 @@ const ProductDetails = () => {
       setKeywordInput("");
     }
   };
-
+  if (isLoading) return <div>Loading...</div>;
+  console.log(keywordFields);
   return (
     <div className=" flex flex-col gap-4 p-6">
       <FormInput
@@ -106,11 +106,7 @@ const ProductDetails = () => {
       </div>
 
       {/* Product Attributes section */}
-      <SpecificationsInput
-        name="productAttributes"
-        label="صفات المنتج"
-        helpText="ماهي صفات المنتج"
-      />
+        <SpecificationsInput name="specifications" label="صفات المنتج" helpText="ماهي صفات المنتج" />
 
       {/* Product Features Section */}
       <div className="space-y-4">

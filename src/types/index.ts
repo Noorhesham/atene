@@ -192,5 +192,434 @@ export interface QueryParams {
   search?: string;
   sort?: string;
   order?: "asc" | "desc";
-  [key: string]: any;
+  [key: string]: string | number | boolean;
+}
+export interface ApiCategory extends BaseEntity {
+  id: number;
+  name: string;
+  image: string | null;
+  status: "active" | "inactive";
+  parent_id: number | null;
+}
+export interface ApiOrder extends BaseEntity {
+  id: number;
+  reference_id: string;
+  status: "pending" | "completed" | "cancelled";
+  client_id: number;
+  client: {
+    id: number;
+    avatar: string | null;
+    avatar_url: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+    roles: string[];
+    is_active: number;
+    date_of_birth: string | null;
+    gender: "male" | "female";
+    referral_code: string | null;
+    verified_code: string | null;
+    last_login_at: string;
+  };
+  name: string;
+  email: string;
+  phone: string;
+  notes: string;
+  address: string;
+  sub_total: number;
+  discount_total: number;
+  shipping_cost: number;
+  total: number;
+  items: {
+    id: number;
+    product_id: number;
+    product: {
+      id: number;
+      name: string;
+      sku: string;
+      price: number;
+    };
+    quantity: number;
+    price: number;
+    price_after_discount: number;
+  }[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ApiStory extends BaseEntity {
+  id: number;
+  image: string | null;
+  text: string;
+  color: string;
+}
+
+export interface ApiHighlight {
+  id: number;
+  name: string;
+  stories: number[];
+  thumbnail?: string;
+}
+
+export interface Follower {
+  id: number;
+  followed_type: "store";
+  followed: {
+    id: number;
+    slug: string;
+    name: string;
+    status: "active" | "inactive";
+    phone: string;
+    whats_app: string | null;
+    email: string;
+    address: string;
+    lat: number | null;
+    lng: number | null;
+    logo: string | null;
+    cover: string | null;
+    is_favorite: boolean;
+    review_rate: number;
+    review_count: number;
+    open_status: string;
+    am_i_following: boolean;
+    created_at: string;
+    updated_at: string;
+    orders_count: number;
+  };
+}
+
+export interface ApiFollowersResponse {
+  status: boolean;
+  message: string;
+  followers: Follower[];
+  total: number;
+}
+
+export interface ApiResponseWithTotal extends ApiResponse<unknown> {
+  total?: number;
+  followers?: Follower[];
+}
+export interface ApiResponse<T> {
+  status: boolean;
+  message: string;
+  recordsTotal?: number;
+  recordsFiltered?: number;
+  data: T[];
+}
+
+// Base response type for single entity operations
+export interface ApiSingleResponse<T> {
+  status: boolean;
+  message: string;
+  record: T;
+  data?: T;
+}
+
+// Base entity interface that all entities should extend
+export interface BaseEntity {
+  id: number;
+  created_at?: string;
+  updated_at?: string;
+  name?: string;
+  title?: string;
+  status?: string;
+  slug?: string;
+  type?: string;
+  [key: string]: string | number | undefined;
+}
+
+// Specific entity interfaces
+export interface ApiUser extends BaseEntity {
+  avatar_url: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string | null;
+  roles: number[];
+  is_active: number;
+  gender: "male" | "female";
+  last_login_at: string;
+}
+
+export interface ApiPermission extends BaseEntity {
+  id: number;
+  title: string;
+  name: string;
+}
+
+export interface ApiRole extends BaseEntity {
+  name: string;
+  permissions: ApiPermission[];
+  permission_ids?: number[]; // For updates
+}
+
+export interface ApiCategory extends BaseEntity {
+  name: string;
+  slug: string;
+  image: string | null;
+  status: "active" | "inactive";
+  parent_id: number | null;
+}
+
+export interface ApiReport extends BaseEntity {
+  title: string;
+  description: string;
+  status: string;
+  user_id: number;
+}
+
+export interface ApiWorkingTime {
+  id?: number;
+  day: string;
+  from: string;
+  to: string;
+  open_always: boolean;
+  closed_always: boolean;
+}
+
+export interface ApiManager {
+  id?: number;
+  title: string;
+  email: string;
+  status: string;
+}
+
+export interface ApiSpecification {
+  id?: number;
+  title: string;
+  icon: string;
+}
+
+export interface ApiStore extends BaseEntity {
+  slug: string;
+  name: string;
+  logo: string | null;
+  logo_url: string | null;
+  cover: string[];
+  covers: string[];
+  mainCover?: string;
+  cover_url: string | null;
+  status: "active" | "inactive";
+  description: string | null;
+  address: string | null;
+  lng: number | null;
+  lat: number | null;
+  email: string;
+  owner_id: number;
+  currency_id: number;
+  phone: string;
+  whats_app: string | null;
+  tiktok: string | null;
+  facebook: string | null;
+  instagram: string | null;
+  twitter: string | null;
+  youtube: string | null;
+  linkedin: string | null;
+  pinterest: string | null;
+  open_status: string | null;
+  workingtimes: ApiWorkingTime[];
+  managers: ApiManager[];
+  specifications: ApiSpecification[];
+}
+
+export interface ApiCouponInput {
+  code: string;
+  type: "value" | "percentage";
+  value: number;
+  start_date: string;
+  end_date: string;
+  store_id?: number;
+  categories?: number[];
+  products?: number[];
+}
+
+export interface ApiCoupon extends BaseEntity {
+  code: string;
+  type: "value" | "percentage";
+  value: number;
+  start_date: string;
+  end_date: string;
+  store_id: number | null;
+  store: ApiStore | null;
+  categories: {
+    id: number;
+    slug: string;
+    name: string;
+    image: string;
+    parent_id: number | null;
+    products_count: number | null;
+  }[];
+  products: {
+    id: number;
+    slug: string;
+    name: string;
+    cover: string;
+    is_favorite: boolean;
+    in_compare: boolean;
+    price: number;
+    price_after_discount: number;
+    discount_present: number;
+  }[];
+}
+
+export interface ApiProduct extends BaseEntity {
+  sku: string;
+  name: string;
+  slug: string;
+  short_description: string | null;
+  description: string | null;
+  cover: string | null;
+  cover_url: string | null;
+  gallary: string[];
+  gallary_url: string[];
+  type: "simple" | "variation";
+  condition: "new" | "used" | "refurbished";
+  category_id: number;
+  category: ApiCategory;
+  section_id: number;
+  section: { id: number; name: string };
+  status: "active" | "inactive";
+  review_rate: number;
+  review_count: number;
+  price: number;
+  store_id: number | null;
+  store: ApiStore | null;
+  cross_sells_price: number;
+  crossSells: any[]; // Define more specifically if needed
+  upSells: any[]; // Define more specifically if needed
+  tags: any[]; // Define more specifically if needed
+  specifications: any[]; // Define more specifically if needed
+  variations: any[]; // Define more specifically if needed
+}
+
+// Type mapping for entity names to their interfaces
+export interface EntityTypeMap {
+  users: ApiUser;
+  roles: ApiRole;
+  permissions: ApiPermission;
+  categories: ApiCategory;
+  reports: ApiReport;
+  stores: ApiStore;
+  products: ApiProduct;
+}
+
+// Hook return type with pagination
+export interface UseAdminEntityReturn<T> {
+  data: T[];
+  isLoading: boolean;
+  error: string | null;
+  totalRecords: number;
+  filteredRecords: number;
+  currentPage: number;
+  totalPages: number;
+  refetch: () => Promise<void>;
+  setCurrentPage: (page: number) => void;
+  setPerPage: (perPage: number) => void;
+  setSearchQuery: (query: string) => void;
+  create: (entityData: Partial<T>) => Promise<T>;
+  update: (id: number, entityData: Partial<T>) => Promise<T>;
+  remove: (id: number) => Promise<void>;
+}
+
+// Hook return type for single entity
+export interface UseAdminSingleEntityReturn<T> {
+  data: T | null;
+  isLoading: boolean;
+  error: string | null;
+  refetch: () => Promise<void>;
+  update: (entityData: Partial<T>) => Promise<T>;
+  remove: () => Promise<void>;
+}
+
+export interface ApiCurrency extends BaseEntity {
+  id: number;
+  name: string;
+  code: string;
+  symbol: string;
+  exchange_rate: number;
+  status: "active" | "inactive";
+}
+
+export interface EntityTypeMap {
+  followers: ApiFollowersResponse;
+  following: ApiFollowersResponse;
+  users: ApiUser;
+  roles: ApiRole;
+  permissions: ApiPermission;
+  categories: ApiCategory;
+  reports: ApiReport;
+  stores: ApiStore;
+  products: ApiProduct;
+  attributes: ApiAttribute;
+  "media-center": ApiMediaFile;
+  coupons: ApiCoupon;
+  orders: ApiOrder;
+  stories: ApiStory;
+  highlights: ApiHighlight;
+  currencies: ApiCurrency;
+}
+
+export type EntityInputMap = {
+  [K in keyof EntityTypeMap]: K extends "followers" | "following"
+    ? never
+    : K extends "stories" | "highlights"
+    ? Partial<EntityTypeMap[K]>
+    : Partial<EntityTypeMap[K]>;
+};
+
+export interface ApiAttribute {
+  id: number;
+  title: string;
+  status: "active" | "inactive";
+  created_at: string;
+  updated_at: string;
+  options?: ApiAttributeOption[];
+}
+
+export interface ApiAttributeOption {
+  id: number;
+  title: string;
+  attribute_id: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ApiMediaFile {
+  id: number;
+  file_type: string;
+  file_name: string;
+  size: number;
+  title: string;
+  alt: string;
+  dimensions: string;
+  user_id: number;
+  store_id: number | null;
+  created_at: string;
+  updated_at: string;
+  url: string;
+  src: string;
+}
+
+export interface UseAdminEntityQueryOptions {
+  initialPage?: number;
+  initialPerPage?: number;
+  queryParams?: Record<string, string>;
+  enabled?: boolean;
+  headers?: Record<string, string>;
+}
+
+export interface EndpointConfig {
+  admin: string;
+  merchant: string;
+  requiresAuth: boolean;
+}
+
+export interface ApiUser extends BaseEntity {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  avatar: string;
+  role: string;
 }

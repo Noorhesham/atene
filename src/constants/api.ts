@@ -1,6 +1,6 @@
 // Use proxy in development, direct URL in production
 export const API_BASE_URL = "https://aatene.com/api";
-
+export const STORAGE_URL = "https://aatene.com/storage";
 export const API_ENDPOINTS = {
   LOGIN: "https://aatene.com/api/auth/login",
   REGISTER: "https://aatene.com/api/auth/register",
@@ -11,6 +11,7 @@ export const API_ENDPOINTS = {
   USERS: "https://aatene.com/api/users",
   ADMIN: "https://aatene.com/api/admin",
   MEDIA_CENTER: "https://aatene.com/api/media-center",
+  BASE: "https://aatene.com/api",
 } as const;
 
 export interface ApiError {
@@ -62,10 +63,11 @@ export async function FetchFunction<T>(
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-
+    console.log(data);
     return data;
   } catch (error) {
     // Handle API errors
+    console.log(error);
     if ((error as ApiError).status === false) {
       throw error;
     }

@@ -41,7 +41,7 @@ const ModalCustom = ({
   const [open, setOpen] = React.useState(isOpen || false);
 
   return (
-    <Dialog open={isOpen || open} onOpenChange={onOpenChange || setOpen}>
+    <Dialog  open={isOpen || open} onOpenChange={onOpenChange || setOpen}>
       <DialogTrigger asChild>{btn}</DialogTrigger>
       <DialogContent
         aria-describedby={desc ? "modal-description" : undefined}

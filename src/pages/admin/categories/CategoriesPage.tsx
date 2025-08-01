@@ -3,10 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { useAdminEntity, ApiCategory } from "@/hooks/useUsers";
-import { Plus, Search, Edit, Trash2, ChevronRight, ChevronDown } from "lucide-react";
+import { Plus, Search, ChevronRight, ChevronDown, Loader2, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useAdminEntityQuery, ApiCategory } from "@/hooks/useUsersQuery";
+import { Pagination } from "@/components/ui/pagination";
+import ModalCustom from "@/components/ModalCustom";
+
+import CategoryCreation from "./add/CategoryCreation";
 
 interface CategoryWithSubs extends ApiCategory {
   subCategories?: CategoryWithSubs[];
@@ -14,9 +18,12 @@ interface CategoryWithSubs extends ApiCategory {
 
 const CategoryTree: React.FC<{
   categories: CategoryWithSubs[];
-  onDelete: (id: number) => void;
+  onDelete: (id: number) => Promise<void>;
   level?: number;
-}> = ({ categories, onDelete, level = 0 }) => {
+  onEdit: (category: CategoryWithSubs) => void;
+  showDeleteConfirm: number | null;
+  setShowDeleteConfirm: (id: number | null) => void;
+}> = ({ categories, onDelete, level = 0, onEdit, showDeleteConfirm, setShowDeleteConfirm }) => {
   const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set());
 
   const toggleExpanded = (categoryId: number) => {
@@ -62,28 +69,62 @@ const CategoryTree: React.FC<{
                   {category.status === "active" ? "نشط" : "غير نشط"}
                 </Badge>
               </div>
-              <div className="flex items-center gap-2">
-                <Link to={`/admin/categories/edit/${category.id}`}>
-                  <Button variant="outline" size="sm">
-                    <Edit className="w-4 h-4 ml-1" />
+              <div className="flex items-center w-fit mr-auto gap-2">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onEdit(category)}
+                    className="text-blue-600 hover:text-blue-700"
+                  >
                     تعديل
                   </Button>
-                </Link>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onDelete(category.id)}
-                  className="text-red-600 hover:text-red-700"
-                >
-                  <Trash2 className="w-4 h-4 ml-1" />
-                  حذف
-                </Button>
+                  <ModalCustom
+                    isOpen={showDeleteConfirm === category.id}
+                    onOpenChange={(isOpen) => !isOpen && setShowDeleteConfirm(null)}
+                    btn={
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowDeleteConfirm(category.id)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4 ml-2" />
+                        حذف
+                      </Button>
+                    }
+                    title="تأكيد الحذف"
+                    content={
+                      <p className="text-center">
+                        هل أنت متأكد من حذف هذا التصنيف؟ سيتم حذف جميع التصنيفات الفرعية أيضاً. لا يمكن التراجع عن هذا
+                        الإجراء.
+                      </p>
+                    }
+                    functionalbtn={
+                      <div className="flex gap-2 w-full justify-end">
+                        <Button variant="ghost" onClick={() => setShowDeleteConfirm(null)}>
+                          إلغاء
+                        </Button>
+                        <Button variant="destructive" onClick={() => onDelete(category.id)}>
+                          حذف
+                        </Button>
+                      </div>
+                    }
+                  />
+                </div>
               </div>
             </div>
           </Card>
 
           {category.subCategories && category.subCategories.length > 0 && expandedCategories.has(category.id) && (
-            <CategoryTree categories={category.subCategories} onDelete={onDelete} level={level + 1} />
+            <CategoryTree
+              categories={category.subCategories}
+              onDelete={onDelete}
+              onEdit={onEdit}
+              level={level + 1}
+              showDeleteConfirm={showDeleteConfirm}
+              setShowDeleteConfirm={setShowDeleteConfirm}
+            />
           )}
         </div>
       ))}
@@ -93,13 +134,29 @@ const CategoryTree: React.FC<{
 
 const CategoriesPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [selectedCategory, setSelectedCategory] = useState<ApiCategory | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
+
   const {
     data: categories,
     isLoading,
     error,
     remove,
     setSearchQuery: setApiSearchQuery,
-  } = useAdminEntity("categories");
+    setCurrentPage: setApiCurrentPage,
+    setPerPage: setApiPerPage,
+    totalPages,
+    totalRecords,
+    refetch,
+  } = useAdminEntityQuery("categories", {
+    initialPage: currentPage,
+    initialPerPage: perPage,
+    queryParams: {
+      search: searchQuery,
+    },
+  });
 
   // Transform flat categories into hierarchical structure
   const buildCategoryTree = (cats: ApiCategory[]): CategoryWithSubs[] => {
@@ -129,19 +186,20 @@ const CategoriesPage: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (window.confirm("هل أنت متأكد من حذف هذا التصنيف؟")) {
-      try {
-        await remove(id);
-        toast.success("تم حذف التصنيف بنجاح");
-      } catch (error) {
-        toast.error("حدث خطأ أثناء حذف التصنيف");
-        console.error("Delete error:", error);
-      }
+    try {
+      await remove(id);
+      toast.success("تم حذف التصنيف بنجاح");
+      setShowDeleteConfirm(null);
+    } catch (error) {
+      toast.error("حدث خطأ أثناء حذف التصنيف");
+      console.error("Delete error:", error);
     }
   };
 
   const handleSearch = () => {
     setApiSearchQuery(searchQuery);
+    setCurrentPage(1);
+    setApiCurrentPage(1);
   };
 
   const categoryTree = buildCategoryTree(categories);
@@ -150,7 +208,8 @@ const CategoriesPage: React.FC = () => {
     return (
       <div className="p-6">
         <div className="flex justify-center items-center h-64">
-          <div className="text-gray-500">جاري التحميل...</div>
+          <Loader2 className="w-8 h-8 animate-spin text-main" />
+          <div className="text-gray-500 mr-2">جاري التحميل...</div>
         </div>
       </div>
     );
@@ -167,58 +226,122 @@ const CategoriesPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 w-full space-y-6" dir="rtl">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">إدارة التصنيفات</h1>
-          <p className="text-gray-600">إدارة تصنيفات المنتجات والفئات الفرعية</p>
-        </div>
-        <Link to="/admin/categories/add">
-          <Button className="bg-main hover:bg-main/90">
-            <Plus className="w-4 h-4 ml-2" />
-            إضافة تصنيف جديد
-          </Button>
-        </Link>
-      </div>
-
-      {/* Search and Filters */}
-      <Card className="p-4">
-        <div className="flex gap-4 items-center">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                placeholder="البحث في التصنيفات..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pr-10"
-                onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-              />
+    <div className="flex  w-full h-full" dir="rtl">
+      <div className="flex-1 h-fit sticky top-0 p-6 space-y-6">
+        {/* Main Content */}
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">إدارة التصنيفات</h1>
+              <p className="text-gray-600">إدارة تصنيفات المنتجات والفئات الفرعية</p>
             </div>
-          </div>
-          <Button onClick={handleSearch} variant="outline">
-            بحث
-          </Button>
-        </div>
-      </Card>
-
-      {/* Categories Tree */}
-      <div className="space-y-4">
-        {categoryTree.length > 0 ? (
-          <CategoryTree categories={categoryTree} onDelete={handleDelete} />
-        ) : (
-          <Card className="p-8 text-center">
-            <p className="text-gray-500 mb-4">لا توجد تصنيفات بعد</p>
             <Link to="/admin/categories/add">
               <Button className="bg-main hover:bg-main/90">
                 <Plus className="w-4 h-4 ml-2" />
-                إضافة أول تصنيف
+                إضافة تصنيف جديد
               </Button>
             </Link>
+          </div>
+
+          {/* Search and Filters */}
+          <Card className="p-4">
+            <div className="flex gap-4 items-center">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    placeholder="البحث في التصنيفات..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pr-10"
+                    onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+                  />
+                </div>
+              </div>
+              <Button onClick={handleSearch} variant="outline">
+                بحث
+              </Button>
+            </div>
           </Card>
-        )}
+
+          {/* Categories Tree */}
+          <div className="space-y-4">
+            {categoryTree.length > 0 ? (
+              <>
+                <CategoryTree
+                  categories={categoryTree}
+                  onDelete={handleDelete}
+                  onEdit={setSelectedCategory}
+                  showDeleteConfirm={showDeleteConfirm}
+                  setShowDeleteConfirm={setShowDeleteConfirm}
+                />
+
+                {/* Pagination and Per Page */}
+                {totalPages > 1 && (
+                  <div className="flex flex-col items-center gap-4 mt-6">
+                    <div className="flex items-center justify-between w-full max-w-2xl">
+                      <div className="text-sm text-gray-500">إجمالي التصنيفات: {totalRecords}</div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-500">عدد العناصر:</span>
+                        <select
+                          className="border rounded p-1 text-sm"
+                          value={perPage}
+                          title="عدد العناصر في الصفحة"
+                          aria-label="عدد العناصر في الصفحة"
+                          onChange={(e) => {
+                            const newPerPage = parseInt(e.target.value);
+                            setPerPage(newPerPage);
+                            setApiPerPage(newPerPage);
+                            setCurrentPage(1);
+                            setApiCurrentPage(1);
+                          }}
+                        >
+                          <option value="10">10</option>
+                          <option value="20">20</option>
+                          <option value="50">50</option>
+                          <option value="100">100</option>
+                        </select>
+                      </div>
+                    </div>
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={(page) => {
+                        setCurrentPage(page);
+                        setApiCurrentPage(page);
+                      }}
+                    />
+                  </div>
+                )}
+              </>
+            ) : (
+              <Card className="p-8 text-center">
+                <p className="text-gray-500 mb-4">لا توجد تصنيفات بعد</p>
+                <Link to="/admin/categories/add">
+                  <Button className="bg-main hover:bg-main/90">
+                    <Plus className="w-4 h-4 ml-2" />
+                    إضافة أول تصنيف
+                  </Button>
+                </Link>
+              </Card>
+            )}
+          </div>
+        </div>
       </div>
+
+      {/* Edit Form Sidebar */}
+      {selectedCategory && (
+        <div className="w-[500px] border-r border-gray-200 bg-gray-50 p-6 overflow-y-auto">
+          <CategoryCreation
+            category={selectedCategory}
+            onSuccess={() => {
+              setSelectedCategory(null);
+              refetch();
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 };

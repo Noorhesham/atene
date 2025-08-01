@@ -10,7 +10,7 @@ const Signup = () => {
 
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
-      navigate("/products");
+      navigate("/");
     }
   }, [isAuthenticated, isLoading, navigate]);
 

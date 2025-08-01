@@ -1,44 +1,11 @@
-import { ReactNode } from "react";
-
-export interface Category {
-  name: string;
-  count: number;
-  active?: boolean;
-}
-
-export interface OrderDetails {
-  customer: {
-    name: string;
-    avatar: string;
-    since: string;
-    email: string;
-    phone: string;
-    address: string;
-  };
-  order: {
-    store: string;
-    id: string;
-    date: string;
-    title: string;
-  };
-  product: {
-    name: string;
-    color: string;
-    size: string;
-    quantity: number;
-  };
-}
-
-export interface Order {
-  id: string;
-  customerName: string;
-  date: string;
-  price: string;
-  details: OrderDetails;
-}
-
 export interface FilterPanelProps {
-  categories: Category[];
+  categories: {
+    name: string;
+    count: number;
+    active?: boolean;
+    status: string | null;
+  }[];
+  onFilterChange: (status: string | null) => void;
 }
 
 export interface OrdersListProps {
@@ -47,24 +14,66 @@ export interface OrdersListProps {
   onSelectOrder: (orderId: string) => void;
 }
 
-export interface ActionButtonProps {
-  children: ReactNode;
-  variant?: "danger" | "primary" | "secondary";
-  icon?: ReactNode;
+export interface OrderDetailsProps {
+  order: Order;
 }
 
 export interface InfoCardProps {
   title: string;
-  children: ReactNode;
+  children: React.ReactNode;
   className?: string;
 }
 
 export interface InfoRowProps {
   label: string;
   value: string | number;
-  icon: ReactNode;
+  icon: React.ReactNode;
 }
 
-export interface OrderDetailsProps {
-  order: Order;
+export interface Order {
+  id: string;
+  customerName: string;
+  date: string;
+  price: string;
+  client: {
+    id: number;
+    avatar: string | null;
+    avatar_url: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+    roles: string[];
+    is_active: number;
+    date_of_birth: string | null;
+    gender: string;
+    referral_code: string | null;
+    verified_code: string | null;
+    last_login_at: string;
+  };
+  items: {
+    id: number;
+    product_id: number;
+    product: {
+      id: number;
+      sku: string;
+      name: string;
+      description?: string;
+      price: number;
+    };
+    quantity: number;
+    price: number;
+    price_after_discount: number;
+  }[];
+  address: string;
+  email: string;
+  phone: string;
+  notes: string;
+  status: string;
+  sub_total: number;
+  discount_total: number;
+  shipping_cost: number;
+  total: number;
+  reference_id: string;
+  name: string;
 }

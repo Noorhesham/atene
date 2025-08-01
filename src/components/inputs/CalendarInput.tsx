@@ -1,6 +1,7 @@
 "use client";
-import React, { useState } from "react";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { useState } from "react";
+import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Control, FieldValues, Path } from "react-hook-form";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { format, isBefore } from "date-fns";
@@ -8,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 
-const CalendarInput = ({
+const CalendarInput = <T extends FieldValues>({
   control,
   name,
   label,
@@ -17,15 +18,14 @@ const CalendarInput = ({
   monthOnly = false,
   disableOldDates = false,
 }: {
-  control: any;
-  name: string;
+  control: Control<T>;
+  name: Path<T>;
   label?: string;
   disabled?: boolean;
   optional?: boolean;
   monthOnly?: boolean;
   disableOldDates?: boolean;
 }) => {
-  const [date, setDate] = useState<Date | null>(null);
   const [open, setOpen] = useState(false);
 
   return (
@@ -64,26 +64,25 @@ const CalendarInput = ({
                 </FormControl>
               </PopoverTrigger>
               <PopoverContent sideOffset={-40} className="w-full z-[51231231321] relative p-0" align="end">
-                {
-                  <Calendar
-                    className="relative w-full"
-                    mode="single"
-                    captionLayout="dropdown-buttons"
-                    fromYear={1990}
-                    toYear={new Date().getFullYear() + 50} // Allow 50 years in the future
-                    selected={field.value}
-                    onSelect={(date) => {
-                      if (!date) return;
-                      const formattedDate = format(date, "yyyy-MM-dd");
-                      field.onChange(formattedDate);
+                <Calendar
+                  className="relative w-full"
+                  mode="single"
+                  captionLayout="dropdown"
+                  fromYear={1990}
+                  toYear={new Date().getFullYear() + 50} // Allow 50 years in the future
+                  selected={field.value ? new Date(field.value) : undefined}
+                  onSelect={(date) => {
+                    if (!date) return;
+                    const formattedDate = format(date, "yyyy-MM-dd");
+                    field.onChange(formattedDate);
+                    // Don't close immediately to allow for month/year navigation
+                    if (!monthOnly) {
                       setOpen(false);
-                    }}
-                    disabled={
-                      (date) => disableOldDates && isBefore(date, new Date()) // Disable dates before today
                     }
-                    initialFocus
-                  />
-                }
+                  }}
+                  disabled={disableOldDates ? (date) => isBefore(date, new Date()) : undefined}
+                  initialFocus
+                />
               </PopoverContent>
             </Popover>
           </FormItem>

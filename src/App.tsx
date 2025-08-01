@@ -31,7 +31,10 @@ import ProductsPageDashboard from "./pages/admin/products/ProductsPageDashboard"
 import CategoryCreatePage from "./pages/admin/categories/add/CategoryCreatPage";
 import AttributesPage from "./pages/admin/attributes/AttributesPage";
 import AttributeCreatPage from "./pages/admin/attributes/add/AttributeCreatPage";
-  
+import CategoryTreeView from "./pages/admin/categories/add/CategoryTreeView";
+import StoriesPage from "./pages/admin/stories/StoriesPage";
+import FollowersPage from "./pages/admin/followers/FollowersPage";
+
 // Admin Layout Component
 const AdminLayout = () => {
   const { user, isLoading } = useAuth() as { user: User | null; isLoading: boolean };
@@ -57,14 +60,13 @@ const DashboardLayout = () => {
   }
 
   if (user) {
-    const isSuperAdmin = user.user.roles.some((role) => role.name === "superadmin");
-    if (isSuperAdmin) {
-      return <Navigate to="/admin" replace />;
+    const isSuperMerchant = user?.user?.user_type === "merchant";
+    if (isSuperMerchant) {
+      return <Outlet />;
     }
-    return <Outlet />;
+    return <Navigate to="/" replace />;
   }
 
-  // If no user, redirect to login
   return <Navigate to="/login" replace />;
 };
 
@@ -122,10 +124,22 @@ function App() {
 
         {/* Regular Dashboard Routes */}
         <Route path="/dashboard" element={<RegularDashboardLayout />}>
+          {" "}
+          <Route path="coupons" element={<CouponsManagement />} />
           <Route index element={<DashboardHome />} />
           <Route path="orders" element={<OrdersPage />} />
-          <Route path="products" element={<ProductsManagement />} />
-          <Route path="stores" element={<StoresManagement />} />
+          <Route path="products">
+            <Route index element={<ProductsPageDashboard />} />
+            <Route path="add" element={<ProductCreationExample />} />
+            <Route path="add/:id" element={<ProductCreationExample />} />
+          </Route>
+          <Route path="stores">
+            <Route index element={<StoreManagementPage />} />
+            <Route path="add" element={<StoreCratePage />} />
+            <Route path="add/:id" element={<StoreCratePage />} />
+          </Route>
+          <Route path="stories" element={<StoriesPage />} />
+          <Route path="followers" element={<FollowersPage />} />
         </Route>
 
         {/* Admin Routes */}
@@ -134,6 +148,7 @@ function App() {
           <Route path="orders" element={<OrdersPage />} />
           <Route path="categories">
             <Route index element={<CategoriesPage />} />
+            <Route path="trees" element={<CategoryTreeView />} />
             <Route path="add" element={<CategoryCreatePage />} />
             <Route path="edit/:id" element={<CategoryCreatePage />} />
           </Route>
@@ -165,6 +180,7 @@ function App() {
             <Route path="add" element={<AttributeCreatPage />} />
             <Route path="edit/:id" element={<AttributeCreatPage />} />
           </Route>
+          <Route path="stories" element={<StoriesPage />} />
         </Route>
       </Routes>
     </main>

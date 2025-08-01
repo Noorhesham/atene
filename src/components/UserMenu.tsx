@@ -1,13 +1,43 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { LogOut, User, Phone, Calendar } from "lucide-react";
+import { LogOut, User, Phone, Calendar, Store } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Button } from "./ui/button";
+import toast from "react-hot-toast";
+import { API_ENDPOINTS, FetchFunction } from "@/constants/api";
 
 const UserMenu = () => {
-  const { user:data, logout, isAuthenticated } = useAuth();
+  const { user: data, logout, isAuthenticated, refetch } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const handleTheClientClick = async () => {
+    try {
+      setIsLoading(true);
+      const response = await FetchFunction(
+        `${API_ENDPOINTS.BASE}/convert-to-merchant`,
+        "POST",
+        {},
+        {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        }
+      );
+      console.log(response);
+      if (response.status) {
+        toast.success("تم التحويل لتاجر بنجاح");
+        refetch();
+      } else {
+        throw new Error(response.message);
+      }
 
+      setIsLoading(false);
+    } catch (error) {
+      toast.error("حدث خطأ ما");
+    } finally {
+      setIsLoading(false);
+    }
+  };
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -83,6 +113,26 @@ const UserMenu = () => {
                 <span>آخر تسجيل دخول: {formatDate(user.last_login_at)}</span>
               </div>
             )}
+            {data.user.user_type === "client" ? (
+              <Button
+                disabled={isLoading}
+                className="flex items-center gap-2 text-xs mt-2"
+                onClick={handleTheClientClick}
+              >
+                <Store size={14} />
+                <span>الدخول كتاجر</span>
+              </Button>
+            ) : data.user.user_type === "admin" ? (
+              <Link to="/admin" className="flex items-center gap-2 text-gray-500 text-xs mt-2">
+                <Store size={14} />
+                <span> لوحة التحكم</span>
+              </Link>
+            ) : data.user.user_type === "merchant" ? (
+              <Link to="/dashboard" className="flex items-center gap-2 text-gray-500 text-xs mt-2">
+                <Store size={14} />
+                <span>لوحة التحكم</span>
+              </Link>
+            ) : null}
           </div>
           <button
             onClick={() => {

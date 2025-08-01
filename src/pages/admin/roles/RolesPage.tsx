@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { ChevronLeft, Plus, HelpCircle, Loader2 } from "lucide-react";
+import { ChevronLeft, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ApiRole, ApiPermission } from "@/hooks/useUsers";
 import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
-import toast from "react-hot-toast";
+import Actions from "@/components/Actions";
 
 // Simple interfaces
 interface RolesSidebarProps {
@@ -23,7 +23,9 @@ interface PermissionsFormProps {
     update: (id: number, data: Partial<ApiRole>) => Promise<ApiRole>;
     create: (data: Partial<ApiRole>) => Promise<ApiRole>;
     remove: (id: number) => Promise<void>;
+    isUpdating: boolean;
   };
+  onRoleUpdated: () => void;
 }
 
 // Category labels mapping
@@ -70,10 +72,9 @@ const RolesSidebar = ({ roles, selectedRoleId, onSelectRole, isLoading }: RolesS
   </Card>
 );
 
-const PermissionsForm = ({ selectedRole, allPermissions, rolesMutation }: PermissionsFormProps) => {
+const PermissionsForm = ({ selectedRole, allPermissions, rolesMutation, onRoleUpdated }: PermissionsFormProps) => {
   const [roleName, setRoleName] = useState("");
   const [selectedPermissions, setSelectedPermissions] = useState<Set<number>>(new Set());
-  const [isSaving, setIsSaving] = useState(false);
 
   // Update form when selected role changes
   useEffect(() => {
@@ -138,19 +139,14 @@ const PermissionsForm = ({ selectedRole, allPermissions, rolesMutation }: Permis
   const handleSave = async () => {
     if (!selectedRole || !roleName.trim()) return;
 
-    setIsSaving(true);
     try {
       await rolesMutation.update(selectedRole.id, {
         name: roleName,
-        permissions: Array.from(selectedPermissions),
+        permission_ids: Array.from(selectedPermissions),
       });
-
-      toast.success("تم حفظ الدور بنجاح");
+      onRoleUpdated();
     } catch (error) {
       console.error("Failed to save role:", error);
-      toast.error("حدث خطأ أثناء حفظ الدور");
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -159,21 +155,6 @@ const PermissionsForm = ({ selectedRole, allPermissions, rolesMutation }: Permis
       setRoleName(selectedRole.name);
       const rolePermissionIds = new Set(selectedRole.permissions.map((p) => p.id));
       setSelectedPermissions(rolePermissionIds);
-      toast.success("تم إلغاء التغييرات");
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!selectedRole) return;
-
-    if (confirm(`هل أنت متأكد من حذف الدور "${selectedRole.name}"؟`)) {
-      try {
-        await rolesMutation.remove(selectedRole.id);
-        toast.success("تم حذف الدور بنجاح");
-      } catch (error) {
-        console.error("Failed to delete role:", error);
-        toast.error("حدث خطأ أثناء حذف الدور");
-      }
     }
   };
 
@@ -270,23 +251,17 @@ const PermissionsForm = ({ selectedRole, allPermissions, rolesMutation }: Permis
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-between items-center pt-4 border-t">
-          <Button variant="destructive" onClick={handleDelete} className="bg-red-600 hover:bg-red-700 text-white">
-            حذف الدور
+        <div className="flex justify-end gap-3 pt-4 border-t">
+          <Button variant="outline" onClick={handleReset}>
+            إلغاء
           </Button>
-
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={handleReset}>
-              إلغاء
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={isSaving || !roleName.trim()}
-              className="bg-main text-white hover:bg-blue-800"
-            >
-              {isSaving ? "جاري الحفظ..." : "حفظ التغييرات"}
-            </Button>
-          </div>
+          <Button
+            onClick={handleSave}
+            disabled={rolesMutation.isUpdating || !roleName.trim()}
+            className="bg-main text-white hover:bg-blue-800"
+          >
+            {rolesMutation.isUpdating ? "جاري الحفظ..." : "حفظ التغييرات"}
+          </Button>
         </div>
       </Card>
     </div>
@@ -305,6 +280,10 @@ const RolesAndPermissionsPage = () => {
     isLoading: permissionsLoading,
     error: permissionsError,
   } = useAdminEntityQuery("permissions");
+
+  const handleRoleUpdated = () => {
+    rolesMutation.refetch();
+  };
 
   // Auto-select first role when data loads
   useEffect(() => {
@@ -340,6 +319,20 @@ const RolesAndPermissionsPage = () => {
         <p className="text-base text-gray-500">المستخدمين / الأدوار والصلاحيات</p>
       </div>
 
+      {/* Actions Component for Role Deletion */}
+      {selectedRole && (
+        <Actions
+          title="إجراءات الدور"
+          entity={selectedRole}
+          entityType="roles"
+          deleteMessage={`هل أنت متأكد من حذف الدور "${selectedRole.name}"؟`}
+          onDeleteSuccess={() => {
+            setSelectedRoleId(roles.length > 1 ? roles.find((r) => r.id !== selectedRole.id)?.id || null : null);
+          }}
+          className="mb-6"
+        />
+      )}
+
       {/* Main Content */}
       {isLoading ? (
         <div className="flex items-center justify-center h-64">
@@ -353,7 +346,12 @@ const RolesAndPermissionsPage = () => {
             onSelectRole={setSelectedRoleId}
             isLoading={rolesLoading}
           />
-          <PermissionsForm selectedRole={selectedRole} allPermissions={permissions} rolesMutation={rolesMutation} />
+          <PermissionsForm
+            selectedRole={selectedRole}
+            allPermissions={permissions}
+            rolesMutation={rolesMutation}
+            onRoleUpdated={handleRoleUpdated}
+          />
         </div>
       )}
     </div>

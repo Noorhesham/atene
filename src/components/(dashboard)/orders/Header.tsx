@@ -1,8 +1,4 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ChevronDown, FilterIcon, Search } from "lucide-react";
-import { Plus } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Search } from "lucide-react";
 
 export const Header = ({ mode, onAddOrder }: { mode: string; onAddOrder: () => void }) => {
   if (mode === "edit") {
@@ -16,7 +12,7 @@ export const Header = ({ mode, onAddOrder }: { mode: string; onAddOrder: () => v
   }
 
   return (
-    <div className="flex flex-col gap-4 mb-6">
+    <div onClick={onAddOrder} className="flex flex-col gap-4 mb-6">
       {/* العنوان */}
       <div className="w-full">
         <p className="text-gray-500 mt-1 text-sm text-right">الرئيسية / الطلبات</p>
@@ -34,20 +30,6 @@ export const Header = ({ mode, onAddOrder }: { mode: string; onAddOrder: () => v
           />
           <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
             <Search size={18} />
-          </div>
-        </div>
-        {/* يسار: زر تصفية + المتجر */}
-        <div className="flex items-center gap-2">
-          <button className="flex items-center justify-center px-3 py-2 border rounded-md text-sm text-gray-700 bg-white hover:bg-gray-50">
-            <FilterIcon className="ml-2" size={16} />
-            تصفية
-          </button>
-          <div className="relative">
-            <button className="flex items-center justify-center px-3 py-2 border rounded-md text-sm text-gray-700 bg-white hover:bg-gray-50">
-              المتجر
-              <ChevronDown className="mr-1" size={16} />
-            </button>
-            {/* يمكن إضافة قائمة dropdown هنا */}
           </div>
         </div>
       </div>

@@ -1,99 +1,139 @@
-"use client";
+import React from "react";
+import { ApiOrder } from "@/hooks/useUsersQuery";
 
-import React, { useState } from "react";
-import ProductGrid from "./ProductList";
-import { ChevronLeft } from "@/components/icons";
-import ShoppingCartComponent from "./ShoppingCart";
+interface EditOrderViewProps {
+  order?: ApiOrder | null;
+  onBack: () => void;
+}
 
-// MOCK DATA
-const productCategories = [
-  { name: "جميع المنتجات", count: 12, active: true },
-  { name: "ملابس", count: 12, active: false },
-  { name: "مستلزمات تجميل", count: 2, active: false },
-  { name: "اخرى", count: 0, active: false },
-];
-
-const productsData = [
-  { id: "p1", name: "اسم المنتج", price: 927.0, image: "https://placehold.co/150x150/F3F4F6/9CA3AF?text=1" },
-  { id: "p2", name: "اسم المنتج", price: 927.0, image: "https://placehold.co/150x150/F3F4F6/9CA3AF?text=2" },
-  { id: "p3", name: "اسم المنتج", price: 100.0, image: "https://placehold.co/150x150/F3F4F6/9CA3AF?text=3" },
-  { id: "p4", name: "اسم المنتج", price: 927.0, image: "https://placehold.co/150x150/F3F4F6/9CA3AF?text=4" },
-  { id: "p5", name: "اسم المنتج", price: 927.0, image: "https://placehold.co/150x150/F3F4F6/9CA3AF?text=5" },
-  { id: "p6", name: "اسم المنتج", price: 927.0, image: "https://placehold.co/150x150/F3F4F6/9CA3AF?text=6" },
-];
-export const ProductFilterPanel = ({ categories }: { categories: any[] }) => (
-  <div className="bg-white rounded-lg border border-gray-200 p-4 h-full">
-    <div className="flex justify-between items-center mb-4">
-      <h2 className="font-bold text-gray-800">
-        جميع المنتجات ({categories.reduce((acc, cat) => acc + (cat.count || 0), 0)})
-      </h2>
-      <button className="p-1 rounded-md hover:bg-gray-100" title="Toggle Panel">
-        <ChevronLeft size={20} />
-      </button>
-    </div>
-    <ul>
-      {categories.map((cat, index) => (
-        <li
-          key={index}
-          className={`flex justify-between items-center p-2 rounded-md cursor-pointer ${
-            cat.active ? "bg-blue-50 text-main font-bold" : "text-gray-600 hover:bg-gray-50"
-          }`}
-        >
-          <span className="flex items-center gap-2">{cat.name}</span>
-          <ChevronLeft size={16} />
-        </li>
-      ))}
-    </ul>
-  </div>
-);
-
-const EditOrderLayout = ({ onBack }: { onBack: () => void }) => {
-  const [cartItems, setCartItems] = useState([]);
-
-  const handleAddToCart = (product: any) => {
-    setCartItems((prevItems) => {
-      const existingItem = prevItems.find((item) => item.id === product.id);
-      if (existingItem) {
-        return prevItems.map((item) => (item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item));
-      }
-      return [...prevItems, { ...product, quantity: 1 }];
-    });
-  };
-
-  const handleUpdateQuantity = (productId: any, newQuantity: any) => {
-    if (newQuantity < 1) {
-      setCartItems((prev) => prev.filter((item) => item.id !== productId));
-    } else {
-      setCartItems((prev) => prev.map((item) => (item.id === productId ? { ...item, quantity: newQuantity } : item)));
-    }
-  };
-
+const EditOrderView: React.FC<EditOrderViewProps> = ({ order, onBack }) => {
   return (
-    <>
-      <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
-        <div className="w-full lg:w-auto">
-          <p className="text-gray-500 mt-1">الطلبات / طلب جديد</p>
-        </div>
-        {/* Optional: Add back button or other actions here */}
-      </header>
-      <div className="grid grid-cols-12 gap-6">
-        {" "}
-        <div className="col-span-12 lg:col-span-3">
-          <ProductFilterPanel categories={productCategories} />
-        </div>
-        <div className="col-span-12 lg:col-span-6">
-          <ProductGrid products={productsData} onAddToCart={handleAddToCart} />
-        </div>
-        <div className="col-span-12 lg:col-span-3">
-          <ShoppingCartComponent
-            items={cartItems}
-            onUpdateQuantity={handleUpdateQuantity}
-            onClearCart={() => setCartItems([])}
-          />
-        </div>
+    <div className="bg-white rounded-lg p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-bold">تعديل الطلب {order?.reference_id}</h2>
+        <button onClick={onBack} className="text-gray-500 hover:text-gray-700">
+          عودة
+        </button>
       </div>
-    </>
+
+      {order ? (
+        <div className="space-y-6">
+          <div>
+            <h3 className="font-medium mb-4">المنتجات في الطلب:</h3>
+            <div className="space-y-4">
+              {order.items.map((item) => (
+                <div key={item.id} className="border rounded-lg p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-medium">{item.product.name}</h4>
+                      <p className="text-sm text-gray-500">SKU: {item.product.sku}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium">{item.price} ريال</p>
+                      {item.price_after_discount !== item.price && (
+                        <p className="text-sm text-red-500">{item.price_after_discount} ريال</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-center gap-4">
+                    <div>
+                      <label className="text-sm text-gray-500">الكمية</label>
+                      <input
+                        type="number"
+                        defaultValue={item.quantity}
+                        min="1"
+                        className="ml-2 w-20 border rounded p-1"
+                        title={`كمية ${item.product.name}`}
+                        placeholder="الكمية"
+                      />
+                    </div>
+                    <button className="text-red-500 text-sm hover:text-red-700">حذف</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="border-t pt-4">
+            <h3 className="font-medium mb-4">تفاصيل الطلب:</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-gray-500 mb-1">المجموع الفرعي</label>
+                <p className="font-medium">{order.sub_total} ريال</p>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-500 mb-1">الخصم</label>
+                <p className="font-medium">{order.discount_total} ريال</p>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-500 mb-1">تكلفة الشحن</label>
+                <p className="font-medium">{order.shipping_cost} ريال</p>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-500 mb-1">الإجمالي</label>
+                <p className="font-medium">{order.total} ريال</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t pt-4">
+            <h3 className="font-medium mb-4">معلومات العميل:</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-gray-500 mb-1">الاسم</label>
+                <input
+                  type="text"
+                  defaultValue={order.name}
+                  className="w-full border rounded p-2"
+                  title="اسم العميل"
+                  placeholder="اسم العميل"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-500 mb-1">البريد الإلكتروني</label>
+                <input
+                  type="email"
+                  defaultValue={order.email}
+                  className="w-full border rounded p-2"
+                  title="البريد الإلكتروني"
+                  placeholder="البريد الإلكتروني"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-500 mb-1">رقم الهاتف</label>
+                <input
+                  type="tel"
+                  defaultValue={order.phone}
+                  className="w-full border rounded p-2"
+                  title="رقم الهاتف"
+                  placeholder="رقم الهاتف"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-500 mb-1">العنوان</label>
+                <input
+                  type="text"
+                  defaultValue={order.address}
+                  className="w-full border rounded p-2"
+                  title="العنوان"
+                  placeholder="العنوان"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-4 mt-8">
+            <button onClick={onBack} className="px-4 py-2 border rounded-lg hover:bg-gray-50">
+              إلغاء
+            </button>
+            <button className="px-4 py-2 bg-main text-white rounded-lg hover:bg-main/90">حفظ التغييرات</button>
+          </div>
+        </div>
+      ) : (
+        <div className="text-center text-gray-500">لم يتم اختيار طلب للتعديل</div>
+      )}
+    </div>
   );
 };
 
-export default EditOrderLayout;
+export default EditOrderView;

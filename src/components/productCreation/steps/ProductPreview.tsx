@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
+import { STORAGE_URL } from "@/constants/api";
 
 // Mock products data (same as in AdvancedSettings.tsx)
 const mockProducts = [
@@ -25,13 +26,6 @@ const mockProducts = [
   // ... other mock products
 ];
 
-interface ProductImage {
-  id: string;
-  file: File;
-  preview: string;
-  isPrimary?: boolean;
-}
-
 const ProductPreview = () => {
   const { watch } = useFormContext();
   const [activeTab, setActiveTab] = useState("card");
@@ -45,12 +39,11 @@ const ProductPreview = () => {
   const relatedProducts = Array.isArray(relatedProductsData) ? relatedProductsData : [];
 
   const hasContent = productName || price || images.length > 0;
-  const primaryImage =
-    images.length > 0 ? images.find((img: ProductImage) => img.isPrimary)?.preview || images[0]?.preview : null;
+  const primaryImage = images.length > 0 ? images[0] : null;
 
   // Get related product details from mock data
   const selectedRelatedProducts = mockProducts.filter((product) => relatedProducts.includes(product.id));
-
+  console.log(primaryImage, images, imagesData);
   return (
     <Card className="p-6 h-full flex flex-col">
       <div className="flex justify-center mb-6">
@@ -82,7 +75,13 @@ const ProductPreview = () => {
             <div className="relative">
               {primaryImage ? (
                 <img
-                  src={primaryImage}
+                  src={
+                    typeof primaryImage === "string"
+                      ? primaryImage.startsWith("http")
+                        ? primaryImage
+                        : `${STORAGE_URL}/${primaryImage}`
+                      : URL.createObjectURL(primaryImage)
+                  }
                   alt={productName || "Product"}
                   className="w-full h-48 object-cover rounded-lg"
                 />
@@ -113,7 +112,11 @@ const ProductPreview = () => {
                 <div className="grid grid-cols-2 gap-2">
                   {selectedRelatedProducts.map((product) => (
                     <div key={product.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
-                      <img src={product.image} alt={product.name} className="w-10 h-10 rounded object-cover" />
+                      <img
+                        src={product.image.startsWith("http") ? product.image : `${STORAGE_URL}${product.image}`}
+                        alt={product.name}
+                        className="w-10 h-10 rounded object-cover"
+                      />
                       <div className="text-right flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-800 truncate">{product.name}</p>
                         <p className="text-xs text-gray-500">${product.price}</p>

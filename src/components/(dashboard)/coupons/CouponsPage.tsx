@@ -8,93 +8,106 @@ import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from "@
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { AddCouponForm } from "./CouponForm";
-import { Filter, Plus, Trash2, Edit, BarChart2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import ModalCustom from "@/components/ModalCustom";
+import { ApiCoupon } from "@/types";
+import { CouponActions } from "./CouponActions";
+import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
 
-const couponsData = [
-  {
-    id: 1,
-    title: "كوبون تجريبي",
-    type: "خصم",
-    startDate: "2023-11-23 14:05",
-    endDate: "2024-06-30 01:50",
-    status: "active",
-  },
-  {
-    id: 2,
-    title: "كوبون تجريبي 2",
-    type: "خصم",
-    startDate: "2023-11-23 14:05",
-    endDate: "2024-06-30 01:50",
-    status: "inactive",
-  },
-  {
-    id: 3,
-    title: "كوبون تجريبي 3",
-    type: "خصم",
-    startDate: "2023-11-23 14:05",
-    endDate: "2024-06-30 01:50",
-    status: "pending",
-  },
-  {
-    id: 4,
-    title: "كوبون تجريبي 4",
-    type: "خصم",
-    startDate: "2023-11-23 14:05",
-    endDate: "2024-06-30 01:50",
-    status: "pending",
-  },
-];
 const CouponsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCoupon, setEditingCoupon] = useState<(ApiCoupon & { id: number }) | undefined>();
 
-  const columns: ColumnDef<(typeof couponsData)[0]>[] = useMemo(
+  const couponsQuery = useAdminEntityQuery("coupons");
+
+  const columns: ColumnDef<ApiCoupon>[] = useMemo(
     () => [
       {
-        accessorKey: "title",
-        header: "عنوان الكوبون",
+        accessorKey: "code",
+        header: "كود الكوبون",
         cell: ({ row }) => {
-          const status = row.original.status;
-          const statusColor =
-            status === "active" ? "bg-green-500" : status === "pending" ? "bg-yellow-500" : "bg-gray-400";
+          const coupon = row.original;
+          const now = new Date();
+          const endDate = new Date(coupon.end_date);
+          const status = now > endDate ? "inactive" : "active";
+          const statusColor = status === "active" ? "bg-green-500" : "bg-gray-400";
+
           return (
             <div className="flex items-center gap-2">
               <span className={`w-2.5 h-2.5 rounded-full ${statusColor}`}></span>
-              <span className="font-semibold text-gray-800 underline">{row.getValue("title")}</span>
+              <span className="font-semibold text-gray-800 underline">{coupon.code}</span>
             </div>
           );
         },
       },
-      { accessorKey: "type", header: "نوع الكوبون" },
-      { accessorKey: "startDate", header: "تاريخ بداية الكوبون" },
-      { accessorKey: "endDate", header: "تاريخ انتهاء الكوبون" },
+      {
+        accessorKey: "type",
+        header: "نوع الكوبون",
+        cell: ({ row }) => {
+          const type = row.original.type;
+          return type === "percentage" ? "نسبة مئوية" : "قيمة ثابتة";
+        },
+      },
+      {
+        accessorKey: "value",
+        header: "قيمة الخصم",
+        cell: ({ row }) => {
+          const { type, value } = row.original;
+          return type === "percentage" ? `${value}%` : `${value} ريال`;
+        },
+      },
+      {
+        accessorKey: "start_date",
+        header: "تاريخ بداية الكوبون",
+        cell: ({ row }) => new Date(row.original.start_date).toLocaleDateString("ar-SA"),
+      },
+      {
+        accessorKey: "end_date",
+        header: "تاريخ انتهاء الكوبون",
+        cell: ({ row }) => new Date(row.original.end_date).toLocaleDateString("ar-SA"),
+      },
       {
         id: "actions",
         header: "عمليات",
         cell: ({ row }) => {
-          const [isActive, setIsActive] = useState(row.original.status === "active");
+          const coupon = row.original;
+          const now = new Date();
+          const endDate = new Date(coupon.end_date);
+          const isActive = now <= endDate;
+
           return (
-            <div className="flex items-center  gap-2">
-              <Switch checked={isActive} onCheckedChange={setIsActive} />
-              <Button variant="ghost" size="icon" className="w-8 h-8 text-red-500 bg-red-50 hover:bg-red-100">
-                <Trash2 size={16} />
-              </Button>
-              <Button variant="ghost" size="icon" className="w-8 h-8 text-main bg-blue-50 hover:bg-blue-100">
-                <Edit size={16} />
-              </Button>
-              <Button variant="outline" className="bg-white text-main border-main/50 hover:bg-blue-50">
-                <BarChart2 size={16} className="ml-2" /> احصائيات
-              </Button>
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={isActive}
+                onCheckedChange={async (checked) => {
+                  try {
+                    await couponsQuery.update(coupon.id, {
+                      code: coupon.code,
+                      type: coupon.type,
+                      value: coupon.value,
+                      start_date: coupon.start_date,
+                      end_date: checked ? "2025-12-31" : new Date().toISOString().split("T")[0],
+                      store_id: coupon.store_id || 0,
+                      categories: coupon.categories?.map((c) => c.id) || [],
+                      products: coupon.products?.map((p) => p.id) || [],
+                      status: checked ? "active" : "not-active",
+                    } as any);
+                  } catch (error) {
+                    console.error("Failed to update coupon status:", error);
+                  }
+                }}
+              />
+              <CouponActions coupon={coupon} editLink={`/admin/coupons/edit/${coupon.id}`} />
             </div>
           );
         },
       },
     ],
-    []
+    [couponsQuery]
   );
 
   const table = useReactTable({
-    data: couponsData,
+    data: couponsQuery.data || [],
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
@@ -135,7 +148,10 @@ const CouponsPage = () => {
           {" "}
           <ModalCustom
             isOpen={isModalOpen}
-            onOpenChange={setIsModalOpen}
+            onOpenChange={(open) => {
+              setIsModalOpen(open);
+              if (!open) setEditingCoupon(undefined);
+            }}
             btn={
               <Button
                 className="bg-main text-white hover:bg-main/90"
@@ -144,11 +160,16 @@ const CouponsPage = () => {
                 <Plus size={16} className="ml-2" /> إضافة كوبون
               </Button>
             }
-            content={<AddCouponForm closeModal={() => setIsModalOpen(false)} />}
+            content={
+              <AddCouponForm
+                closeModal={() => {
+                  setIsModalOpen(false);
+                  setEditingCoupon(undefined);
+                }}
+                editingCoupon={editingCoupon}
+              />
+            }
           />
-          <Button variant="outline" className="bg-white">
-            <Filter size={16} className="ml-2" /> تصفية
-          </Button>
           <Button variant="outline" className="bg-white">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path

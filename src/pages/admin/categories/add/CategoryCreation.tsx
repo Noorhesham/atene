@@ -1,312 +1,186 @@
 import React, { useState, useEffect } from "react";
-import { useForm, FormProvider, useFieldArray } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
-import { ApiCategory } from "@/hooks/useUsers";
-import FormInput from "@/components/inputs/FormInput";
-import { PlusCircle, Trash2 } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Form } from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, ArrowLeft } from "lucide-react";
+import CategoryTreeView from "./CategoryTreeView";
 import toast from "react-hot-toast";
+import FormInput from "@/components/inputs/FormInput";
+import { ApiCategory } from "@/hooks/useUsersQuery";
 
-// Schema for subcategory
-const subCategorySchema = z.object({
-  id: z.number().optional(),
-  name: z.string().min(1, "اسم التصنيف الفرعي مطلوب"),
-  image: z.string().optional().nullable(),
-  status: z.enum(["active", "inactive"]),
-  parent_id: z.number(),
-});
-
-// Main category schema
 const categorySchema = z.object({
   name: z.string().min(1, "اسم التصنيف مطلوب"),
-  image: z.string().optional().nullable(),
-  status: z.enum(["active", "inactive"]),
-  parent_id: z.number().nullable(),
-  subCategories: z.array(subCategorySchema),
+  image: z.string().nullable().optional(),
+  status: z.enum(["active", "inactive"], { required_error: "حالة التصنيف مطلوبة" }),
+  parent_id: z.string().nullable().optional(),
 });
 
 type CategoryFormData = z.infer<typeof categorySchema>;
 
 interface CategoryCreationProps {
   category?: ApiCategory | null;
+  onSuccess?: () => void;
 }
 
-const CategoryCreation: React.FC<CategoryCreationProps> = ({ category }) => {
+const CategoryCreation: React.FC<CategoryCreationProps> = ({ category, onSuccess }) => {
   const navigate = useNavigate();
-  const { id } = useParams();
-  const isEditMode = !!id && !!category;
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isEditMode = !!category;
+  const [showTreeView, setShowTreeView] = useState(false);
 
-  // Hooks for data fetching
-  const { data: categories, create: createCategory, update: updateCategory } = useAdminEntityQuery("categories");
+  // Fetch categories for parent selection and tree view
+  const {
+    data: categories,
+    isLoading: categoriesLoading,
+    create,
+    update,
+    isCreating,
+    isUpdating,
+    isUpdatingParent,
+    refetch,
+  } = useAdminEntityQuery("categories");
 
   const form = useForm<CategoryFormData>({
     resolver: zodResolver(categorySchema),
     defaultValues: {
       name: "",
       image: null,
-      status: "active" as const,
-      parent_id: null,
-      subCategories: [],
+      status: "active",
+      parent_id: "null",
     },
-    mode: "onChange",
   });
 
-  const {
-    fields: subCategories,
-    append,
-    remove,
-  } = useFieldArray({
-    control: form.control,
-    name: "subCategories",
-  });
-
-  // Populate form when editing
+  // Set form values when editing
   useEffect(() => {
     if (category && isEditMode) {
       form.reset({
         name: category.name || "",
         image: category.image || null,
-        status: (category.status as "active" | "inactive") || "active",
-        parent_id: category.parent_id || null,
-        subCategories: [], // Will be populated separately if needed
+        status: category.status || "active",
+        parent_id: category.parent_id ? category.parent_id.toString() : "null",
       });
     }
   }, [category, isEditMode, form]);
 
-  const addSubCategory = () => {
-    append({
-      name: "",
-      image: null,
-      status: "active" as const,
-      parent_id: 0, // Will be set when parent is created
-    });
-  };
-
-  const removeSubCategory = (index: number) => {
-    remove(index);
-  };
-
-  const handleSubmit = form.handleSubmit(async (data) => {
-    setIsSubmitting(true);
+  const onSubmit = async (data: CategoryFormData) => {
     try {
-      console.log("Category Data to submit:", data);
-
-      // Prepare main category data
-      const mainCategoryData = {
-        name: data.name,
-        image: data.image,
-        status: data.status,
-        parent_id: data.parent_id,
+      const formattedData = {
+        ...data,
+        parent_id: data.parent_id && data.parent_id !== "null" ? Number(data.parent_id) : null,
       };
 
-      let savedCategory: ApiCategory;
-
       if (isEditMode && category) {
-        savedCategory = await updateCategory(category.id, mainCategoryData);
-        toast.success("تم تحديث التصنيف بنجاح!");
+        await update(category.id, formattedData);
+        onSuccess?.();
       } else {
-        savedCategory = await createCategory(mainCategoryData);
-        toast.success("تم إنشاء التصنيف بنجاح!");
+        await create(formattedData);
+        form.reset();
       }
-
-      // Create subcategories if any
-      if (data.subCategories && data.subCategories.length > 0) {
-        for (const subCategory of data.subCategories) {
-          const subCategoryData = {
-            ...subCategory,
-            parent_id: savedCategory.id,
-          };
-          await createCategory(subCategoryData);
-        }
-        toast.success("تم إنشاء التصنيفات الفرعية بنجاح!");
-      }
-
-      // Navigate back to categories page
-      navigate("/admin/categories");
+      refetch();
     } catch (error) {
-      console.error("Error submitting category:", error);
-      if (isEditMode) {
-        toast.error("حدث خطأ أثناء تحديث التصنيف");
-      } else {
-        toast.error("حدث خطأ أثناء إنشاء التصنيف");
-      }
-    } finally {
-      setIsSubmitting(false);
+      console.error("Error saving category:", error);
+      toast.error("حدث خطأ أثناء حفظ التصنيف");
     }
-  });
+  };
 
-  // Get parent categories (categories without parent_id)
-  const parentCategories = categories.filter((cat) => cat.parent_id === null);
+  if (categoriesLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6  mx-auto w-full" dir="rtl">
-      <FormProvider {...form}>
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{isEditMode ? "تعديل التصنيف" : "إنشاء تصنيف جديد"}</h1>
-              <p className="text-gray-600">
-                {isEditMode ? "تعديل بيانات التصنيف" : "إنشاء تصنيف جديد مع التصنيفات الفرعية"}
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <Button type="button" variant="outline" onClick={() => navigate("/admin/categories")}>
-                إلغاء
-              </Button>
-              <Button type="submit" className="bg-main hover:bg-main/90" disabled={isSubmitting}>
-                {isSubmitting
-                  ? isEditMode
-                    ? "جاري التحديث..."
-                    : "جاري الحفظ..."
-                  : isEditMode
-                  ? "تحديث التصنيف"
-                  : "حفظ التصنيف"}
-              </Button>
-            </div>
-          </div>
+    <div className="container sticky top-0 w-full flex flex-col gap-4" dir="rtl">
+      <h1 className="text-2xl font-bold">{isEditMode ? "تعديل التصنيف" : "إضافة تصنيف جديد"}</h1>
 
-          {/* Main Category Information */}
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold mb-4">بيانات التصنيف الأساسية</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Category Name */}
-              <FormInput
-                control={form.control}
-                name="name"
-                label="اسم التصنيف"
-                placeholder="مثال: إلكترونيات"
-                error={form.formState.errors.name?.message}
-              />
-
-              {/* Status */}
-              <FormInput
-                control={form.control}
-                name="status"
-                label="الحالة"
-                select
-                options={[
-                  { value: "active", label: "نشط" },
-                  { value: "inactive", label: "غير نشط" },
-                ]}
-              />
-
-              {/* Parent Category */}
-              <div className="space-y-2">
-                <FormInput
+      <div className=" flex flex-col w-full  gap-6">
+        {/* Category Form */}
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>{isEditMode ? "تعديل بيانات التصنيف" : "بيانات التصنيف الجديد"}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                {/*   <FormField
                   control={form.control}
-                  name="parent_id"
-                  label="التصنيف الأب (اختياري)"
-                  select
-                  optional
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>اسم التصنيف</FormLabel>
+                      <FormControl>
+                        <Input placeholder="مثال: إلكترونيات" {...field} className="text-right" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                /> */}
+                <FormInput name="name" label="اسم التصنيف" />
+                <FormInput photo={true} name="image" label="صورة التصنيف" />
+                <FormInput
+                  select={true}
+                  name="status"
+                  label="حالة التصنيف"
                   options={[
-                    { value: "null", label: "بدون تصنيف أب" },
-                    ...parentCategories.map((cat: ApiCategory) => ({
-                      value: cat.id.toString(),
-                      label: cat.name,
-                    })),
+                    { value: "active", label: "نشط" },
+                    { value: "inactive", label: "غير نشط" },
                   ]}
                 />
-              </div>
 
-              {/* Category Image */}
-              <FormInput control={form.control} name="image" label="صورة التصنيف" photo optional />
-            </div>
+                <FormInput
+                  select={true}
+                  name="parent_id"
+                  label="التصنيف الأب"
+                  options={[
+                    { value: "null", label: "بدون تصنيف أب" },
+                    ...(categories?.map((cat) => ({ label: cat.name, value: cat.id.toString() })) || []),
+                  ]}
+                />
+
+                <div className="flex gap-4">
+                  <Button type="submit" disabled={isCreating || isUpdating} className="flex-1">
+                    {isCreating || isUpdating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin ml-2" />
+                        {isEditMode ? "جاري التحديث..." : "جاري الإنشاء..."}
+                      </>
+                    ) : (
+                      <>{isEditMode ? "تحديث التصنيف" : "إنشاء التصنيف"}</>
+                    )}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowTreeView(!showTreeView)}
+                    className="flex-1"
+                  >
+                    {showTreeView ? "إخفاء الشجرة" : "إدارة الهيكل"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+
+        {/* Category Tree View */}
+        {showTreeView && (
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle>هيكل التصنيفات</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <CategoryTreeView isUpdating={isUpdatingParent} />
+            </CardContent>
           </Card>
-
-          {/* Subcategories Section */}
-          {!isEditMode && form.watch("parent_id") === null && (
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">التصنيفات الفرعية</h2>
-                <Button type="button" variant="outline" onClick={addSubCategory} className="flex items-center gap-2">
-                  <PlusCircle className="w-4 h-4" />
-                  إضافة تصنيف فرعي
-                </Button>
-              </div>
-
-              {subCategories.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <p>لا توجد تصنيفات فرعية</p>
-                  <p className="text-sm">يمكنك إضافة تصنيفات فرعية لتنظيم المنتجات بشكل أفضل</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {subCategories.map((field, index) => (
-                    <div key={field.id} className="border rounded-lg p-4 bg-gray-50">
-                      <div className="flex items-start justify-between mb-4">
-                        <h3 className="font-medium text-gray-900">التصنيف الفرعي {index + 1}</h3>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removeSubCategory(index)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {/* Subcategory Name */}
-                        <FormInput
-                          control={form.control}
-                          name={`subCategories.${index}.name`}
-                          label="اسم التصنيف الفرعي"
-                          placeholder="مثال: هواتف ذكية"
-                          error={form.formState.errors.subCategories?.[index]?.name?.message}
-                        />
-
-                        {/* Subcategory Status */}
-                        <FormInput
-                          control={form.control}
-                          name={`subCategories.${index}.status`}
-                          label="الحالة"
-                          select
-                          options={[
-                            { value: "active", label: "نشط" },
-                            { value: "inactive", label: "غير نشط" },
-                          ]}
-                        />
-
-                        {/* Subcategory Image */}
-                        <FormInput
-                          control={form.control}
-                          name={`subCategories.${index}.image`}
-                          label="صورة التصنيف الفرعي"
-                          photo
-                          optional
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Card>
-          )}
-
-          {/* Submit Button */}
-          <div className="flex justify-end gap-3">
-            <Button type="button" variant="outline" onClick={() => navigate("/admin/categories")}>
-              إلغاء
-            </Button>
-            <Button type="submit" className="bg-main hover:bg-main/90" disabled={isSubmitting}>
-              {isSubmitting
-                ? isEditMode
-                  ? "جاري التحديث..."
-                  : "جاري الحفظ..."
-                : isEditMode
-                ? "تحديث التصنيف"
-                : "حفظ التصنيف"}
-            </Button>
-          </div>
-        </form>
-      </FormProvider>
+        )}
+      </div>
     </div>
   );
 };

@@ -3,7 +3,7 @@ import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessa
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { EyeIcon, EyeOffIcon, ImageIcon } from "lucide-react";
+import { EyeIcon, EyeOffIcon, ImageIcon, X } from "lucide-react";
 import { Control } from "react-hook-form";
 import { useFormContext } from "react-hook-form";
 import RichText from "./RichText";
@@ -11,7 +11,8 @@ import Starrating from "../reviews/Rate";
 import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from "../ui/select";
 import CalendarInput from "./CalendarInput";
 import MediaCenter from "./MediaCenter";
-import { ApiMediaFile } from "@/hooks/useUsersQuery";
+import { ApiMediaFile } from "@/types";
+import { STORAGE_URL } from "@/constants/api";
 
 interface FormInputProps {
   control?: Control<Record<string, unknown>>;
@@ -52,6 +53,8 @@ interface FormInputProps {
   info?: string;
   multiple?: boolean;
   maxFiles?: number;
+  mainCoverField?: string; // Field name for the main cover
+  grid?: number;
 }
 
 const FormInput = ({
@@ -83,6 +86,8 @@ const FormInput = ({
   flex,
   multiple = false,
   maxFiles = 10,
+  mainCoverField,
+  grid=5,
 }: FormInputProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isMediaCenterOpen, setIsMediaCenterOpen] = useState(false);
@@ -114,11 +119,30 @@ const FormInput = ({
             // Remove if already selected
             const newArray = currentArray.filter((_: string, index: number) => index !== fileIndex);
             form.setValue(name, newArray, { shouldValidate: true });
+
+            // If this was the main cover, reset main cover field
+            if (mainCoverField) {
+              const mainCover = form.getValues(mainCoverField);
+              if (mainCover === file.file_name) {
+                form.setValue(mainCoverField, newArray.length > 0 ? newArray[0] : "", { shouldValidate: true });
+              }
+            }
           } else {
             // Add to array (check maxFiles limit)
             if (currentArray.length < maxFiles) {
-              const newArray = [...currentArray, file.file_name];
+              // If it's the first image or there's no main cover set, add it to the start
+              const isFirstImage = currentArray.length === 0;
+              const noMainCover = mainCoverField && !form.getValues(mainCoverField);
+
+              const newArray =
+                isFirstImage || noMainCover ? [file.file_name, ...currentArray] : [...currentArray, file.file_name];
+
               form.setValue(name, newArray, { shouldValidate: true });
+
+              // Set as main cover if it's the first one or no main cover is set
+              if (mainCoverField && (isFirstImage || noMainCover)) {
+                form.setValue(mainCoverField, file.file_name, { shouldValidate: true });
+              }
             } else {
               // Optional: Show a toast or alert about max files limit
               console.warn(`Maximum of ${maxFiles} files allowed`);
@@ -127,6 +151,43 @@ const FormInput = ({
         } else {
           // For single selection, store as string
           form.setValue(name, file.file_name, { shouldValidate: true });
+        }
+      }
+    }
+  };
+
+  const handleRemoveCover = (fileName: string) => {
+    const form = formContext;
+    if (form && multiple) {
+      const currentValue = form.getValues(name) || [];
+      const currentArray = Array.isArray(currentValue) ? currentValue : [];
+      const newArray = currentArray.filter((f: string) => f !== fileName);
+      form.setValue(name, newArray, { shouldValidate: true });
+
+      // If this was the main cover, set the first remaining as main
+      if (mainCoverField) {
+        const mainCover = form.getValues(mainCoverField);
+        if (mainCover === fileName) {
+          form.setValue(mainCoverField, newArray.length > 0 ? newArray[0] : "", { shouldValidate: true });
+        }
+      }
+    }
+  };
+
+  const handleSetMainCover = (fileName: string) => {
+    const form = formContext;
+    if (form && mainCoverField) {
+      // Set the main cover field
+      form.setValue(mainCoverField, fileName, { shouldValidate: true });
+
+      // Reorder the array to put the main cover first
+      const currentFiles = form.getValues(name) as string[];
+      if (Array.isArray(currentFiles)) {
+        const fileIndex = currentFiles.indexOf(fileName);
+        if (fileIndex > 0) {
+          // Only reorder if not already first
+          const newFiles = [fileName, ...currentFiles.slice(0, fileIndex), ...currentFiles.slice(fileIndex + 1)];
+          form.setValue(name, newFiles, { shouldValidate: true });
         }
       }
     }
@@ -145,7 +206,11 @@ const FormInput = ({
         >
           {!switchToggle && label !== "" && !date && (
             <div className={` ${flex ? "w-fit" : "w-full"} flex justify-between  items-center gap-2`}>
-              <FormLabel className={`uppercase  text-nowrap relative w-fit text-[18px] ${check && "text-nowrap mt-2"}`}>
+              <FormLabel
+                className={`uppercase text-right  text-nowrap relative w-fit text-[18px] ${
+                  check && "text-nowrap mt-2"
+                }`}
+              >
                 {" "}
                 {!flex && !optional && !date && !switchToggle && label && (
                   <span className={`absolute -left-3 top-0   font-normal text-red-600`}>*</span>
@@ -197,32 +262,104 @@ const FormInput = ({
                         {field.value ? (
                           multiple ? (
                             // Multiple images display
-                            <div className="grid grid-cols-2 gap-2 p-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary">
+                            <div className="p-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary">
                               {Array.isArray(field.value) && (field.value as string[]).length > 0 ? (
                                 <>
-                                  {(field.value as string[]).slice(0, 3).map((fileName: string, index: number) => (
-                                    <img
-                                      key={index}
-                                      src={
-                                        fileName?.startsWith("http")
-                                          ? fileName
-                                          : `https://aatene.com/storage/${fileName}`
-                                      }
-                                      alt={`Selected media ${index + 1}`}
-                                      className="w-14 h-14 object-cover rounded"
-                                    />
-                                  ))}
-                                  {(field.value as string[]).length > 3 && (
-                                    <div className="w-14 h-14 bg-gray-100 rounded flex items-center justify-center text-xs font-medium">
-                                      +{(field.value as string[]).length - 3}
+                                  <div className={`grid grid-cols-${grid} gap-2`}>
+                                    {(field.value as string[]).map((fileName: string, index: number) => {
+                                      const mainCover = mainCoverField ? formContext?.getValues(mainCoverField) : null;
+                                      const isMainCover = mainCover === fileName;
+
+                                      return (
+                                        <div key={index} className="relative w-fit group">
+                                          <img
+                                            src={
+                                              fileName?.startsWith("http")
+                                                ? fileName
+                                                : `https://aatene.com/storage/${fileName}`
+                                            }
+                                            alt={`Selected media ${index + 1}`}
+                                            className={`w-20 h-20 object-cover rounded-lg ${
+                                              isMainCover ? "ring-2 ring-main" : ""
+                                            }`}
+                                          />
+
+                                          {/* Delete button */}
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleRemoveCover(fileName);
+                                            }}
+                                            className="absolute top-2 left-2 bg-red-500 text-white rounded-full p-1.5 opacity-90 hover:opacity-100 transition-opacity hover:bg-red-600 shadow-md"
+                                            title="حذف الصورة"
+                                          >
+                                            <X className="w-4 h-4" />
+                                          </button>
+
+                                          {/* Main cover radio button - only show if mainCoverField is provided */}
+                                          {mainCoverField && (
+                                            <button
+                                              type="button"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleSetMainCover(fileName);
+                                              }}
+                                              className={`absolute top-2 right-2 rounded-full p-1.5 transition-colors shadow-md ${
+                                                isMainCover
+                                                  ? "bg-main text-white"
+                                                  : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-300"
+                                              }`}
+                                              title={isMainCover ? "الغلاف الرئيسي" : "تعيين كغلاف رئيسي"}
+                                            >
+                                              <div
+                                                className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                                  isMainCover ? "bg-white border-main" : "border-gray-400"
+                                                }`}
+                                              >
+                                                {isMainCover && <div className="w-2 h-2 bg-main rounded-full" />}
+                                              </div>
+                                            </button>
+                                          )}
+
+                                          {/* Main cover indicator text */}
+                                          {isMainCover && (
+                                            <div className="absolute bottom-0 left-0 right-0 bg-main text-white text-xs py-1 px-2 rounded-b text-center font-medium">
+                                              الغلاف الرئيسي
+                                            </div>
+                                          )}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+
+                                  {/* Progress bar showing main cover */}
+                                  {mainCoverField && (
+                                    <div className="mt-3 w-full bg-gray-200 rounded-full h-2">
+                                      <div
+                                        className="bg-main h-2 rounded-full transition-all duration-300"
+                                        style={{
+                                          width: `${
+                                            (((field.value as string[]).findIndex(
+                                              (f: string) => f === formContext?.getValues(mainCoverField)
+                                            ) +
+                                              1) /
+                                              (field.value as string[]).length) *
+                                            100
+                                          }%`,
+                                        }}
+                                      />
                                     </div>
                                   )}
                                 </>
                               ) : (
-                                <div className="col-span-2 flex flex-col items-center justify-center h-32">
+                                <div className="flex flex-col items-center justify-center h-32">
                                   <ImageIcon className="mx-auto h-8 w-8 text-gray-400" />
                                   <p className="mt-2 text-sm text-gray-500">اختر صور متعددة</p>
                                   <p className="text-xs text-gray-400">حد أقصى {maxFiles} صور</p>
+                                  {mainCoverField && (
+                                    <p className="text-xs text-main mt-1">الصورة الأولى ستكون الغلاف الرئيسي</p>
+                                  )}
                                 </div>
                               )}
                             </div>
@@ -232,7 +369,7 @@ const FormInput = ({
                               src={
                                 (field.value as string)?.startsWith("http")
                                   ? (field.value as string)
-                                  : `https://aatene.com/storage/${field.value as string}`
+                                  : `${STORAGE_URL}/${field.value as string}`
                               }
                               alt="Selected media"
                               className="w-32 h-32 object-cover rounded-lg border-2 border-dashed border-gray-300 hover:border-primary"
@@ -275,7 +412,7 @@ const FormInput = ({
               ) : select && options ? (
                 <Select value={field.value as string} onValueChange={field.onChange}>
                   <SelectTrigger className=" w-full">
-                    <SelectValue placeholder="اختر..." />
+                    <SelectValue className="text-right" placeholder="اختر..." />
                   </SelectTrigger>
                   <SelectContent className=" w-full">
                     {options.map((option) => (

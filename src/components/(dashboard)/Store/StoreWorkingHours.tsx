@@ -1,18 +1,31 @@
 "use client";
 
 import React from "react";
-import { useFormContext, useFieldArray } from "react-hook-form";
+import { useFormContext, useFieldArray, FieldValues } from "react-hook-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Info } from "lucide-react";
 
+interface WorkingTime {
+  id?: string;
+  day: string;
+  from: string;
+  to: string;
+  open_always: boolean;
+  closed_always: boolean;
+}
+
+interface StoreFormValues extends FieldValues {
+  workingtimes: WorkingTime[];
+  open_status: string;
+}
+
 const StoreWorkingHours = () => {
-  const { control, watch, setValue } = useFormContext();
+  const { control, watch, setValue } = useFormContext<StoreFormValues>();
 
   const {
     fields: workingtimes,
-    append,
     update,
-    remove,
+    replace,
   } = useFieldArray({
     control,
     name: "workingtimes",
@@ -40,32 +53,39 @@ const StoreWorkingHours = () => {
     { value: "permanently_closed", label: "مغلق بشكل دائم", description: "أتوقف عن استقبال الطلبات نهائياً" },
   ];
 
-  // Initialize working times if empty
+  // Initialize or ensure exactly 7 working times
   React.useEffect(() => {
-    if (workingtimes.length === 0) {
-      daysOfWeek.forEach((day) => {
-        append({
-          day: day.key,
-          from: "09:00",
-          to: "18:00",
-          open_always: false,
-          closed_always: false,
-        });
-      });
-    }
-  }, [workingtimes.length, append]);
+    const currentWorkingTimes = workingtimes as WorkingTime[];
 
-  const handleTimeChange = (index: number, field: string, value: string) => {
-    const currentWorkingTime = workingtimes[index];
+    // If we have no working times or incorrect number of days, initialize/fix them
+    if (currentWorkingTimes.length !== 7) {
+      const correctedWorkingTimes: WorkingTime[] = daysOfWeek.map((day) => {
+        const existing = currentWorkingTimes.find((wt) => wt.day === day.key);
+        return (
+          existing || {
+            day: day.key,
+            from: "09:00",
+            to: "18:00",
+            open_always: false,
+            closed_always: false,
+          }
+        );
+      });
+      replace(correctedWorkingTimes);
+    }
+  }, [workingtimes, daysOfWeek, replace]);
+
+  const handleTimeChange = (index: number, field: "from" | "to", value: string) => {
+    const currentWorkingTime = workingtimes[index] as WorkingTime;
     update(index, {
       ...currentWorkingTime,
       [field]: value,
     });
   };
 
-  const handleCheckboxChange = (index: number, field: string, value: boolean) => {
-    const currentWorkingTime = workingtimes[index];
-    const newWorkingTime = {
+  const handleCheckboxChange = (index: number, field: "open_always" | "closed_always", value: boolean) => {
+    const currentWorkingTime = workingtimes[index] as WorkingTime;
+    const newWorkingTime: WorkingTime = {
       ...currentWorkingTime,
       [field]: value,
     };
@@ -147,15 +167,16 @@ const StoreWorkingHours = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {workingtimes.map((workingTime: any, index: number) => {
-                    const dayInfo = daysOfWeek.find((d) => d.key === workingTime.day);
+                  {workingtimes.map((workingTime, index) => {
+                    const typedWorkingTime = workingTime as WorkingTime;
+                    const dayInfo = daysOfWeek.find((d) => d.key === typedWorkingTime.day);
                     return (
                       <tr key={index} className="border-b hover:bg-gray-50">
-                        <td className="p-3 font-medium text-gray-900">{dayInfo?.label || workingTime.day}</td>
+                        <td className="p-3 font-medium text-gray-900">{dayInfo?.label || typedWorkingTime.day}</td>
                         <td className="p-3 text-center">
                           <input
                             type="checkbox"
-                            checked={workingTime.closed_always || false}
+                            checked={typedWorkingTime.closed_always || false}
                             onChange={(e) => handleCheckboxChange(index, "closed_always", e.target.checked)}
                             aria-label={`مغلق ${dayInfo?.label}`}
                             className="w-4 h-4 text-main border-gray-300 rounded focus:ring-main"
@@ -164,7 +185,7 @@ const StoreWorkingHours = () => {
                         <td className="p-3 text-center">
                           <input
                             type="checkbox"
-                            checked={workingTime.open_always || false}
+                            checked={typedWorkingTime.open_always || false}
                             onChange={(e) => handleCheckboxChange(index, "open_always", e.target.checked)}
                             aria-label={`24 ساعة كاملة ${dayInfo?.label}`}
                             className="w-4 h-4 text-main border-gray-300 rounded focus:ring-main"
@@ -173,9 +194,9 @@ const StoreWorkingHours = () => {
                         <td className="p-3">
                           <input
                             type="time"
-                            value={workingTime.from || "09:00"}
+                            value={typedWorkingTime.from || "09:00"}
                             onChange={(e) => handleTimeChange(index, "from", e.target.value)}
-                            disabled={workingTime.closed_always || workingTime.open_always}
+                            disabled={typedWorkingTime.closed_always || typedWorkingTime.open_always}
                             aria-label={`من ${dayInfo?.label}`}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent disabled:bg-gray-100 disabled:text-gray-500"
                           />
@@ -183,9 +204,9 @@ const StoreWorkingHours = () => {
                         <td className="p-3">
                           <input
                             type="time"
-                            value={workingTime.to || "18:00"}
+                            value={typedWorkingTime.to || "18:00"}
                             onChange={(e) => handleTimeChange(index, "to", e.target.value)}
-                            disabled={workingTime.closed_always || workingTime.open_always}
+                            disabled={typedWorkingTime.closed_always || typedWorkingTime.open_always}
                             aria-label={`إلى ${dayInfo?.label}`}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent disabled:bg-gray-100 disabled:text-gray-500"
                           />

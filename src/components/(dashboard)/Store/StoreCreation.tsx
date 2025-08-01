@@ -17,7 +17,9 @@ import StorePreview from "./StorePreview";
 import StoreProgressSteps from "./StoreProgressSteps";
 import StoreContactInfo from "./StoreContact";
 import StoreSpecifications from "./StoreSpecifications";
-import { ApiStore, useAdminEntity } from "@/hooks/useUsers";
+import { ApiStore } from "@/types";
+import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
+import { useAuth } from "@/context/AuthContext";
 
 type StoreFormData = z.infer<typeof storeSchema>;
 
@@ -55,19 +57,24 @@ const AccordionStep = ({
 const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const isEditMode = !!store;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-
+  const { user } = useAuth();
   // Use the create method from the hook
-  const { create: createStore, update: updateStore } = useAdminEntity("stores");
+  const { create: createStore, update: updateStore } = useAdminEntityQuery("stores", {
+    initialPage: 1,
+    initialPerPage: 10,
+  });
 
   const form = useForm<StoreFormData>({
     resolver: zodResolver(storeSchema),
     defaultValues: {
       name: "",
       logo: null,
-      cover: null,
+      cover: [],
+      mainCover: "",
       description: "",
       email: "",
       address: "",
@@ -91,21 +98,22 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
     },
     mode: "onChange",
   });
-
+  console.log(store);
   // Populate form with store data when in edit mode
   useEffect(() => {
     if (store) {
       form.reset({
         name: store.name || "",
         logo: store.logo || null,
-        cover: store.cover || null,
+        cover: store.cover || [],
+        mainCover: store.cover?.[0] || "",
         description: store.description || "",
         email: store.email || "",
         address: store.address || "",
         lng: store.lng?.toString() || "",
         lat: store.lat?.toString() || "",
-        owner_id: store.owner_id || 1,
-        currency_id: store.currency_id || 1,
+        owner_id: store.owner_id.toString() || "1",
+        currency_id: store.currency_id.toString() || "1",
         phone: store.phone || "",
         whats_app: store.whats_app || null,
         facebook: store.facebook || null,
@@ -119,8 +127,8 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
           (store.open_status as "open_always" | "open_with_working_times" | "closed_always") ||
           "open_with_working_times",
         workingtimes: store.workingtimes || [],
-        managers: store.managers || [],
-        specifications: store.specifications || [], // TODO: Add when API type is updated
+        managers: store.managers.map((manager) => ({ ...manager, email: manager.user_email })) || [],
+        specifications: store.specifications || [],
       });
     }
   }, [store, form]);
@@ -142,33 +150,40 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
         "owner_id",
         "currency_id",
         "phone",
-      ] as const,
+      ] as Array<keyof StoreFormData>,
     },
     {
       id: 2,
       title: "الاتصال والسوشيل",
       component: <StoreContactInfo />,
-      fields: ["whats_app", "facebook", "tiktok", "youtube", "instagram", "twitter", "linkedin", "pinterest"] as const,
+      fields: ["whats_app", "facebook", "tiktok", "youtube", "instagram", "twitter", "linkedin", "pinterest"] as Array<
+        keyof StoreFormData
+      >,
     },
-    { id: 3, title: "فريق العمل", component: <StoreEmployeeManagement />, fields: ["managers"] as const },
+    {
+      id: 3,
+      title: "فريق العمل",
+      component: <StoreEmployeeManagement />,
+      fields: ["managers"] as Array<keyof StoreFormData>,
+    },
     {
       id: 4,
       title: "أوقات العمل و الطلبات",
       component: <StoreWorkingHours />,
-      fields: ["open_status", "workingtimes"] as const,
+      fields: ["open_status", "workingtimes"] as Array<keyof StoreFormData>,
     },
     {
       id: 5,
       title: "مواصفات المتجر",
       component: <StoreSpecifications />,
-      fields: ["specifications"] as const,
+      fields: ["specifications"] as Array<keyof StoreFormData>,
     },
   ] as const;
 
   console.log(form.formState.errors);
 
   const nextStep = async () => {
-    const stepFields = steps[currentStep - 1].fields;
+    const stepFields = steps[currentStep - 1].fields as (keyof StoreFormData)[];
     const isValid = await form.trigger(stepFields);
 
     if (!isValid) {
@@ -238,10 +253,8 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
 
       if (isEditMode && store) {
         await updateStore(store.id, apiData);
-        toast.success("تم تحديث المتجر بنجاح!");
       } else {
         await createStore(apiData);
-        toast.success("تم إنشاء المتجر بنجاح!");
       }
 
       // Invalidate stores cache to refresh the data
@@ -250,7 +263,11 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
       });
 
       // Navigate back to stores management page
-      navigate("/admin/stores");
+      if (user?.user?.user_type === "admin") {
+        navigate("/admin/stores");
+      } else {
+        navigate("/dashboard/stores");
+      }
     } catch (error) {
       console.error("Error submitting store:", error);
       if (isEditMode) {

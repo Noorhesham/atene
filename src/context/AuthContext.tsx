@@ -12,6 +12,7 @@ interface User {
   is_active: number;
   referral_code: string | null;
   roles: string[];
+  user_type: "client" | "admin" | "merchant";
 }
 
 interface AuthUser {
@@ -25,6 +26,7 @@ interface AuthContextType {
   login: (token: string) => Promise<void>;
   logout: () => void;
   checkAuth: () => Promise<void>;
+  refetch: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -34,6 +36,7 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => {},
   logout: () => {},
   checkAuth: async () => {},
+  refetch: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -85,6 +88,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("storeId");
     setUser(null);
   };
 
@@ -94,7 +98,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
     fetchUser();
   }, []);
-
+  const refetch = async () => {
+    await checkAuth();
+  };
   return (
     <AuthContext.Provider
       value={{
@@ -104,6 +110,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         login,
         logout,
         checkAuth,
+        refetch,
       }}
     >
       {children}

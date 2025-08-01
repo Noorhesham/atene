@@ -7,89 +7,39 @@ import ModalCustom from "@/components/ModalCustom";
 import FormInput from "@/components/inputs/FormInput";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
+import { ApiProduct } from "@/types";
 
 type RelatedProduct = {
-  id: string;
+  id: number;
   name: string;
-  category: string;
+  category: { name: string };
   price: number;
-  image: string;
-  stock: number;
+  cover: string | null;
+  cover_url: string | null;
 };
-
-const mockProducts: RelatedProduct[] = [
-  {
-    id: "prod1",
-    name: "بنطلون جينز و",
-    category: "ملابس و اكسسوارات",
-    price: 927.0,
-    image: "https://placehold.co/40x40/E2E8F0/4A5568?text=P1",
-    stock: 10,
-  },
-  {
-    id: "prod2",
-    name: "اسم المنتج",
-    category: "ملابس و اكسسوارات",
-    price: 117.0,
-    image: "https://placehold.co/40x40/E2E8F0/4A5568?text=P2",
-    stock: 10,
-  },
-  {
-    id: "prod3",
-    name: "اسم المنتج",
-    category: "ملابس و اكسسوارات",
-    price: 637.0,
-    image: "https://placehold.co/40x40/E2E8F0/4A5568?text=P3",
-    stock: 2,
-  },
-  {
-    id: "prod4",
-    name: "اسم المنتج",
-    category: "ملابس و اكسسوارات",
-    price: 431.0,
-    image: "https://placehold.co/40x40/E2E8F0/4A5568?text=P4",
-    stock: 3,
-  },
-  {
-    id: "prod5",
-    name: "اسم المنتج",
-    category: "ملابس و اكسسوارات",
-    price: 164.0,
-    image: "https://placehold.co/40x40/E2E8F0/4A5568?text=P5",
-    stock: 1,
-  },
-  {
-    id: "prod6",
-    name: "اسم المنتج",
-    category: "ملابس و اكسسوارات",
-    price: 839.0,
-    image: "https://placehold.co/40x40/E2E8F0/4A5568?text=P6",
-    stock: 5,
-  },
-];
 
 const SelectUpsellProductsModal = ({
   onConfirm,
   closeModal,
   currentSelection,
 }: {
-  onConfirm: (products: RelatedProduct[]) => void;
+  onConfirm: (productIds: number[]) => void;
   closeModal: () => void;
-  currentSelection: RelatedProduct[];
+  currentSelection: number[];
 }) => {
-  const [selectedProducts, setSelectedProducts] = useState<RelatedProduct[]>(currentSelection);
+  const [selectedProductIds, setSelectedProductIds] = useState<number[]>(currentSelection);
   const [searchTerm, setSearchTerm] = useState("");
+  const { data: products = [], isLoading } = useAdminEntityQuery("products", {});
 
-  const handleToggle = (product: RelatedProduct) => {
-    setSelectedProducts((prev) =>
-      prev.some((p) => p.id === product.id) ? prev.filter((p) => p.id !== product.id) : [...prev, product]
+  const handleToggle = (product: ApiProduct) => {
+    setSelectedProductIds((prev) =>
+      prev.includes(product.id) ? prev.filter((id) => id !== product.id) : [...prev, product.id]
     );
   };
 
-  const filteredProducts = mockProducts.filter((p: RelatedProduct) =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
+  const filteredProducts = products.filter((p: ApiProduct) => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  if (isLoading) return <div>Loading...</div>;
   return (
     <div className="p-4" dir="rtl">
       <h3 className="text-lg font-bold text-center mb-4">إضافة منتجات مكملة</h3>
@@ -104,8 +54,8 @@ const SelectUpsellProductsModal = ({
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
       </div>
       <div className="space-y-2 max-h-80 overflow-y-auto pr-2">
-        {filteredProducts.map((product: RelatedProduct) => {
-          const isSelected = selectedProducts.some((p) => p.id === product.id);
+        {filteredProducts.map((product: ApiProduct) => {
+          const isSelected = selectedProductIds.includes(product.id);
           return (
             <div
               key={product.id}
@@ -114,14 +64,18 @@ const SelectUpsellProductsModal = ({
               }`}
               onClick={() => handleToggle(product)}
             >
-              <img src={product.image} alt={product.name} className="w-10 h-10 rounded-md object-cover" />
+              <img
+                src={product.cover_url || product.cover || ""}
+                alt={product.name}
+                className="w-10 h-10 rounded-md object-cover"
+              />
               <div className="flex-grow">
                 <p className="font-semibold text-gray-800">{product.name}</p>
                 <div className="flex items-center gap-2 text-xs text-gray-500">
-                  <span>{product.category}</span>
+                  <span>{product.category?.name || "غير محدد"}</span>
                   <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
                   <Package size={12} />
-                  <span>{product.stock}</span>
+                  <span>متوفر</span>
                 </div>
               </div>
               <div className="font-bold text-gray-700">₪ {product.price.toFixed(2)}</div>
@@ -138,7 +92,7 @@ const SelectUpsellProductsModal = ({
         })}
       </div>
       <div className="flex justify-between items-center mt-6">
-        <p className="text-sm text-gray-600">{selectedProducts.length} منتجات مختارة</p>
+        <p className="text-sm text-gray-600">{selectedProductIds.length} منتجات مختارة</p>
         <div className="flex gap-3">
           <Button type="button" variant="outline" onClick={closeModal} className="bg-gray-100">
             إلغاء
@@ -146,7 +100,7 @@ const SelectUpsellProductsModal = ({
           <Button
             type="button"
             onClick={() => {
-              onConfirm(selectedProducts);
+              onConfirm(selectedProductIds);
               closeModal();
             }}
             className="bg-main text-white hover:bg-main/90"
@@ -222,17 +176,21 @@ const AddDiscountModal = ({
 };
 
 const UpSell = () => {
-  const { control, setValue } = useFormContext();
+  const { control, setValue, watch } = useFormContext();
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
   const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
+  const { data: products = [], isLoading } = useAdminEntityQuery("products", {});
 
-  const { fields, remove, replace } = useFieldArray({
+  const { replace } = useFieldArray({
     control,
     name: "upsellProducts",
   });
 
-  const handleConfirmSelection = (products: RelatedProduct[]) => {
-    replace(products);
+  const upsellProductIds = watch("upsellProducts") || [];
+  const selectedProducts = products.filter((product) => upsellProductIds.includes(product.id));
+
+  const handleConfirmSelection = (productIds: number[]) => {
+    replace(productIds);
   };
 
   const handleConfirmDiscount = ({ price, date }: { price: number; date: string }) => {
@@ -245,7 +203,7 @@ const UpSell = () => {
     setValue("upsellDiscountPrice", undefined);
     setValue("upsellDiscountEndDate", undefined);
   };
-
+  if (isLoading) return <div>Loading...</div>;
   return (
     <div className="space-y-6 p-6">
       <div className="flex justify-between items-center">
@@ -260,7 +218,7 @@ const UpSell = () => {
           }
           content={
             <SelectUpsellProductsModal
-              currentSelection={fields as RelatedProduct[]}
+              currentSelection={upsellProductIds}
               onConfirm={handleConfirmSelection}
               closeModal={() => setIsSelectModalOpen(false)}
             />
@@ -268,7 +226,7 @@ const UpSell = () => {
         />
       </div>
 
-      {fields.length === 0 ? (
+      {selectedProducts.length === 0 ? (
         <div className="text-center p-8 border-t">
           <div className="flex justify-center items-center gap-4 mb-4">
             <div className="p-4 bg-gray-100 rounded-full text-gray-400">
@@ -284,32 +242,35 @@ const UpSell = () => {
               حذف الكل
             </Button>
           </div>
-          {fields.map((field, index) => (
-            <div key={field.id} className="p-3 bg-gray-50 rounded-lg flex items-center justify-between">
+          {selectedProducts.map((product) => (
+            <div key={product.id} className="p-3 bg-gray-50 rounded-lg flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <img
-                  src={(field as RelatedProduct).image}
-                  alt={(field as RelatedProduct).name}
+                  src={product.cover_url || product.cover || ""}
+                  alt={product.name}
                   className="w-10 h-10 rounded-md object-cover"
                 />
                 <div>
-                  <p className="font-semibold text-gray-800">{(field as RelatedProduct).name}</p>
+                  <p className="font-semibold text-gray-800">{product.name}</p>
                   <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <span>{(field as RelatedProduct).category}</span>
+                    <span>{product.category?.name || "غير محدد"}</span>
                     <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
                     <Package size={12} />
-                    <span>{(field as RelatedProduct).stock}</span>
+                    <span>متوفر</span>
                   </div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <p className="font-bold text-gray-700">₪ {(field as RelatedProduct).price.toFixed(2)}</p>
+                <p className="font-bold text-gray-700">₪ {product.price.toFixed(2)}</p>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
                   className="w-8 h-8 text-red-500 bg-red-50 hover:bg-red-100"
-                  onClick={() => remove(index)}
+                  onClick={() => {
+                    const newIds = upsellProductIds.filter((id: number) => id !== product.id);
+                    replace(newIds);
+                  }}
                 >
                   <Trash2 size={16} />
                 </Button>
@@ -326,7 +287,7 @@ const UpSell = () => {
             }
             content={
               <AddDiscountModal
-                products={fields as RelatedProduct[]}
+                products={selectedProducts}
                 onConfirm={handleConfirmDiscount}
                 closeModal={() => setIsDiscountModalOpen(false)}
               />

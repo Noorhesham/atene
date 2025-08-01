@@ -1,143 +1,21 @@
 import React, { useState } from "react";
-import { ChevronLeft, Add, ShoppingCart, Search } from "../../../components/icons";
-
-import { Category, FilterPanelProps } from "@/types/orders";
+import { ChevronLeft, Add, ShoppingCart } from "../../../components/icons";
+import { FilterPanelProps, Order } from "@/types/orders";
 import { OrdersList, OrderDetails } from "./OrdersList";
 import { Header } from "./Header";
-import { Button } from "@/components/ui/button";
 import EditOrderView from "./EditOrderView";
-import { Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useAdminEntityQuery, ApiOrder } from "@/hooks/useUsersQuery";
+import { Loader2 } from "lucide-react";
 
-const ordersData = [
-  {
-    id: "#123444",
-    customerName: "اسم العميل",
-    date: "منذ 4 أشهر",
-    price: "927.00",
-    details: {
-      customer: {
-        name: "اسم العميل",
-        avatar: "https://i.pravatar.cc/40?u=a042581f4e29026704d",
-        since: "منذ 4 أشهر",
-        email: "kerooddeef5@gmail.com",
-        phone: "+20 1289922985",
-        address: "شارع الخليل ابراهيم, الف مسكن",
-      },
-      order: {
-        store: "متجر الرئيسي",
-        id: "1212424234",
-        date: "16 يوليو, 2025",
-        title: "طلب منتج",
-      },
-      product: {
-        name: "لابتوب لينوفو",
-        color: "اسود",
-        size: "15 inch",
-        quantity: 2,
-      },
-    },
-  },
-  {
-    id: "#123445",
-    customerName: "عميل آخر",
-    date: "منذ 5 أشهر",
-    price: "850.00",
-    details: {
-      customer: {
-        name: "عميل آخر",
-        avatar: "https://i.pravatar.cc/40?u=a042581f4e29026704e",
-        since: "منذ 5 أشهر",
-        email: "test@example.com",
-        phone: "+20 1000000000",
-        address: "عنوان افتراضي",
-      },
-      order: { store: "متجر ثانوي", id: "987654321", date: "15 يونيو, 2025", title: "طلب جديد" },
-      product: { name: "شاشة سامسونج", color: "فضي", size: "27 inch", quantity: 1 },
-    },
-  },
-  {
-    id: "#123446",
-    customerName: "جون دو",
-    date: "منذ 5 أشهر",
-    price: "120.00",
-    details: {
-      customer: {
-        name: "جون دو",
-        avatar: "https://i.pravatar.cc/40?u=a042581f4e29026704f",
-        since: "منذ 5 أشهر",
-        email: "john.doe@example.com",
-        phone: "+1 5551234567",
-        address: "123 Main St",
-      },
-      order: { store: "متجر رئيسي", id: "555555555", date: "14 يونيو, 2025", title: "اكسسوارات" },
-      product: { name: "ماوس لاسلكي", color: "أسود", size: "N/A", quantity: 1 },
-    },
-  },
-  {
-    id: "#123447",
-    customerName: "سارة كونور",
-    date: "منذ 6 أشهر",
-    price: "345.00",
-    details: {
-      customer: {
-        name: "سارة كونور",
-        avatar: "https://i.pravatar.cc/40?u=a042581f4e29026704a",
-        since: "منذ 6 أشهر",
-        email: "sarah.c@example.com",
-        phone: "+44 2079460958",
-        address: "London, UK",
-      },
-      order: { store: "متجر الكتروني", id: "333444555", date: "10 مايو, 2025", title: "مكونات كمبيوتر" },
-      product: { name: "لوحة مفاتيح ميكانيكية", color: "أبيض", size: "Full-size", quantity: 1 },
-    },
-  },
-  {
-    id: "#123448",
-    customerName: "احمد علي",
-    date: "منذ 6 أشهر",
-    price: "500.00",
-    details: {
-      customer: {
-        name: "احمد علي",
-        avatar: "https://i.pravatar.cc/40?u=a042581f4e29026704b",
-        since: "منذ 6 أشهر",
-        email: "ahmed.ali@example.com",
-        phone: "+20 111222333",
-        address: "القاهرة, مصر",
-      },
-      order: { store: "متجر رئيسي", id: "1122334455", date: "5 مايو, 2025", title: "ملابس" },
-      product: { name: "تي شيرت", color: "أزرق", size: "Large", quantity: 3 },
-    },
-  },
-  {
-    id: "#123449",
-    customerName: "فاطمة محمد",
-    date: "منذ 7 أشهر",
-    price: "730.00",
-    details: {
-      customer: {
-        name: "فاطمة محمد",
-        avatar: "https://i.pravatar.cc/40?u=a042581f4e29026704c",
-        since: "منذ 7 أشهر",
-        email: "fatima.m@example.com",
-        phone: "+966 501234567",
-        address: "الرياض, السعودية",
-      },
-      order: { store: "متجر الأزياء", id: "6677889900", date: "1 أبريل, 2025", title: "فستان سهرة" },
-      product: { name: "فستان", color: "أحمر", size: "Medium", quantity: 1 },
-    },
-  },
+const filterCategories = [
+  { name: "جميع الطلبات", count: 0, active: true, status: null },
+  { name: "الطلبات المعلقة", count: 0, status: "pending" },
+  { name: "الطلبات المكتملة", count: 0, status: "completed" },
+  { name: "الطلبات الملغية", count: 0, status: "cancelled" },
 ];
 
-const filterCategories: Category[] = [
-  { name: "جميع الطلبات", count: 14, active: true },
-  { name: "الطلبات المعلقة", count: 0 },
-  { name: "الطلبات المكتملة", count: 12 },
-  { name: "الطلبات الملغية", count: 2 },
-];
-
-const FilterPanel: React.FC<FilterPanelProps> = ({ categories }) => (
+const FilterPanel: React.FC<FilterPanelProps> = ({ categories, onFilterChange }) => (
   <div className="bg-white rounded-lg border border-gray-200 p-4 h-full">
     <div className="flex justify-between items-center mb-4">
       <h2 className="font-bold text-main">جميع الطلبات (14)</h2>
@@ -146,20 +24,23 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ categories }) => (
       </button>
     </div>
     <ul>
-      {categories.map((cat, index) => (
-        <li
-          key={index}
-          className={`flex justify-between items-center p-2 rounded-md cursor-pointer ${
-            cat.active ? "bg-blue-50 text-blue-700 font-bold" : "text-gray-600 hover:bg-gray-50"
-          }`}
-        >
-          <span className="flex items-center gap-2">
-            {cat.active && <span className="w-1.5 h-1.5 bg-blue-700 rounded-full"></span>}
-            {cat.name}
-          </span>
-          <span>({cat.count})</span>
-        </li>
-      ))}
+      {categories.map(
+        (cat: { name: string; count: number; active?: boolean; status: string | null }, index: number) => (
+          <li
+            key={index}
+            onClick={() => onFilterChange(cat.status)}
+            className={`flex justify-between items-center p-2 rounded-md cursor-pointer ${
+              cat.active ? "bg-blue-50 text-blue-700 font-bold" : "text-gray-600 hover:bg-gray-50"
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              {cat.active && <span className="w-1.5 h-1.5 bg-blue-700 rounded-full"></span>}
+              {cat.name}
+            </span>
+            <span>({cat.count})</span>
+          </li>
+        )
+      )}
     </ul>
     <button className="w-full mt-4 flex items-center justify-center gap-2 py-2 px-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
       <Add />
@@ -180,9 +61,30 @@ const EmptyState: React.FC = () => (
 
 const OrdersPage = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const [selectedOrders, setSelectedOrders] = useState([ordersData[0].id]);
+  const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [activeStatus, setActiveStatus] = useState<string | null>(null);
+  const {
+    data: orders,
+    isLoading,
+    error,
+    totalPages,
+    setSearchQuery: setOrderSearchQuery,
+    setCurrentPage: setOrderCurrentPage,
+  } = useAdminEntityQuery("orders", {
+    initialPage: currentPage,
+    queryParams: { search: searchQuery },
+  }) as {
+    data: ApiOrder[];
+    isLoading: boolean;
+    error: string | null;
+    totalPages: number;
+    setSearchQuery: (query: string) => void;
+    setCurrentPage: (page: number) => void;
+  };
 
-  const handleSelectOrder = (orderId: any) => {
+  const handleSelectOrder = (orderId: string) => {
     setSelectedOrders((prev) => {
       const newSelection = new Set(prev);
       if (newSelection.has(orderId)) {
@@ -194,32 +96,117 @@ const OrdersPage = () => {
     });
   };
 
-  const orderForDetails = selectedOrders.length === 1 ? ordersData.find((o) => o.id === selectedOrders[0]) : null;
+  const orderForDetails =
+    selectedOrders.length === 1 ? orders.find((o: ApiOrder) => o.reference_id === selectedOrders[0]) : null;
 
+  // Update filter categories counts
+  const filteredOrders = orders?.filter((order: ApiOrder) => {
+    if (!activeStatus) return true;
+    return order.status === activeStatus;
+  });
+
+  const updatedFilterCategories = filterCategories.map((cat) => ({
+    ...cat,
+    active: cat.status === activeStatus,
+    count:
+      orders?.filter((order: ApiOrder) => {
+        if (cat.status === null) return true;
+        return order.status === cat.status;
+      }).length || 0,
+  }));
+
+  if (isLoading) {
+    return (
+      <div className="w-full min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full min-h-screen flex items-center justify-center text-red-500">
+        حدث خطأ أثناء تحميل الطلبات
+      </div>
+    );
+  }
+  console.log(orders);
   return (
     <div className="w-full min-h-screen p-4 lg:p-6 font-sans bg-gray-50">
-      <Header onAddOrder={() => setIsEditing(true)} />
+      <Header mode="orders" onAddOrder={() => setIsEditing(true)} />
 
       {isEditing ? (
-        <EditOrderView onBack={() => setIsEditing(false)} />
+        <EditOrderView order={orderForDetails} onBack={() => setIsEditing(false)} />
       ) : (
         <div>
-          <div className="w-full lg:w-auto flex items-center gap-4 mb-6"></div>{" "}
+          <div className="w-full lg:w-auto flex items-center gap-4 mb-6">
+            <Input
+              placeholder="البحث في الطلبات..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setOrderSearchQuery(e.target.value);
+              }}
+              className="max-w-sm"
+            />
+          </div>
           <div className="grid grid-cols-12 gap-6" dir="rtl">
             <div className="col-span-12 lg:col-span-3">
-              <FilterPanel categories={filterCategories} />
+              <FilterPanel
+                categories={updatedFilterCategories}
+                onFilterChange={(status) => {
+                  setActiveStatus(status);
+                  setSelectedOrders([]);
+                }}
+              />
             </div>
             <div className="col-span-12 lg:col-span-4">
-              <OrdersList orders={ordersData} selectedOrders={selectedOrders} onSelectOrder={handleSelectOrder} />
+              <OrdersList
+                orders={(filteredOrders || []).map((order: ApiOrder) => ({
+                  id: order.reference_id,
+                  customerName: order.name,
+                  date: "-",
+                  price: order.total.toString(),
+                  client: order.client,
+                  items: order.items,
+                  address: order.address,
+                  email: order.email,
+                  phone: order.phone,
+                  notes: order.notes,
+                  status: order.status,
+                  sub_total: order.sub_total,
+                  discount_total: order.discount_total,
+                  shipping_cost: order.shipping_cost,
+                  total: order.total,
+                  reference_id: order.reference_id,
+                  name: order.name,
+                }))}
+                selectedOrders={selectedOrders}
+                onSelectOrder={handleSelectOrder}
+              />
             </div>
             <div className="col-span-12 lg:col-span-5">
-              {orderForDetails ? (
-                <OrderDetails onEdit={() => setIsEditing(true)} order={orderForDetails} />
-              ) : (
-                <EmptyState />
-              )}
+              {orderForDetails ? <OrderDetails order={orderForDetails as unknown as Order} /> : <EmptyState />}
             </div>
           </div>
+          {totalPages > 1 && (
+            <div className="mt-4 flex justify-center">
+              <div className="flex gap-2">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => {
+                      setCurrentPage(page);
+                      setOrderCurrentPage(page);
+                    }}
+                    className={`px-3 py-1 rounded ${currentPage === page ? "bg-main text-white" : "bg-gray-100"}`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

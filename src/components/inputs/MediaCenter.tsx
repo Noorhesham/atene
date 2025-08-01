@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAdminEntityQuery, ApiMediaFile } from "@/hooks/useUsersQuery";
+import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
+import { ApiMediaFile } from "@/types";
 import { cn } from "@/lib/utils";
 import {
   Upload,
@@ -76,10 +77,14 @@ export const MediaCenter: React.FC<MediaCenterProps> = ({
     isLoading,
     error,
     refetch,
-  } = useAdminEntityQuery("media-center", {
-    queryParams: { type: activeTab, search: searchQuery },
-    enabled: open,
-  });
+  } = useAdminEntityQuery(
+    "media-center",
+    {
+      queryParams: { type: activeTab, search: searchQuery },
+      enabled: open,
+    },
+    "merchant"
+  );
 
   // Handle tab change
   const handleTabChange = (value: string) => {
@@ -123,9 +128,9 @@ export const MediaCenter: React.FC<MediaCenterProps> = ({
         const file = files[i];
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("file_type", activeTab);
+        formData.append("type", activeTab);
 
-        const response = await fetch(`https://aatene.com/api/add-new`, {
+        const response = await fetch(`https://aatene.com/api/media-center/add-new`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -264,7 +269,7 @@ export const MediaCenter: React.FC<MediaCenterProps> = ({
                 <p className="text-sm">Try uploading something!</p>
               </div>
             ) : (
-              <div className="grid grid-cols-[repeat(auto-fit,_minmax(150px,_1fr))] gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {(mediaFiles as ApiMediaFile[]).map((file) => {
                   const isSelected = selectedItems.some((item) => item.id === file.id);
                   const isImage = isImageFile(file.file_name, activeTab);

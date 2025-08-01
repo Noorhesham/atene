@@ -1,27 +1,14 @@
 "use client";
 
 import { Link } from "react-router-dom";
-import {
-  ChevronDown,
-  Package,
-  Users,
-  Settings,
-  User,
-  Home,
-  Store,
-  ShoppingCart,
-  MoreHorizontal,
-  Shirt,
-} from "lucide-react";
+import { ChevronDown, Package, Users, Home, ShoppingCart, MoreHorizontal, Shirt, Store } from "lucide-react";
+import StoreSelector from "./StoreSelector";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -30,10 +17,10 @@ import { useAuth } from "@/context/AuthContext";
 
 const DashboardNavbar = () => {
   const { user } = useAuth();
-  const isAdmin = user?.user.roles.map((role) => role.name === "superadmin");
+  const isAdmin = user?.user.roles.includes("superadmin");
   const preLink = isAdmin ? "/admin" : "/dashboard";
   return (
-    <nav className="w-full bg-[#C8D7E8] border-b border-gray-200 shadow-sm" dir="rtl">
+    <nav dir="rtl" className="w-full bg-[#C8D7E8] border-b border-gray-200 shadow-sm">
       <MaxWidthDashboard className="bg-[#C8D7E8]">
         <div className="flex items-center justify-between h-16">
           {/* Right Side - Logo and Navigation */}
@@ -69,7 +56,7 @@ const DashboardNavbar = () => {
                     <ChevronDown className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuContent align="end" className="w-48 text-right">
                   <DropdownMenuItem>
                     <Link to={`${preLink}/stores`} className="w-full">
                       إدارة المتاجر
@@ -78,11 +65,6 @@ const DashboardNavbar = () => {
                   <DropdownMenuItem>
                     <Link to={`${preLink}/stores/add`} className="w-full">
                       إضافة متجر
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to={`${preLink}/stores/pending`} className="w-full">
-                      المتاجر المعلقة
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -100,7 +82,7 @@ const DashboardNavbar = () => {
                     <ChevronDown className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuContent align="end" className="w-48 text-right">
                   <DropdownMenuItem>
                     <Link to={`${preLink}/orders`} className="w-full">
                       جميع الطلبات
@@ -131,7 +113,7 @@ const DashboardNavbar = () => {
                     <ChevronDown className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuContent align="end" className="w-48 text-right">
                   <DropdownMenuItem>
                     <Link to={`${preLink}/products`} className="w-full">
                       إدارة المنتجات
@@ -162,7 +144,7 @@ const DashboardNavbar = () => {
                     <ChevronDown className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuContent align="end" className="w-48 text-right   ">
                   <DropdownMenuItem>
                     <Link to={`${preLink}/users`} className="w-full">
                       إدارة المستخدمين
@@ -249,37 +231,7 @@ const DashboardNavbar = () => {
               </PopoverContent>
             </Popover>
             {/* User Profile */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2 hover:bg-[#C8D7E8]/20">
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src="/placeholder-avatar.jpg" alt="User" />
-                    <AvatarFallback className="bg-[#2D496A] text-white">م</AvatarFallback>
-                  </Avatar>
-                  <div className="text-right hidden sm:block">
-                    <div className="text-sm font-medium text-[#2D496A]">المحتوى (التشغيل الحالي)</div>
-                    <div className="text-xs text-gray-600">الرئيسية</div>
-                  </div>
-                  <ChevronDown className="w-4 h-4 text-[#2D496A]" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel className="text-right">حسابي</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-right">
-                  <User className="ml-2 h-4 w-4" />
-                  <span>الملف الشخصي</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-right">
-                  <Settings className="ml-2 h-4 w-4" />
-                  <span>الإعدادات</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-right text-red-600">
-                  <span>تسجيل الخروج</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <StoreSelector />
           </div>
         </div>
       </MaxWidthDashboard>

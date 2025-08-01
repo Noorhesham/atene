@@ -1,4 +1,3 @@
-import React from "react";
 import { useFormContext } from "react-hook-form";
 import { Card } from "@/components/ui/card";
 import { ImageIcon } from "lucide-react";
@@ -9,15 +8,15 @@ const StorePreview = () => {
   const storeDescription = watch("description");
   const storeLogo = watch("logo");
   const storeCover = watch("cover");
-
+  console.log(storeCover);
   return (
     <Card className="p-6">
       <h3 className="text-lg font-bold mb-4">معاينة صفحة المتجر</h3>
       <div className="border rounded-lg p-4 space-y-4">
         <div className="w-full h-32 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden">
-          {storeCover ? (
+          {storeCover[0] ? (
             <img
-              src={typeof storeCover === "string" ? storeCover : URL.createObjectURL(storeCover)}
+              src={storeCover?.[0]?.startsWith("http") ? storeCover[0] : `https://aatene.com/storage/${storeCover[0]}`}
               alt="Store Cover"
               className="w-full h-full object-cover"
             />
@@ -29,7 +28,13 @@ const StorePreview = () => {
           <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
             {storeLogo ? (
               <img
-                src={typeof storeLogo === "string" ? storeLogo : URL.createObjectURL(storeLogo)}
+                src={
+                  typeof storeLogo === "string"
+                    ? storeLogo.startsWith("http")
+                      ? storeLogo
+                      : `https://aatene.com/storage/${storeLogo}`
+                    : URL.createObjectURL(storeLogo)
+                }
                 alt="Store Logo"
                 className="w-full h-full object-cover"
               />

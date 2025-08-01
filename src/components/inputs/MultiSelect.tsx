@@ -221,7 +221,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
         }
       }
     };
-
+    console.log(options, value);
     return (
       <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen} modal={modalPopover}>
         <PopoverTrigger asChild>
@@ -246,6 +246,8 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                       const option = options.find((o) => {
                         const optionValue = String(o.value);
                         const selectedValue = String(value);
+                        console.log(optionValue, selectedValue, selectedValues);
+
                         return optionValue === selectedValue;
                       });
                       const IconComponent = option?.icon;

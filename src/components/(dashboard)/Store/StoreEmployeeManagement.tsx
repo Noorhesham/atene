@@ -37,8 +37,7 @@ const StoreEmployeeManagement = () => {
   const [employeeData, setEmployeeData] = useState({
     title: "",
     email: "",
-    phone: "",
-    password: "",
+
     status: "active",
   });
 
@@ -46,8 +45,7 @@ const StoreEmployeeManagement = () => {
 
   const statusOptions = [
     { value: "active", label: "نشط" },
-    { value: "inactive", label: "غير نشط" },
-    { value: "pending", label: "في انتظار الموافقة" },
+    { value: "not-active", label: "غير نشط" },
   ];
 
   const validateEmployee = (data: typeof employeeData) => {
@@ -59,14 +57,6 @@ const StoreEmployeeManagement = () => {
 
     if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
       errors.email = "البريد الإلكتروني غير صالح";
-    }
-
-    if (!data.phone || data.phone.length < 10) {
-      errors.phone = "رقم الهاتف يجب أن يكون 10 أرقام على الأقل";
-    }
-
-    if (!data.password || data.password.length < 6) {
-      errors.password = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
     }
 
     if (!data.status) {
@@ -85,14 +75,12 @@ const StoreEmployeeManagement = () => {
         title: employeeData.title,
         email: employeeData.email,
         status: employeeData.status,
-        phone: employeeData.phone,
       });
 
       setEmployeeData({
         title: "",
         email: "",
-        phone: "",
-        password: "",
+
         status: "active",
       });
       setValidationErrors({});
@@ -109,8 +97,6 @@ const StoreEmployeeManagement = () => {
       title: employee.title,
       email: employee.email,
       status: employee.status,
-      phone: employee.phone || "",
-      password: "••••••••", // Placeholder for existing password
     });
     setValidationErrors({});
   };
@@ -124,14 +110,12 @@ const StoreEmployeeManagement = () => {
         title: employeeData.title,
         email: employeeData.email,
         status: employeeData.status,
-        phone: employeeData.phone,
       });
 
       setEmployeeData({
         title: "",
         email: "",
-        phone: "",
-        password: "",
+
         status: "active",
       });
       setValidationErrors({});
@@ -152,8 +136,7 @@ const StoreEmployeeManagement = () => {
     setEmployeeData({
       title: "",
       email: "",
-      phone: "",
-      password: "",
+
       status: "active",
     });
     setValidationErrors({});
@@ -222,12 +205,12 @@ const StoreEmployeeManagement = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b">
-                        <th className="text-right p-3 font-medium text-gray-700">اسم الموظف</th>
-                        <th className="text-right p-3 font-medium text-gray-700">حالة الموظف</th>
-                        <th className="text-right p-3 font-medium text-gray-700">رقم الهاتف</th>
-                        <th className="text-right p-3 font-medium text-gray-700">الايميل</th>
-                        <th className="text-right p-3 font-medium text-gray-700">الإجراءات</th>
+                      <tr className="border-b text-center">
+                        <th className=" p-3 font-medium text-gray-700">اسم الوظيفة</th>
+                        <th className=" p-3 font-medium text-gray-700">حالة الموظف</th>
+                        <th className=" p-3 font-medium text-gray-700">رقم الهاتف</th>
+                        <th className=" p-3 font-medium text-gray-700">الايميل</th>
+                        <th className=" p-3 font-medium text-gray-700">الإجراءات</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -237,9 +220,6 @@ const StoreEmployeeManagement = () => {
                           <tr key={index} className="border-b hover:bg-gray-50">
                             <td className="p-3">
                               <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                                  <User size={16} className="text-gray-400" />
-                                </div>
                                 <span className="font-medium">{emp.title}</span>
                               </div>
                             </td>
@@ -280,27 +260,13 @@ const StoreEmployeeManagement = () => {
         <TabsContent value="add-employee" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg font-medium">
+              <CardTitle className="text-lg text-right font-medium">
                 {editingEmployee !== null ? "تعديل الموظف" : "إضافة موظف جديد"}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardContent dir="rtl" className="space-y-6">
+              <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">اسم الموظف *</label>
-                    <input
-                      type="text"
-                      value={employeeData.title}
-                      onChange={(e) => setEmployeeData({ ...employeeData, title: e.target.value })}
-                      placeholder="كريس عادل"
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-main focus:border-transparent ${
-                        validationErrors.title ? "border-red-500" : "border-gray-300"
-                      }`}
-                    />
-                    {validationErrors.title && <p className="text-red-500 text-sm mt-1">{validationErrors.title}</p>}
-                  </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">البريد الالكتروني *</label>
                     <input
@@ -313,36 +279,6 @@ const StoreEmployeeManagement = () => {
                       }`}
                     />
                     {validationErrors.email && <p className="text-red-500 text-sm mt-1">{validationErrors.email}</p>}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">رقم الموبايل *</label>
-                    <input
-                      type="tel"
-                      value={employeeData.phone}
-                      onChange={(e) => setEmployeeData({ ...employeeData, phone: e.target.value })}
-                      placeholder="1289022985"
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-main focus:border-transparent ${
-                        validationErrors.phone ? "border-red-500" : "border-gray-300"
-                      }`}
-                    />
-                    {validationErrors.phone && <p className="text-red-500 text-sm mt-1">{validationErrors.phone}</p>}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">كلمة المرور *</label>
-                    <input
-                      type="password"
-                      value={employeeData.password}
-                      onChange={(e) => setEmployeeData({ ...employeeData, password: e.target.value })}
-                      placeholder="••••••••"
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-main focus:border-transparent ${
-                        validationErrors.password ? "border-red-500" : "border-gray-300"
-                      }`}
-                    />
-                    {validationErrors.password && (
-                      <p className="text-red-500 text-sm mt-1">{validationErrors.password}</p>
-                    )}
                   </div>
 
                   <div>
@@ -362,6 +298,30 @@ const StoreEmployeeManagement = () => {
                       ))}
                     </select>
                     {validationErrors.status && <p className="text-red-500 text-sm mt-1">{validationErrors.status}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">الصلاحيات *</label>
+                    <select
+                      value={employeeData.title}
+                      onChange={(e) => setEmployeeData({ ...employeeData, title: e.target.value })}
+                      aria-label="حالة الموظف"
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-main focus:border-transparent ${
+                        validationErrors.title ? "border-red-500" : "border-gray-300"
+                      }`}
+                    >
+                      {[
+                        { label: "مدير عام", value: "general_manager" },
+                        { label: "بيانات المتجر", value: "store_data" },
+                        { label: "بيانات المنتجات", value: "products_data" },
+                        { label: "بيانات الكوبونات", value: "coupons_data" },
+                        { label: "بيانات الطلبات", value: "orders_data" },
+                      ].map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    {validationErrors.title && <p className="text-red-500 text-sm mt-1">{validationErrors.title}</p>}
                   </div>
                 </div>
               </div>

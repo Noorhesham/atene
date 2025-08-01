@@ -1,8 +1,8 @@
 import { InfoCardProps, InfoRowProps, OrderDetailsProps, OrdersListProps } from "@/types/orders";
-import { Calendar, Edit, Filter, Sort, Trash, User } from "@/components/icons";
+import { Calendar, Edit, Sort, Trash, User } from "@/components/icons";
 import ActionButton from "@/components/ActionButton";
-import { Mail } from "lucide-react";
-import { Adress, ColorIcon, Info, Phone, QuantityIcon, SizeIcon, Store } from "@/constants/Icons";
+import { Mail, Phone } from "lucide-react";
+import { Adress, Info, Store } from "@/constants/Icons";
 
 export const OrdersList: React.FC<OrdersListProps> = ({ orders, selectedOrders, onSelectOrder }) => (
   <div className="bg-white rounded-lg border border-gray-200 h-full flex flex-col">
@@ -51,8 +51,8 @@ export const OrdersList: React.FC<OrdersListProps> = ({ orders, selectedOrders, 
     </div>
   </div>
 );
-export const OrderDetails: React.FC<OrderDetailsProps> = ({ order, onEdit }) => {
-  const { customer, order: orderInfo, product } = order.details;
+export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
+  console.log(order);
 
   const InfoCard: React.FC<InfoCardProps> = ({ title, children, className }) => (
     <div className={`bg-white border border-gray-200 rounded-lg p-4 ${className}`}>
@@ -78,7 +78,7 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order, onEdit }) => 
         <h3 className="text-lg font-bold text-main mb-3 text-right">إجراءات الطلب</h3>
         <div className="grid grid-cols-3 gap-3">
           <ActionButton variant="secondary">تفريغ حالة الطلب</ActionButton>
-          <ActionButton variant="primary" icon={<Edit />} onClick={onEdit}>
+          <ActionButton variant="primary" icon={<Edit />}>
             تعديل الطلب
           </ActionButton>
           <ActionButton variant="danger" icon={<Trash />}>
@@ -90,10 +90,10 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order, onEdit }) => 
       <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <img src={customer.avatar} alt="Customer" className="w-12 h-12 rounded-full" />
+            <img src={order.client.avatar_url} alt="Customer" className="w-12 h-12 rounded-full" />
             <div>
-              <p className="font-bold text-gray-900">{customer.name}</p>
-              <p className="text-sm text-gray-500">{customer.since}</p>
+              <p className="font-bold text-gray-900">{order.name}</p>
+              <p className="text-sm text-gray-500">{order.status}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -108,23 +108,39 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order, onEdit }) => 
       </div>
 
       <InfoCard title="معلومات عن العميل">
-        <InfoRow label="البريد الالكتروني" value={customer.email} icon={<Mail />} />
-        <InfoRow label="الهاتف" value={customer.phone} icon={<Phone />} />
-        <InfoRow label="عنوان مقدم الطلب" value={customer.address} icon={<Adress />} />
+        <InfoRow label="البريد الالكتروني" value={order.email} icon={<Mail />} />
+        <InfoRow label="الهاتف" value={order.phone} icon={<Phone />} />
+        <InfoRow label="عنوان مقدم الطلب" value={order.address} icon={<Adress />} />
       </InfoCard>
 
       <div className="mt-4 space-y-4">
         <InfoCard className="bg-[#F8F8F8]" title="تفاصيل الطلب">
-          <InfoRow label="معرف الطلب" value={orderInfo.id} icon={<Info />} />
-          <InfoRow label="المتجر" value={orderInfo.store} icon={<Store />} />
-          <InfoRow label="تاريخ الطلب" value={orderInfo.date} icon={<Calendar />} />
-          <InfoRow label="عنوان الطلب" value={orderInfo.title} icon={<Adress />} />
+          <InfoRow label="معرف الطلب" value={order.reference_id} icon={<Info />} />
+          <InfoRow label="المتجر" value="متجر الرئيسي" icon={<Store />} />
+          <InfoRow label="حالة الطلب" value={order.status} icon={<Calendar />} />
+          <InfoRow label="ملاحظات" value={order.notes} icon={<Adress />} />
         </InfoCard>
-        <InfoCard title="تفاصيل المنتج">
-          <InfoRow label="المنتج" value={product.name} icon={<Filter />} />
-          <InfoRow label="لون المنتج" value={product.color} icon={<ColorIcon />} />
-          <InfoRow label="حجم المنتج" value={product.size} icon={<SizeIcon />} />
-          <InfoRow label="الكمية" value={product.quantity} icon={<QuantityIcon />} />
+        <InfoCard title="تفاصيل المنتجات">
+          {order.items.map((item) => (
+            <div key={item.id} className="col-span-2 border-b last:border-0 pb-2">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h4 className="font-medium">{item.product.name}</h4>
+                  <p className="text-sm text-gray-500">الكمية: {item.quantity}</p>
+                </div>
+                <div className="text-left">
+                  <p className="font-medium">{item.price} ريال</p>
+                  {item.price_after_discount !== item.price && (
+                    <p className="text-sm text-red-500">{item.price_after_discount} ريال</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+          <InfoRow label="المجموع الفرعي" value={`${order.sub_total} ريال`} icon={<Info />} />
+          <InfoRow label="الخصم" value={`${order.discount_total} ريال`} icon={<Info />} />
+          <InfoRow label="تكلفة الشحن" value={`${order.shipping_cost} ريال`} icon={<Info />} />
+          <InfoRow label="الإجمالي" value={`${order.total} ريال`} icon={<Info />} />
         </InfoCard>
       </div>
     </div>

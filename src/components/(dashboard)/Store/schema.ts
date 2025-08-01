@@ -26,7 +26,8 @@ export const storeSchema = z.object({
   // Basic Info
   name: z.string().min(1, "اسم المتجر مطلوب"),
   logo: z.string().optional().nullable(),
-  cover: z.string().optional().nullable(),
+  cover: z.array(z.string()).min(1, "يجب إضافة صورة غلاف واحدة على الأقل"),
+  mainCover: z.string().optional(),
   description: z.string().min(10, "وصف المتجر يجب أن يكون 10 أحرف على الأقل"),
   address: z.string().min(1, "العنوان مطلوب"),
   lng: z.string().optional(),

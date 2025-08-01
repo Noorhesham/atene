@@ -3,42 +3,78 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CheckSquare, ListChecks, Percent, Tag, X, Users, Calendar } from "lucide-react";
+import { CheckSquare, ListChecks, Percent, Tag, Loader2 } from "lucide-react";
 import { z } from "zod";
+import { useMemo } from "react";
 import FormInput from "@/components/inputs/FormInput";
-import toast from "react-hot-toast";
+import { ApiCoupon } from "@/types";
+import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
+import { MultiSelect } from "@/components/inputs/MultiSelect";
 
 const couponSchema = z.object({
-  couponCode: z.string().min(1, "كود الكوبون مطلوب"),
-  couponType: z.enum(["percentage", "fixed"], { required_error: "نوع الكوبون مطلوب" }),
-  discountValue: z.number().min(0, "قيمة الخصم مطلوبة"),
-  startDate: z.string().min(1, "تاريخ البداية مطلوب"),
-  endDate: z.string().min(1, "تاريخ الانتهاء مطلوب"),
-  usageLimit: z.number().min(1, "يجب تحديد عدد مرات الاستخدام"),
-  includedCategories: z.array(z.string()).optional(),
-  includedProducts: z.array(z.string()).optional(),
+  code: z.string().min(1, "كود الكوبون مطلوب"),
+  type: z.enum(["value", "percentage"], { required_error: "نوع الكوبون مطلوب" }),
+  value: z.union([z.number().min(1, "قيمة الخصم مطلوبة"), z.string()]),
+  start_date: z.string().min(1, "تاريخ البداية مطلوب"),
+  end_date: z.string().min(1, "تاريخ الانتهاء مطلوب"),
+  categories: z.array(z.union([z.number(), z.string()])),
+  products: z.array(z.union([z.number(), z.string()])),
+  store_id: z.union([z.number(), z.string()]),
+  status: z.enum(["active", "in-active"], { required_error: "حالة الكوبون مطلوبة" }),
 });
 
 type CouponFormData = z.infer<typeof couponSchema>;
 
-export const AddCouponForm = ({ closeModal }: { closeModal: () => void }) => {
+interface AddCouponFormProps {
+  closeModal: () => void;
+  editingCoupon?: ApiCoupon & { id: number };
+}
+
+export const AddCouponForm = ({ closeModal, editingCoupon }: AddCouponFormProps) => {
+  const couponsQuery = useAdminEntityQuery("coupons");
+  const categoriesQuery = useAdminEntityQuery("categories");
+  const productsQuery = useAdminEntityQuery("products");
+  const storesQuery = useAdminEntityQuery("stores");
+
   const form = useForm<CouponFormData>({
     resolver: zodResolver(couponSchema),
     defaultValues: {
-      couponType: "percentage",
+      code: editingCoupon?.code || "",
+      type: editingCoupon?.type || ("percentage" as const),
+      value: Number(editingCoupon?.value) || 0,
+      start_date: editingCoupon?.start_date || "",
+      end_date: editingCoupon?.end_date || "",
+      store_id: editingCoupon?.store_id || "",
+      categories: editingCoupon?.categories?.map((cat) => cat.id?.toString()) || [],
+      products: editingCoupon?.products?.map((prod) => prod.id?.toString()) || [],
+      status: editingCoupon?.status || "active",
     },
   });
 
-  const onSubmit = (data: CouponFormData) => {
-    console.log(data);
-    toast.success("تم حفظ الكوبون بنجاح!");
-    closeModal();
+  const onSubmit = async (data: CouponFormData) => {
+    try {
+      if (editingCoupon) {
+        await couponsQuery.update(editingCoupon.id, data);
+      } else {
+        await couponsQuery.create(data);
+      }
+      closeModal();
+    } catch (error) {
+      console.error("Failed to save coupon:", error);
+    }
   };
-
+  console.log(couponsQuery.data);
+  if (couponsQuery.isLoading || categoriesQuery.isLoading || productsQuery.isLoading || storesQuery.isLoading)
+    return (
+      <div className="flex justify-center items-center h-full">
+        <Loader2 className="w-4 h-4 animate-spin" />
+      </div>
+    );
+  console.log(form.formState.errors, form.watch());
   return (
     <FormProvider {...form}>
       <Form {...form}>
-        <form dir="rtl" onSubmit={form.handleSubmit(onSubmit)} dir="rtl">
+        <form dir="rtl" onSubmit={form.handleSubmit(onSubmit)}>
           <h2 className="text-xl font-bold text-center mb-6">إضافة كوبون جديد</h2>
           <Tabs defaultValue="details" className="w-full">
             <TabsList className="grid w-full grid-cols-2 p-1 bg-gray-100 rounded-lg">
@@ -57,18 +93,36 @@ export const AddCouponForm = ({ closeModal }: { closeModal: () => void }) => {
             </TabsList>
             <TabsContent value="details" className="py-6 space-y-4">
               <FormInput
-                name="couponCode"
+                name="code"
                 label="كود الكوبون "
                 placeholder="مثال: RAMADAN25"
                 desc="حروف انجليزية وارقام وبدون مسافات"
               />
-
+              <FormInput
+                name="store_id"
+                label="المتجر المشمول في الكوبون "
+                placeholder="اختر المتجر"
+                options={storesQuery.data?.map((store) => ({
+                  value: store.id.toString(),
+                  label: store.name,
+                }))}
+                select
+              />
+              <FormInput
+                name="status"
+                label="حالة الكوبون"
+                placeholder="اختر الحالة"
+                options={[
+                  { value: "active", label: "نشط" },
+                  { value: "inactive", label: "غير نشط" },
+                ]}
+                select
+              />
               <FormField
-                control={form.control}
-                name="couponType"
+                name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="  mb-2  ml-auto">نوع الكوبون </FormLabel>
+                    <FormLabel className="mb-2 ml-auto">نوع الكوبون </FormLabel>
                     <FormControl>
                       <div className="flex border border-gray-300 rounded-lg p-1">
                         <Button
@@ -84,9 +138,9 @@ export const AddCouponForm = ({ closeModal }: { closeModal: () => void }) => {
                         </Button>
                         <Button
                           type="button"
-                          onClick={() => field.onChange("fixed")}
+                          onClick={() => field.onChange("value")}
                           className={`w-1/2 ${
-                            field.value === "fixed"
+                            field.value === "value"
                               ? "bg-white text-main shadow-sm"
                               : "bg-transparent text-gray-500 hover:bg-gray-50"
                           }`}
@@ -101,48 +155,85 @@ export const AddCouponForm = ({ closeModal }: { closeModal: () => void }) => {
               />
 
               <FormInput
-                name="discountValue"
-                label="نسبة الخصم "
+                name="value"
+                label={`قيمة الخصم ${form.watch("type") === "percentage" ? "%" : ""}`}
                 type="number"
-                placeholder="20%"
-                icon={<Percent size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />}
+                placeholder={form.watch("type") === "percentage" ? "20%" : "100"}
+                icon={
+                  form.watch("type") === "percentage" ? (
+                    <Percent size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  ) : undefined
+                }
               />
 
               <div className="grid grid-cols-2 gap-4">
-                <FormInput name="startDate" date label="تاريخ بداية الكوبون " placeholder="2025-05-28 23:00" />
-                <FormInput date name="endDate" label="تاريخ انتهاء الكوبون " placeholder="2025-05-29 23:00" />
+                <FormInput name="start_date" date label="تاريخ بداية الكوبون " placeholder="2025-05-28 23:00" />
+                <FormInput date name="end_date" label="تاريخ انتهاء الكوبون " placeholder="2025-05-29 23:00" />
               </div>
-              <FormInput
-                name="usageLimit"
-                label="عدد مرات الاستخدام للجميع "
-                type="number"
-                placeholder="200"
-                icon={<Users size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />}
-              />
             </TabsContent>
             <TabsContent value="includes" className="py-6 space-y-4">
-              <FormInput
-                select
-                name="includedCategories"
-                label="تصنيفات مشمولة "
-                options={[{ value: "cat1", label: "ملابس" }]}
-                placeholder="اختر..."
+              <FormField
+                control={form.control}
+                name="categories"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>تصنيفات مشمولة</FormLabel>
+                    <FormControl>
+                      {categoriesQuery.isLoading ? (
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>جاري تحميل التصنيفات...</span>
+                        </div>
+                      ) : (
+                        <MultiSelect
+                          name="categories"
+                          options={
+                            categoriesQuery.data?.map((cat) => ({
+                              value: cat.id.toString(),
+                              label: cat.name,
+                            })) || ([] as any)
+                          }
+                          value={form.watch("categories") || []}
+                          onValueChange={(values) => field.onChange(values.map(Number))}
+                          placeholder="اختر التصنيفات..."
+                        />
+                      )}
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              <FormInput name="includedProducts" label="منتجات مشمولة " placeholder="ابحث عن منتج..." />
-              <div className="flex flex-wrap gap-2 mt-2">
-                <div className="bg-gray-100 text-gray-800 text-sm font-medium pl-2 pr-3 py-1 rounded-full flex items-center gap-2">
-                  تيشيرت بولو
-                  <button type="button" className="text-gray-500 hover:text-gray-800">
-                    <X size={16} />
-                  </button>
-                </div>
-                <div className="bg-gray-100 text-gray-800 text-sm font-medium pl-2 pr-3 py-1 rounded-full flex items-center gap-2">
-                  بنطلون جينز
-                  <button type="button" className="text-gray-500 hover:text-gray-800">
-                    <X size={16} />
-                  </button>
-                </div>
-              </div>
+              <FormField
+                control={form.control}
+                name="products"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>منتجات مشمولة</FormLabel>
+                    <FormControl>
+                      {productsQuery.isLoading ? (
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>جاري تحميل المنتجات...</span>
+                        </div>
+                      ) : (
+                        <MultiSelect
+                          name="products"
+                          options={
+                            productsQuery.data?.map((prod) => ({
+                              value: prod.id.toString(),
+                              label: prod.name,
+                            })) || ([] as any)
+                          }
+                          value={form.watch("products") || []}
+                          onValueChange={(values) => field.onChange(values.map(Number))}
+                          placeholder="اختر المنتجات..."
+                        />
+                      )}
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </TabsContent>
           </Tabs>
           <div className="flex justify-end gap-3 pt-6 border-t">

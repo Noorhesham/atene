@@ -2,18 +2,13 @@ import { useFormContext } from "react-hook-form";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X, PlusCircle, Settings, Package, UploadCloud, Trash2 } from "lucide-react";
+import { Search, X, PlusCircle, Settings, Package, Trash2 } from "lucide-react";
 import { FormLabel } from "@/components/ui/form";
 import FormInput from "@/components/inputs/FormInput";
 import { Controller, useFieldArray } from "react-hook-form";
 import { Switch } from "@/components/ui/switch";
 import ModalCustom from "@/components/ModalCustom";
-import { API_ENDPOINTS, FetchFunction } from "@/constants/api";
-
-interface VariantImage {
-  file_name: string;
-  preview: string;
-}
+import { useAuth } from "@/context/AuthContext";
 
 interface VariantErrors {
   variants?: {
@@ -30,9 +25,9 @@ interface Variant {
   color?: string;
   size?: string;
   price: string;
-  images: VariantImage[];
+  images: string[]; // Changed to string[] to be compatible with FormInput
   isActive: boolean;
-  [key: string]: string | boolean | VariantImage[] | undefined; // More specific type for dynamic attributes
+  [key: string]: string | boolean | string[] | undefined; // More specific type for dynamic attributes
 }
 
 const AddVariantAttributeModal = ({
@@ -147,63 +142,19 @@ const VariantsForm = () => {
     watch,
     formState: { errors },
   } = useFormContext();
+  const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const hasVariations = watch("hasVariations");
   const variantAttributes = watch("variantAttributes") || [];
   const variantErrors = errors as VariantErrors;
 
+  // Check if user is admin to show status field
+  const isAdmin = user?.user?.user_type === "admin";
+
   const { fields, append, remove } = useFieldArray({
     control,
     name: "variants",
   });
-
-  const handleImageUpload = async (index: number, files: FileList | null) => {
-    if (!files) return;
-
-    const uploadToMediaCenter = async (file: File) => {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("type", "gallery");
-
-      try {
-        const response = await FetchFunction<{
-          status: boolean;
-          message: string;
-          data: { url: string; file_name: string };
-        }>(`${API_ENDPOINTS.MEDIA_CENTER}/add-new`, "POST", formData);
-
-        if (response.status) {
-          return { url: response.data.url, file_name: response.data.file_name };
-        }
-        throw new Error(response.message);
-      } catch (error) {
-        console.error("Upload failed:", error);
-        throw error;
-      }
-    };
-
-    try {
-      const uploadPromises = Array.from(files).map(async (file) => {
-        const { url, file_name } = await uploadToMediaCenter(file);
-        return {
-          file_name: file_name,
-          preview: url,
-        };
-      });
-
-      const images = await Promise.all(uploadPromises);
-
-      const currentVariants = watch("variants") || [];
-      const updatedVariants = [...currentVariants];
-      updatedVariants[index] = {
-        ...updatedVariants[index],
-        images,
-      };
-      setValue("variants", updatedVariants);
-    } catch (error) {
-      console.error("Failed to upload variant images:", error);
-    }
-  };
 
   const handleConfirmAttributes = (attributes: string[]) => {
     setValue("variantAttributes", attributes);
@@ -213,7 +164,7 @@ const VariantsForm = () => {
         color: "",
         size: "",
         price: "",
-        images: [],
+        images: [] as string[],
         isActive: true,
       } as Variant);
     } else if (attributes.length === 0) {
@@ -224,6 +175,10 @@ const VariantsForm = () => {
       const currentVariants = watch("variants") || [];
       const updatedVariants = currentVariants.map((variant: Variant) => {
         const newVariant = { ...variant };
+        // Ensure images is always an array
+        if (!Array.isArray(newVariant.images)) {
+          newVariant.images = [];
+        }
         // Remove fields that are no longer in attributes
         if (!attributes.includes("color")) delete newVariant.color;
         if (!attributes.includes("size")) delete newVariant.size;
@@ -332,26 +287,33 @@ const VariantsForm = () => {
                   type="button"
                   variant="outline"
                   className=" justify-start text-base font-[500] bg-blue-100  w-fit "
-                  onClick={() => append({ color: "", size: "", price: "", images: [], isActive: true })}
+                  onClick={() => append({ color: "", size: "", price: "", images: [] as string[], isActive: true })}
                 >
                   <PlusCircle size={16} className="ml-2" /> قيمة جديدة
                 </Button>
               </div>
 
               <div className="overflow-x-auto">
-                <div className="grid grid-cols-[1fr_1fr_100px_150px_120px] gap-4 p-3 bg-[#F9FAFB] rounded-t-lg text-sm font-medium text-[#667085] min-w-[600px]">
+                <div
+                  className={`grid ${
+                    isAdmin ? "grid-cols-[1fr_1fr_100px_150px_120px_80px]" : "grid-cols-[1fr_1fr_100px_150px_120px]"
+                  } gap-4 p-3 bg-[#F9FAFB] rounded-t-lg text-sm font-medium text-[#667085] min-w-[600px]`}
+                >
                   {variantAttributes.map((attr: string) => (
                     <span key={attr}>{attr === "color" ? "اللون" : attr === "size" ? "المقاس" : attr}</span>
                   ))}
                   <span>السعر</span>
                   <span>الصور</span>
+                  {isAdmin && <span>الحالة</span>}
                   <span className="text-left">الاجراءات</span>
                 </div>
                 <div className="space-y-px min-w-[600px]">
                   {fields.map((field, index) => (
                     <div
                       key={field.id}
-                      className="grid grid-cols-[1fr_1fr_100px_150px_120px] gap-4 items-center p-3 bg-white border border-[#E7EAEE] last:rounded-b-lg"
+                      className={`grid ${
+                        isAdmin ? "grid-cols-[1fr_1fr_100px_150px_120px_80px]" : "grid-cols-[1fr_1fr_100px_150px_120px]"
+                      } gap-4 items-center p-3 bg-white border border-[#E7EAEE] last:rounded-b-lg`}
                     >
                       {variantAttributes.map((attr: string) => (
                         <div key={attr}>
@@ -379,102 +341,32 @@ const VariantsForm = () => {
                         </div>
                       </div>
                       <div className="relative">
-                        <input
-                          type="file"
+                        <FormInput
+                          grid={1}
+                          name={`variants.${index}.images`}
+                          photo
                           multiple
-                          accept="image/*"
-                          onChange={(e) => handleImageUpload(index, e.target.files)}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                          aria-label="Upload variant images"
-                          title="اختيار صور المنتج المتغير"
-                          placeholder="اختر الصور"
+                          maxFiles={5}
+                          placeholder="اختر صور للمنتج المتغير"
                         />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="w-full h-10 flex items-center justify-center bg-white border-[#E7EAEE] text-[#344054] text-sm hover:bg-gray-50"
-                          title="قم برفع الصور"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                          >
-                            <path
-                              d="M13 3.002C12.53 3.00067 12.03 3 11.5 3C7.022 3 4.782 3 3.391 4.391C2 5.782 2 8.021 2 12.5C2 16.978 2 19.218 3.391 20.609C4.782 22 7.021 22 11.5 22C15.978 22 18.218 22 19.609 20.609C20.947 19.27 20.998 17.147 20.999 13"
-                              stroke="#406896"
-                              stroke-width="1.5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                            />
-                            <path
-                              d="M2 14.135C2.62 14.045 3.244 14.001 3.872 14.003C6.524 13.947 9.111 14.773 11.172 16.334C13.082 17.782 14.425 19.774 15 22"
-                              stroke="#406896"
-                              stroke-width="1.5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                            />
-                            <path
-                              d="M21 16.896C19.825 16.301 18.609 15.999 17.386 16C15.535 15.993 13.702 16.673 12 18M17 4.5C17.491 3.994 18.8 2 19.5 2M19.5 2C20.2 2 21.509 3.994 22 4.5M19.5 2V10"
-                              stroke="#406896"
-                              stroke-width="1.5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                            />
-                          </svg>
-                          {watch(`variants.${index}.images`)?.length > 0
-                            ? `${watch(`variants.${index}.images`).length} صور`
-                            : "قم برفع الصور"}
-                        </Button>
-                        {watch(`variants.${index}.images`)?.length > 0 && (
-                          <div className="absolute top-full left-0 mt-2 bg-white border border-[#E7EAEE] rounded-lg p-2 shadow-lg z-20">
-                            <div className="flex gap-2 flex-wrap">
-                              {watch(`variants.${index}.images`).map((img: VariantImage) => (
-                                <div key={img.file_name} className="relative w-16 h-16 group">
-                                  <img
-                                    src={img.preview}
-                                    alt="Variant preview"
-                                    className="w-full h-full object-cover rounded-lg"
-                                  />
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      const currentImages = watch(`variants.${index}.images`);
-                                      const filteredImages = currentImages.filter(
-                                        (i: VariantImage) => i.file_name !== img.file_name
-                                      );
-                                      setValue(`variants.${index}.images`, filteredImages);
-                                    }}
-                                    className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    aria-label="حذف الصورة"
-                                    title="حذف الصورة"
-                                  >
-                                    <X size={12} />
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        {variantErrors?.variants?.[index]?.images && (
-                          <p className="text-sm text-red-500 mt-1">{variantErrors.variants[index]?.images?.message}</p>
-                        )}
                       </div>
+                      {isAdmin && (
+                        <div className="flex items-center justify-center">
+                          <Controller
+                            name={`variants.${index}.isActive`}
+                            control={control}
+                            render={({ field }) => (
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                className="data-[state=checked]:bg-[#395A7D]"
+                                aria-label={`تفعيل/تعطيل المنتج المتغير ${index + 1}`}
+                              />
+                            )}
+                          />
+                        </div>
+                      )}
                       <div className="flex items-center justify-end gap-3">
-                        <Controller
-                          name={`variants.${index}.isActive`}
-                          control={control}
-                          render={({ field }) => (
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                              className="data-[state=checked]:bg-[#395A7D]"
-                              aria-label={`تفعيل/تعطيل المنتج المتغير ${index + 1}`}
-                            />
-                          )}
-                        />
                         <Button
                           type="button"
                           variant="ghost"

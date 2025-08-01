@@ -26,7 +26,7 @@ export interface Role {
   deleted_at: null | string;
 }
 
-export  interface User {
+export interface User {
   user: {
     roles: Role[];
     id: number;
@@ -38,5 +38,6 @@ export  interface User {
     phone: string | null;
     referral_code: string | null;
     last_login_at: string;
+    user_type: "admin" | "merchant" | "client";
   };
 }

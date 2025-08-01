@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { Search, ChevronLeft, Plus, Filter, MoreHorizontal, Package, Star, Trash2 } from "lucide-react";
+import { Search, ChevronLeft, Plus, MoreHorizontal, Package, Star, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
-import { ApiProduct, ApiCategory } from "@/hooks/useUsers";
+import { ApiProduct, ApiCategory, BaseEntity } from "@/types";
 import EntityList from "@/components/EntityList";
 import { Link } from "react-router-dom";
 import { ProductCreationForm } from "@/components/productCreation";
 import Actions from "@/components/Actions";
 import ModalCustom from "@/components/ModalCustom";
 import toast from "react-hot-toast";
+import { useAuth } from "@/context/AuthContext";
+
+import SectionsPopover from "@/components/SectionsPopover";
+import { useLocation } from "react-router-dom";
 
 const FILTER_CATEGORIES = [
   { name: "الكل", value: null },
@@ -97,10 +101,15 @@ const FilterPanel = ({
 );
 
 export default function ProductsPageDashboard() {
+  const location = useLocation();
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [productToDelete, setProductToDelete] = useState<ApiProduct | null>(null);
+
+  // Get section from URL params
+  const urlParams = new URLSearchParams(location.search);
+  const sectionFilter = urlParams.get("section");
 
   // Fetch products with filters
   const {
@@ -113,17 +122,21 @@ export default function ProductsPageDashboard() {
     setSearchQuery,
     totalRecords,
     remove: deleteProduct,
+    update: updateProduct,
   } = useAdminEntityQuery("products", {
     initialPerPage: 10,
     queryParams: {
       ...(statusFilter && { status: statusFilter }),
       ...(categoryFilter && { category_id: categoryFilter }),
+      ...(sectionFilter && { section: sectionFilter }),
     },
   });
 
   // Fetch categories for filter
-  const { data: categories } = useAdminEntityQuery("categories");
-
+  const { data: categories = [], isLoading: isLoadingCategories } = useAdminEntityQuery("categories");
+  const { data: stores = [], isLoading: isLoadingStores } = useAdminEntityQuery("stores");
+  const { user, isLoading: isLoadingUser } = useAuth();
+  console.log(stores);
   const [selectedProduct, setSelectedProduct] = useState<ApiProduct | null>(null);
   const [searchInput, setSearchInput] = useState("");
 
@@ -200,25 +213,26 @@ export default function ProductsPageDashboard() {
       </div>
     );
   };
-
+  if (!user || isLoadingCategories || isLoadingStores) return <div>Loading...</div>;
+  console.log(user);
   return (
     <div className="w-full min-h-screen p-4 sm:p-6 lg:p-8 bg-gray-50" dir="rtl">
       <header className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">المنتجات</h1>
         <div className="flex items-center gap-3">
-          <Link to="/admin/products/add">
+          <Link to={`/${user?.user?.user_type === "merchant" ? "dashboard" : "admin"}/products/add`}>
             <Button className="bg-main text-white hover:bg-main/90">
               <Plus size={16} className="ml-2" /> إضافة منتج
             </Button>
           </Link>
-          <Button variant="outline">
+          <Button variant="outline" disabled={isLoadingUser}>
             <MoreHorizontal size={16} />
           </Button>
         </div>
       </header>
 
-      <div className="flex justify-between items-center mb-4">
-        <div className="relative flex-1 max-w-lg">
+      <div className="flex justify-between  gap-4 items-center mb-4">
+        <div className="relative flex-1  w-full">
           <Input
             type="text"
             placeholder="ابحث باسم المنتج أو رمز المنتج"
@@ -230,9 +244,9 @@ export default function ProductsPageDashboard() {
             <Search size={20} />
           </div>
         </div>
-        <Button variant="outline" className="flex items-center gap-2">
-          <Filter size={16} /> تصفية
-        </Button>
+        <div className="flex gap-2">
+          <SectionsPopover />
+        </div>
       </div>
 
       <div className="grid grid-cols-12 gap-6 items-start">
@@ -241,7 +255,7 @@ export default function ProductsPageDashboard() {
           <Card className="p-0">
             <FilterPanel
               statusCategories={FILTER_CATEGORIES}
-              productCategories={categories || []}
+              productCategories={categories}
               activeStatusFilter={statusFilter}
               activeCategoryFilter={categoryFilter}
               onStatusFilterChange={setStatusFilter}
@@ -275,13 +289,27 @@ export default function ProductsPageDashboard() {
             <>
               <Actions
                 title="إجراءات المنتج"
-                isActive={selectedProduct.status === "published"}
-                onApprove={() => {
-                  // TODO: Implement approve functionality
-                  alert("سيتم تنفيذ الموافقة قريباً");
-                }}
+                isActive={selectedProduct.status === "active"}
+                onApprove={
+                  user?.user.user_type === "admin"
+                    ? async () => {
+                        try {
+                          await updateProduct(selectedProduct.id, { status: "active" });
+                          toast.success("تم تفعيل المنتج بنجاح");
+                        } catch (error) {
+                          console.error("Failed to update product status:", error);
+                        }
+                      }
+                    : undefined
+                }
                 editLink={`/admin/products/add/${selectedProduct.id}`}
-                onDelete={() => setProductToDelete(selectedProduct)}
+                entity={selectedProduct as unknown as BaseEntity}
+                entityType="products"
+                deleteMessage={`هل أنت متأكد من حذف المنتج "${selectedProduct.name}"؟`}
+                onDeleteSuccess={() => {
+                  setProductToDelete(null);
+                  setSelectedProduct(null);
+                }}
                 isUpdating={isDeleting}
               />
               <ProductCreationForm product={selectedProduct} disableCreate={true} />

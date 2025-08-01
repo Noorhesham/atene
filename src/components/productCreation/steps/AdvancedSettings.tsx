@@ -1,90 +1,39 @@
 import { Input } from "@/components/ui/input";
 import { Package, Search, Trash2, PlusCircle, Info, Shirt } from "lucide-react";
 import { useFormContext } from "react-hook-form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useFieldArray } from "react-hook-form";
 import ModalCustom from "@/components/ModalCustom";
 import { Button } from "@/components/ui/button";
-
-type RelatedProduct = {
-  id: string;
-  name: string;
-  category: string;
-  price: number;
-  image: string;
-  stock: number;
-};
-
-const mockProducts: RelatedProduct[] = [
-  {
-    id: "prod1",
-    name: "بنطلون جينز و",
-    category: "ملابس و اكسسوارات",
-    price: 927.0,
-    image: "https://placehold.co/40x40/E2E8F0/4A5568?text=P1",
-    stock: 10,
-  },
-  {
-    id: "prod2",
-    name: "اسم المنتج",
-    category: "ملابس و اكسسوارات",
-    price: 117.0,
-    image: "https://placehold.co/40x40/E2E8F0/4A5568?text=P2",
-    stock: 10,
-  },
-  {
-    id: "prod3",
-    name: "اسم المنتج",
-    category: "ملابس و اكسسوارات",
-    price: 637.0,
-    image: "https://placehold.co/40x40/E2E8F0/4A5568?text=P3",
-    stock: 2,
-  },
-  {
-    id: "prod4",
-    name: "اسم المنتج",
-    category: "ملابس و اكسسوارات",
-    price: 431.0,
-    image: "https://placehold.co/40x40/E2E8F0/4A5568?text=P4",
-    stock: 3,
-  },
-  {
-    id: "prod5",
-    name: "اسم المنتج",
-    category: "ملابس و اكسسوارات",
-    price: 164.0,
-    image: "https://placehold.co/40x40/E2E8F0/4A5568?text=P5",
-    stock: 1,
-  },
-  {
-    id: "prod6",
-    name: "اسم المنتج",
-    category: "ملابس و اكسسوارات",
-    price: 839.0,
-    image: "https://placehold.co/40x40/E2E8F0/4A5568?text=P6",
-    stock: 5,
-  },
-];
+import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
+import { ApiProduct } from "@/types";
 
 const SelectRelatedProductsModal = ({
   onConfirm,
   closeModal,
+  products,
 }: {
   onConfirm: (productIds: string[]) => void;
   closeModal: () => void;
+  products: ApiProduct[];
 }) => {
   const { watch } = useFormContext();
-  const currentlyRelated = watch("relatedProducts") || [];
-  const [selectedProducts, setSelectedProducts] = useState<string[]>(currentlyRelated);
+  const currentlyRelated = watch("crossSells") || [];
+  const [selectedProducts, setSelectedProducts] = useState<string[]>(
+    currentlyRelated
+      .filter((id: string | number) => typeof id === "string" || typeof id === "number")
+      .map((id: string | number) => id.toString())
+  );
   const [searchTerm, setSearchTerm] = useState("");
 
-  const handleToggle = (productId: string) => {
+  const handleToggle = (productId: number) => {
+    const productIdStr = productId.toString();
     setSelectedProducts((prev) =>
-      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]
+      prev.includes(productIdStr) ? prev.filter((id) => id !== productIdStr) : [...prev, productIdStr]
     );
   };
 
-  const filteredProducts = mockProducts.filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredProducts = products.filter((p: ApiProduct) => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
     <div className="p-4">
@@ -103,7 +52,7 @@ const SelectRelatedProductsModal = ({
       </div>
       <div className="space-y-2 max-h-80 overflow-y-auto pr-2">
         {filteredProducts.map((product) => {
-          const isSelected = selectedProducts.includes(product.id);
+          const isSelected = selectedProducts.includes(product.id.toString());
           return (
             <div
               key={product.id}
@@ -121,14 +70,18 @@ const SelectRelatedProductsModal = ({
                 aria-label={`اختيار ${product.name}`}
                 title={`اختيار ${product.name}`}
               />
-              <img src={product.image} alt={product.name} className="w-10 h-10 rounded-md object-cover" />
+              <img
+                src={product.cover_url || product.cover || ""}
+                alt={product.name}
+                className="w-10 h-10 rounded-md object-cover"
+              />
               <div className="flex-grow">
                 <p className="font-semibold text-gray-800">{product.name}</p>
                 <div className="flex items-center gap-2 text-xs text-gray-500">
-                  <span>{product.category}</span>
+                  <span>{product.category?.name || "غير محدد"}</span>
                   <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
                   <Package size={12} />
-                  <span>{product.stock}</span>
+                  <span>متوفر</span>
                 </div>
               </div>
               <div className="font-bold text-gray-700">₪ {product.price.toFixed(2)}</div>
@@ -163,17 +116,19 @@ const SelectRelatedProductsModal = ({
 const RelatedProducts = () => {
   const { control, watch } = useFormContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const { data: products = [], isLoading } = useAdminEntityQuery("products", {});
   const { replace } = useFieldArray({
     control,
-    name: "relatedProducts",
+    name: "crossSells",
   });
 
-  const relatedProductIds = watch("relatedProducts") || [];
-  const selectedProducts = mockProducts.filter((product) => relatedProductIds.includes(product.id));
-
+  const relatedProductIds = watch("crossSells") || [];
+  const selectedProducts = products.filter((product) => relatedProductIds.includes(product.id.toString()));
+  console.log(selectedProducts);
   const handleConfirmSelection = (productIds: string[]) => {
-    replace(productIds);
+    // Ensure we only store IDs, not objects
+    const cleanIds = productIds.filter((id) => id !== "[object Object]" && id !== "undefined" && id !== "null");
+    replace(cleanIds);
   };
 
   const handleRemoveAll = () => {
@@ -185,6 +140,20 @@ const RelatedProducts = () => {
     replace(newIds);
   };
 
+  // Clean up crossSells field on mount to remove any bad data
+  useEffect(() => {
+    if (relatedProductIds.length > 0) {
+      const cleanIds = relatedProductIds.filter(
+        (id: string) => id !== "[object Object]" && id !== "undefined" && id !== "null" && id !== ""
+      );
+      if (cleanIds.length !== relatedProductIds.length) {
+        replace(cleanIds);
+      }
+    }
+  }, []);
+
+  if (isLoading) return <div>Loading...</div>;
+  console.log(products);
   return (
     <div className="space-y-6 p-6">
       <div className="flex justify-between items-center">
@@ -198,7 +167,11 @@ const RelatedProducts = () => {
             </Button>
           }
           content={
-            <SelectRelatedProductsModal onConfirm={handleConfirmSelection} closeModal={() => setIsModalOpen(false)} />
+            <SelectRelatedProductsModal
+              products={products}
+              onConfirm={handleConfirmSelection}
+              closeModal={() => setIsModalOpen(false)}
+            />
           }
         />
       </div>
@@ -225,14 +198,18 @@ const RelatedProducts = () => {
           {selectedProducts.map((product) => (
             <div key={product.id} className="p-3 bg-gray-50 rounded-lg flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <img src={product.image} alt={product.name} className="w-10 h-10 rounded-md object-cover" />
+                <img
+                  src={product.cover_url || product.cover || ""}
+                  alt={product.name}
+                  className="w-10 h-10 rounded-md object-cover"
+                />
                 <div>
                   <p className="font-semibold text-gray-800">{product.name}</p>
                   <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <span>{product.category}</span>
+                    <span>{product.category?.name || "غير محدد"}</span>
                     <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
                     <Package size={12} />
-                    <span>{product.stock}</span>
+                    <span>متوفر</span>
                   </div>
                 </div>
               </div>
@@ -241,7 +218,7 @@ const RelatedProducts = () => {
                 variant="ghost"
                 size="icon"
                 className="w-8 h-8 text-red-500 bg-red-50 hover:bg-red-100"
-                onClick={() => handleRemoveProduct(product.id)}
+                onClick={() => handleRemoveProduct(product.id.toString())}
               >
                 <Trash2 size={16} />
               </Button>

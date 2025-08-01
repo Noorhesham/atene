@@ -1,0 +1,40 @@
+.story-text {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.story-progress {
+  animation: progress 5s linear forwards;
+}
+
+@keyframes progress {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.story-viewer {
+  background-color: rgba(0, 0, 0, 0.95);
+}
+
+.story-navigation-button {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.2);
+  transition: background-color 0.2s;
+}
+
+.story-navigation-button:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.story-text-container {
+  background-color: var(--story-bg-color, #000000);
+}
+
+.story-text-container[data-color] {
+  --story-bg-color: attr(data-color);
+}
