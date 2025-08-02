@@ -16,7 +16,8 @@ import MaxWidthDashboard from "./(dashboard)/components/MaxWidthDashboard";
 import { useAuth } from "@/context/AuthContext";
 
 const DashboardNavbar = () => {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+  if (isLoading) return <div>Loading...</div>;
   const isAdmin = user?.user.roles.includes("superadmin");
   const preLink = isAdmin ? "/admin" : "/dashboard";
   return (
