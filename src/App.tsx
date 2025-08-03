@@ -34,6 +34,8 @@ import AttributeCreatPage from "./pages/admin/attributes/add/AttributeCreatPage"
 import CategoryTreeView from "./pages/admin/categories/add/CategoryTreeView";
 import StoriesPage from "./pages/admin/stories/StoriesPage";
 import FollowersPage from "./pages/admin/followers/FollowersPage";
+import SectionsPage from "./pages/admin/sections/SectionsPage";
+import SectionCreatPage from "./pages/admin/sections/add/SectionCreatPage";
 
 // Admin Layout Component
 const AdminLayout = () => {
@@ -171,7 +173,11 @@ function App() {
             <Route path="add" element={<ProductCreationExample />} />
             <Route path="add/:id" element={<ProductCreationExample />} />
           </Route>
-          <Route path="sections" element={<SectionsManagement />} />
+          <Route path="sections">
+            <Route index element={<SectionsPage />} />
+            <Route path="add" element={<SectionCreatPage />} />
+            <Route path="edit/:id" element={<SectionCreatPage />} />
+          </Route>
           <Route path="reports" element={<ReportsManagement />} />
           <Route path="notifications" element={<NotificationsManagement />} />
           <Route path="settings" element={<Settings />} />
@@ -190,8 +196,6 @@ function App() {
 // Placeholder components
 const StoresManagement = () => <StoreCreationForm />;
 const CouponsManagement = () => <CouponsPage />;
-const ProductsManagement = () => <ProductCreationExample />;
-const SectionsManagement = () => <div className="p-4">Sections Management Page</div>;
 const ReportsManagement = () => <div className="p-4">Reports Management Page</div>;
 const NotificationsManagement = () => <div className="p-4">Notifications Management Page</div>;
 const Settings = () => <div className="p-4">Settings Page</div>;

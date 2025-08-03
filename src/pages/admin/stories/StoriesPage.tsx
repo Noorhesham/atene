@@ -5,12 +5,13 @@ import { Plus, Trash2, Type, Image as ImageIcon } from "lucide-react";
 import ModalCustom from "@/components/ModalCustom";
 import toast from "react-hot-toast";
 import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
-import type { ApiStory } from "@/hooks/useUsersQuery";
+import type { ApiStory } from "@/types";
 import type { StoryFormData } from "./StoryForm";
 import type { HighlightFormData } from "./HighLightForm";
 import StoryForm from "./StoryForm";
 import HighlightForm from "./HighLightForm";
 import HighlightViewer from "./HighlightViewer";
+import StoryViewer from "./StoryViewer";
 
 const StoriesPage = () => {
   const [isHighlightModalOpen, setIsHighlightModalOpen] = useState(false);
@@ -20,7 +21,10 @@ const StoriesPage = () => {
   const [isAddStoryModalOpen, setIsAddStoryModalOpen] = useState(false);
   const [storyType, setStoryType] = useState<"text" | "media" | null>(null);
   const [highlightName, setHighlightName] = useState("");
-  const [viewingHighlight, setViewingHighlight] = useState<{ stories: ApiStory[]; name: string } | null>(null);
+  const [viewingHighlight, setViewingHighlight] = useState<{ stories: ApiStory[]; name: string; id: number } | null>(
+    null
+  );
+  const [viewingStory, setViewingStory] = useState<ApiStory | null>(null);
 
   useEffect(() => {
     if (viewingHighlight && viewingHighlight.stories.length === 0) {
@@ -40,8 +44,10 @@ const StoriesPage = () => {
 
   const handleAddStory = async (data: StoryFormData) => {
     try {
-      const storyData =
-        storyType === "media" ? { image: data.image } : { text: data.text, color: data.color || "#000000" };
+      const storyData: Partial<ApiStory> =
+        storyType === "media"
+          ? { image: data.image || undefined }
+          : { text: data.text, color: data.color || "#000000" };
 
       await createStory(storyData);
       setIsAddStoryModalOpen(false);
@@ -86,6 +92,13 @@ const StoriesPage = () => {
     try {
       await deleteStory(storyId);
       setShowDeleteConfirm(null);
+      // Close viewers if the deleted story is being viewed
+      if (viewingStory?.id === storyId) {
+        setViewingStory(null);
+      }
+      if (viewingHighlight?.stories.some((story) => story.id === storyId)) {
+        setViewingHighlight(null);
+      }
       toast.success("تم حذف القصة بنجاح");
     } catch (error: Error | unknown) {
       toast.error(error instanceof Error ? error.message : "حدث خطأ أثناء حذف القصة");
@@ -109,7 +122,7 @@ const StoriesPage = () => {
       </div>
     );
   }
-  console.log(viewingHighlight);
+
   return (
     <div className="p-6 w-full bg-gray-100 min-h-screen" dir="rtl">
       <div className="flex justify-between items-center mb-6">
@@ -172,12 +185,20 @@ const StoriesPage = () => {
               }
             />
             {highlights?.map((highlight) => {
-              const highlightStories = stories.filter((story) => highlight.stories.includes(story.id));
+              const highlightStories = stories
               return (
                 <div
                   key={highlight.id}
-                  className="flex flex-col items-center gap-2 cursor-pointer"
-                  onClick={() => setViewingHighlight({ stories: highlightStories, name: highlight.name })}
+                  className={`flex flex-col items-center gap-2 ${
+                    highlightStories.length > 0 ? "cursor-pointer" : "cursor-not-allowed opacity-50"
+                  }`}
+                  onClick={() => {
+                    if (highlightStories.length > 0) {
+                      setViewingHighlight({ stories: highlightStories, name: highlight.name, id: highlight.id });
+                    } else {
+                      toast.error("لا توجد قصص في هذه المجموعة");
+                    }
+                  }}
                 >
                   <div className="w-20 h-20 rounded-full border-2 border-gray-300 overflow-hidden">
                     {highlight.thumbnail ? (
@@ -195,6 +216,7 @@ const StoriesPage = () => {
                     )}
                   </div>
                   <span className="text-sm">{highlight.name}</span>
+                  {highlightStories.length === 0 && <span className="text-xs text-red-500">لا توجد قصص</span>}
                 </div>
               );
             })}
@@ -249,7 +271,7 @@ const StoriesPage = () => {
           <div className="space-y-3">
             {stories?.map((story) => (
               <div key={story.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 cursor-pointer" onClick={() => setViewingStory(story)}>
                   {story.image ? (
                     <img
                       src={story.image}
@@ -261,9 +283,11 @@ const StoriesPage = () => {
                       className={`w-16 h-16 rounded-full border-2 border-gray-400 flex items-center justify-center ${
                         story.color ? "" : "bg-gray-100"
                       }`}
-                      data-color={story.color}
+                      style={{ backgroundColor: story.color || "#000000" }}
                     >
-                      <span className="text-sm overflow-hidden line-clamp-2 p-2">{story.text || "No content"}</span>
+                      <span className="text-sm overflow-hidden line-clamp-2 p-2 text-white">
+                        {story.text || "قصة نصية"}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -318,8 +342,29 @@ const StoriesPage = () => {
       {viewingHighlight && (
         <HighlightViewer
           stories={viewingHighlight.stories}
+          highlightId={viewingHighlight.id}
+          highlightName={viewingHighlight.name}
           onClose={() => setViewingHighlight(null)}
-          onDelete={handleDeleteStory}
+          onDelete={() => {
+            // Refresh the stories list after deletion
+            refetch();
+          }}
+          onDeleteHighlight={() => {
+            // Refresh both stories and highlights after deletion
+            refetch();
+          }}
+        />
+      )}
+
+      {/* Story Viewer */}
+      {viewingStory && (
+        <StoryViewer
+          stories={[viewingStory]}
+          onClose={() => setViewingStory(null)}
+          onDelete={() => {
+            // Refresh the stories list after deletion
+            refetch();
+          }}
         />
       )}
     </div>

@@ -195,7 +195,7 @@ const ProductCreationForm = ({
       productName: "",
       price: "",
       section_id: sectionIdFromParams || "",
-      category_id: "1", // Set default category to first category (ID: 1)
+      category_id: "",
       status: user?.user?.user_type === "admin" ? "active" : "not_active", // Set default status based on user type
       condition: "new",
       shortDescription: "",
@@ -256,7 +256,6 @@ const ProductCreationForm = ({
         storeVisibility: product.store_id?.toString() || "",
         hasDelivery: false,
         productType: product.type || "",
-        mainCategory: product.category_id?.toString() || "",
         subCategory: "",
         city: "",
         neighborhood: "",
@@ -396,7 +395,7 @@ const ProductCreationForm = ({
         gallary: data.images || [], // All images as gallery
         type: data.hasVariations ? ("variation" as const) : ("simple" as const),
         condition: data.condition,
-        category_id: parseInt(data.category_id) || 1,
+        category_id: data.category_id.toString(),
         section_id: parseInt(data.section_id) || 1,
         review_rate: isEditMode ? productData?.review_rate || 0 : 0,
         review_count: isEditMode ? productData?.review_count || 0 : 0,

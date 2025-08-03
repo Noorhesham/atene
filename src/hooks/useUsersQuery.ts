@@ -377,6 +377,7 @@ export function useAdminEntityQuery<K extends keyof EntityTypeMap>(
         Authorization: `Bearer ${localStorage.getItem("token")}`,
         "Content-Type": "application/json",
         ...(options?.headers || {}),
+        storeId: localStorage.getItem("storeId") || "",
       });
 
       if (!response.status) {

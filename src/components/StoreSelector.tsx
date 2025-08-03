@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/context/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Store {
   id: number;
@@ -29,7 +30,7 @@ const StoreSelector = () => {
     },
     false
   );
-
+  const queryClient = useQueryClient();
   useEffect(() => {
     // Set initial selected store from localStorage
     const storedId = localStorage.getItem("storeId");
@@ -46,6 +47,7 @@ const StoreSelector = () => {
   const handleStoreSelect = (store: Store) => {
     setSelectedStore(store);
     localStorage.setItem("storeId", store.id.toString());
+    queryClient.invalidateQueries({ queryKey: ["merchant", "coupons"] });
   };
 
   const filteredStores = stores?.filter((store) => store.name.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -56,7 +58,7 @@ const StoreSelector = () => {
         <Button variant="ghost" className="flex items-center gap-2 bg-white rounded-lg px-4 py-2">
           <div className="w-8 h-8 rounded-lg bg-main/10 flex items-center justify-center">
             {selectedStore?.logo_url ? (
-              <img src={selectedStore.logo_url} alt="Store Logo" className="w-6 h-6" />
+              <img src={selectedStore.logo_url} alt="Store Logo" className="w-6 object-cover h-6" />
             ) : (
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path

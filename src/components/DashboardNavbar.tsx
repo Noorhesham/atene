@@ -87,14 +87,21 @@ const DashboardNavbar = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48 text-right">
-                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/stores`) ? "bg-blue-50" : ""}>
+                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/stores`) ? "bg-main text-white" : ""}>
                     <Link to={`${preLink}/stores`} className="w-full">
                       إدارة المتاجر
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/stores/add`) ? "bg-blue-50" : ""}>
+                  <DropdownMenuItem
+                    className={isDropdownItemActive(`${preLink}/stores/add`) ? "bg-main text-white" : ""}
+                  >
                     <Link to={`${preLink}/stores/add`} className="w-full">
                       إضافة متجر
+                    </Link>
+                  </DropdownMenuItem>{" "}
+                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/coupons`) ? "bg-main  text-white" : ""}>
+                    <Link to={`${preLink}/coupons`} className="w-full">
+                      الكوبونات
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -110,17 +117,21 @@ const DashboardNavbar = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48 text-right">
-                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/orders`) ? "bg-blue-50" : ""}>
+                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/orders`) ? "bg-main text-white" : ""}>
                     <Link to={`${preLink}/orders`} className="w-full">
                       جميع الطلبات
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/orders/pending`) ? "bg-blue-50" : ""}>
+                  <DropdownMenuItem
+                    className={isDropdownItemActive(`${preLink}/orders/pending`) ? "bg-main text-white" : ""}
+                  >
                     <Link to={`${preLink}/orders/pending`} className="w-full">
                       الطلبات المعلقة
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/orders/completed`) ? "bg-blue-50" : ""}>
+                  <DropdownMenuItem
+                    className={isDropdownItemActive(`${preLink}/orders/completed`) ? "bg-main text-white" : ""}
+                  >
                     <Link to={`${preLink}/orders/completed`} className="w-full">
                       الطلبات المكتملة
                     </Link>
@@ -138,21 +149,44 @@ const DashboardNavbar = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48 text-right">
-                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/products`) ? "bg-blue-50" : ""}>
+                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/products`) ? "bg-main text-white" : ""}>
                     <Link to={`${preLink}/products`} className="w-full">
                       إدارة المنتجات
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/products/add`) ? "bg-blue-50" : ""}>
+                  <DropdownMenuItem
+                    className={isDropdownItemActive(`${preLink}/products/add`) ? "bg-main text-white" : ""}
+                  >
                     <Link to={`${preLink}/products/add`} className="w-full">
                       إضافة منتج
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/categories`) ? "bg-blue-50" : ""}>
-                    <Link to={`${preLink}/categories`} className="w-full">
-                      الفئات
-                    </Link>
-                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <>
+                      {" "}
+                      <DropdownMenuItem
+                        className={isDropdownItemActive(`${preLink}/categories`) ? "bg-main text-white" : ""}
+                      >
+                        <Link to={`${preLink}/categories`} className="w-full">
+                          الفئات
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className={isDropdownItemActive(`${preLink}/attributes`) ? "bg-main text-white" : ""}
+                      >
+                        <Link to={`${preLink}/attributes`} className="w-full">
+                          الخصائص
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className={isDropdownItemActive(`${preLink}/sections`) ? "bg-main text-white" : ""}
+                      >
+                        <Link to={`${preLink}/sections`} className="w-full">
+                          الأقسام
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -166,17 +200,20 @@ const DashboardNavbar = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48 text-right   ">
-                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/users`) ? "bg-blue-50" : ""}>
-                    <Link to={`${preLink}/users`} className="w-full">
-                      إدارة المستخدمين
+                  {isAdmin && (
+                    <DropdownMenuItem className={isDropdownItemActive(`${preLink}/users`) ? "bg-main text-white" : ""}>
+                      <Link to={`${preLink}/users`} className="w-full">
+                        إدارة المستخدمين
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/stories`) ? "bg-main  text-white" : ""}>
+                    <Link to={`${preLink}/stories`} className="w-full">
+                      القصص
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/reports`) ? "bg-blue-50" : ""}>
-                    <Link to={`${preLink}/reports`} className="w-full">
-                      التقارير
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/settings`) ? "bg-blue-50" : ""}>
+
+                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/settings`) ? "bg-main text-white" : ""}>
                     <Link to={`${preLink}/settings`} className="w-full">
                       الإعدادات
                     </Link>
@@ -230,7 +267,7 @@ const DashboardNavbar = () => {
                   </div>
                   <div className="space-y-3">
                     <div className="flex items-start gap-3 p-3 bg-[#C8D7E8]/20 rounded-lg">
-                      <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-main text-white0 rounded-full flex items-center justify-center">
                         <Package className="w-4 h-4 text-white" />
                       </div>
                       <div className="flex-1">
