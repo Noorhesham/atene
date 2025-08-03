@@ -9,6 +9,8 @@ import { Controller, useFieldArray } from "react-hook-form";
 import { Switch } from "@/components/ui/switch";
 import ModalCustom from "@/components/ModalCustom";
 import { useAuth } from "@/context/AuthContext";
+import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
+import Loader from "@/components/Loader";
 
 interface VariantErrors {
   variants?: {
@@ -37,15 +39,8 @@ const AddVariantAttributeModal = ({
   onConfirm: (attributes: string[]) => void;
   closeModal: () => void;
 }) => {
-  const allAttributes = [
-    { id: "color", label: "اللون" },
-    { id: "size", label: "المقاس" },
-    { id: "material", label: "الخامة" },
-    { id: "screen_size", label: "حجم الشاشة" },
-    { id: "attr_4", label: "سمة ٤" },
-    { id: "attr_5", label: "سمة ٥" },
-    { id: "attr_6", label: "سمة ٦" },
-  ];
+  const { data: attributes, isLoading: isLoadingAttributes } = useAdminEntityQuery("attributes");
+  console.log(attributes);
 
   const { watch } = useFormContext();
   const currentAttributes = watch("variantAttributes") || [];
@@ -65,7 +60,7 @@ const AddVariantAttributeModal = ({
     onConfirm(finalAttributes);
     closeModal();
   };
-
+  if (isLoadingAttributes) return <Loader />;
   return (
     <div className="p-4" dir="rtl">
       <h3 className="text-lg font-bold text-center mb-4">اختر السمات لاستخدامها في الاختلافات</h3>
@@ -74,25 +69,25 @@ const AddVariantAttributeModal = ({
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
       </div>
       <div className="space-y-3">
-        {allAttributes.map((attr) => (
+        {attributes.map((attr) => (
           <div
             key={attr.id}
             className={`p-3 rounded-lg border flex items-center gap-3 cursor-pointer transition-colors ${
-              selectedAttributes.includes(attr.id)
+              selectedAttributes.includes(attr.id.toString())
                 ? "bg-blue-50 border-main"
                 : "bg-gray-50 border-transparent hover:bg-gray-100"
             }`}
-            onClick={() => handleToggle(attr.id)}
+            onClick={() => handleToggle(attr.id.toString())}
           >
             <input
               type="checkbox"
-              checked={selectedAttributes.includes(attr.id)}
+              checked={selectedAttributes.includes(attr.id.toString())}
               readOnly
               className="form-checkbox h-5 w-5 rounded text-main focus:ring-main"
-              aria-label={`اختيار ${attr.label}`}
-              title={`اختيار ${attr.label}`}
+              aria-label={`اختيار ${attr.id}`}
+              title={`اختيار ${attr.title}`}
             />
-            <span className="font-medium">{attr.label}</span>
+            <span className="font-medium">{attr.title}</span>
           </div>
         ))}
         <div
@@ -148,6 +143,9 @@ const VariantsForm = () => {
   const variantAttributes = watch("variantAttributes") || [];
   const variantErrors = errors as VariantErrors;
 
+  // Get attributes data for select options
+  const { data: attributes = [], isLoading: isLoadingAttributes } = useAdminEntityQuery("attributes");
+
   // Check if user is admin to show status field
   const isAdmin = user?.user?.user_type === "admin";
 
@@ -155,6 +153,17 @@ const VariantsForm = () => {
     control,
     name: "variants",
   });
+
+  // Show loading state if attributes are still loading
+  if (isLoadingAttributes) {
+    return (
+      <div className="space-y-6 p-6">
+        <div className="flex justify-center items-center h-32">
+          <Loader />
+        </div>
+      </div>
+    );
+  }
 
   const handleConfirmAttributes = (attributes: string[]) => {
     setValue("variantAttributes", attributes);
@@ -192,7 +201,24 @@ const VariantsForm = () => {
     const current = watch("variantAttributes") || [];
     handleConfirmAttributes(current.filter((item: string) => item !== attr));
   };
+  console.log("PricingInventory debugging:", {
+    variantAttributes,
+    attributes,
+    attributesLength: attributes.length,
+    firstAttribute: attributes[0],
+    firstAttributeOptions: attributes[0]?.options,
+  });
 
+  // Debug variant attributes with titles
+  const variantAttributesWithTitles = variantAttributes.map((attr: string) => {
+    const attribute = attributes.find((attrData: any) => attrData.id.toString() === attr);
+    return {
+      id: attr,
+      title: attribute?.title || attr,
+      attribute,
+    };
+  });
+  console.log("Variant attributes with titles:", variantAttributesWithTitles);
   return (
     <div className="space-y-6 p-6">
       <div className="flex flex-col items-start gap-4">
@@ -263,22 +289,28 @@ const VariantsForm = () => {
           {variantAttributes.length > 0 && (
             <>
               <div className="flex flex-wrap gap-2 mt-2">
-                {variantAttributes.map((attr: string, index: number) => (
-                  <div
-                    key={index}
-                    className="bg-main  text-gray-50 text-sm font-medium pl-2 pr-3 py-1 rounded-full flex items-center gap-2"
-                  >
-                    {attr === "color" ? "اللون" : attr === "size" ? "المقاس" : attr}
-                    <button
-                      type="button"
-                      title="إزالة السمة"
-                      onClick={() => removeVariantAttribute(attr)}
-                      className="text-gray-500 hover:text-gray-800"
+                {variantAttributes.map((attr: string, index: number) => {
+                  // Find the attribute title from the attributes data
+                  const attribute = attributes.find((attrData: any) => attrData.id.toString() === attr);
+                  const attributeTitle = attribute?.title || attr;
+
+                  return (
+                    <div
+                      key={index}
+                      className="bg-main  text-gray-50 text-sm font-medium pl-2 pr-3 py-1 rounded-full flex items-center gap-2"
                     >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ))}
+                      {attributeTitle}
+                      <button
+                        type="button"
+                        title="إزالة السمة"
+                        onClick={() => removeVariantAttribute(attr)}
+                        className="text-gray-500 hover:text-gray-800"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="flex  justify-between items-center">
@@ -299,9 +331,13 @@ const VariantsForm = () => {
                     isAdmin ? "grid-cols-[1fr_1fr_100px_150px_120px_80px]" : "grid-cols-[1fr_1fr_100px_150px_120px]"
                   } gap-4 p-3 bg-[#F9FAFB] rounded-t-lg text-sm font-medium text-[#667085] min-w-[600px]`}
                 >
-                  {variantAttributes.map((attr: string) => (
-                    <span key={attr}>{attr === "color" ? "اللون" : attr === "size" ? "المقاس" : attr}</span>
-                  ))}
+                  {variantAttributes.map((attr: string) => {
+                    // Find the attribute title from the attributes data
+                    const attribute = attributes.find((attrData: any) => attrData.id.toString() === attr);
+                    const attributeTitle = attribute?.title || attr;
+
+                    return <span key={attr}>{attributeTitle}</span>;
+                  })}
                   <span>السعر</span>
                   <span>الصور</span>
                   {isAdmin && <span>الحالة</span>}
@@ -315,19 +351,33 @@ const VariantsForm = () => {
                         isAdmin ? "grid-cols-[1fr_1fr_100px_150px_120px_80px]" : "grid-cols-[1fr_1fr_100px_150px_120px]"
                       } gap-4 items-center p-3 bg-white border border-[#E7EAEE] last:rounded-b-lg`}
                     >
-                      {variantAttributes.map((attr: string) => (
-                        <div key={attr}>
-                          <FormInput
-                            name={`variants.${index}.${attr}`}
-                            placeholder={attr === "color" ? "اسود" : attr === "size" ? "XL" : attr}
-                            error={
-                              variantErrors?.variants?.[index]?.[attr as keyof (typeof variantErrors.variants)[number]]
-                                ?.message
-                            }
-                            className="h-10 text-sm placeholder:text-[#667085]"
-                          />
-                        </div>
-                      ))}
+                      {variantAttributes.map((attr: string) => {
+                        const attribute = attributes.find(
+                          (attribute) => attribute.title === attr || attribute.id.toString() === attr
+                        );
+                        console.log(attribute?.options);
+                        return (
+                          <div key={attr}>
+                            <FormInput
+                              name={`variants.${index}.${attr}`}
+                              placeholder={attr === "color" ? "اسود" : attr === "size" ? "XL" : attr}
+                              error={
+                                variantErrors?.variants?.[index]?.[
+                                  attr as keyof (typeof variantErrors.variants)[number]
+                                ]?.message
+                              }
+                              className="h-10 text-sm placeholder:text-[#667085]"
+                              select
+                              options={
+                                attribute?.options?.map((option) => ({
+                                  value: option.id.toString(),
+                                  label: option.title,
+                                })) || []
+                              }
+                            />
+                          </div>
+                        );
+                      })}
                       <div>
                         <div className="relative">
                           <FormInput

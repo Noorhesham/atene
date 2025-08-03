@@ -23,6 +23,27 @@ const StoreEmployeeManagement = () => {
   const [activeTab, setActiveTab] = useState("employees");
   const [editingEmployee, setEditingEmployee] = useState<number | null>(null);
 
+  // Debug active tab changes
+  console.log("Current active tab:", activeTab);
+  console.log("Editing employee:", editingEmployee);
+
+  const handleTabChange = (newTab: string) => {
+    console.log("Changing tab from", activeTab, "to", newTab);
+    setActiveTab(newTab);
+  };
+
+  const handleAddEmployeeClick = () => {
+    console.log("Add employee button clicked");
+    setActiveTab("add-employee");
+    setEditingEmployee(null);
+    setEmployeeData({
+      title: "",
+      email: "",
+      status: "active",
+    });
+    setValidationErrors({});
+  };
+
   const {
     fields: managers,
     append,
@@ -162,7 +183,7 @@ const StoreEmployeeManagement = () => {
         <div className="text-sm text-gray-500">الكل ({managers.length})</div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="employees">جدول الموظفين</TabsTrigger>
           <TabsTrigger value="add-employee">{editingEmployee !== null ? "تعديل الموظف" : "إضافة الموظف"}</TabsTrigger>
@@ -172,15 +193,7 @@ const StoreEmployeeManagement = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-lg font-medium">الموظفين</CardTitle>
-              <Button
-                onClick={() => {
-                  setActiveTab("add-employee");
-                  setEditingEmployee(null);
-                  handleCancelEdit();
-                }}
-                className="bg-main hover:bg-main/90"
-                size="sm"
-              >
+              <Button onClick={handleAddEmployeeClick} className="bg-main hover:bg-main/90" size="sm">
                 <Plus className="w-4 h-4 ml-2" />
                 إضافة موظف
               </Button>
@@ -190,14 +203,7 @@ const StoreEmployeeManagement = () => {
                 <div className="text-center py-8 text-gray-500">
                   <User className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                   <p>لا يوجد موظفين مضافين بعد</p>
-                  <Button
-                    onClick={() => {
-                      setActiveTab("add-employee");
-                      handleCancelEdit();
-                    }}
-                    variant="outline"
-                    className="mt-4"
-                  >
+                  <Button onClick={handleAddEmployeeClick} variant="outline" className="mt-4">
                     إضافة أول موظف
                   </Button>
                 </div>

@@ -15,6 +15,7 @@ import { useAuth } from "@/context/AuthContext";
 
 import SectionsPopover from "@/components/SectionsPopover";
 import { useLocation } from "react-router-dom";
+import Loader from "@/components/Loader";
 
 const FILTER_CATEGORIES = [
   { name: "الكل", value: null },
@@ -190,8 +191,8 @@ export default function ProductsPageDashboard() {
     return (
       <div className="flex items-center gap-3 p-3 border-b">
         <div className="w-12 h-12 rounded-md bg-gray-200 flex items-center justify-center flex-shrink-0">
-          {product.images && product.images.length > 0 ? (
-            <img src={product.images[0]} alt={product.name} className="w-12 h-12 rounded-md object-cover" />
+          {product.gallary_url && product.gallary_url.length > 0 ? (
+            <img src={product.gallary_url?.[0]} alt={product.name} className="w-12 h-12 rounded-md object-cover" />
           ) : (
             <Package size={20} className="text-gray-400" />
           )}
@@ -199,7 +200,7 @@ export default function ProductsPageDashboard() {
         <div className="flex-1">
           <p className="font-semibold text-gray-800 text-sm line-clamp-1">{product.name}</p>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs font-semibold text-blue-600">{currentPrice.toLocaleString()} ر.س</span>
+            <span className="text-xs font-semibold text-main">{currentPrice.toLocaleString()} ر.س</span>
             {product.sale_price && (
               <span className="text-xs text-gray-500 line-through">{product.price.toLocaleString()} ر.س</span>
             )}
@@ -213,22 +214,12 @@ export default function ProductsPageDashboard() {
       </div>
     );
   };
-  if (!user || isLoadingCategories || isLoadingStores) return <div>Loading...</div>;
-  console.log(user);
+  if (!user || isLoadingCategories || isLoadingStores) return <Loader />;
+
   return (
     <div className="w-full min-h-screen p-4 sm:p-6 lg:p-8 bg-gray-50" dir="rtl">
       <header className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">المنتجات</h1>
-        <div className="flex items-center gap-3">
-          <Link to={`/${user?.user?.user_type === "merchant" ? "dashboard" : "admin"}/products/add`}>
-            <Button className="bg-main text-white hover:bg-main/90">
-              <Plus size={16} className="ml-2" /> إضافة منتج
-            </Button>
-          </Link>
-          <Button variant="outline" disabled={isLoadingUser}>
-            <MoreHorizontal size={16} />
-          </Button>
-        </div>
       </header>
 
       <div className="flex justify-between  gap-4 items-center mb-4">

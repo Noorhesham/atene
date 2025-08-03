@@ -10,6 +10,7 @@ import { FacebookIcon, InstagramIcon, TikTokIcon, YoutubeIcon } from "@/constant
 import { Link } from "react-router-dom";
 import Actions from "@/components/Actions";
 import { useAuth } from "@/context/AuthContext";
+import Loader from "@/components/Loader";
 
 interface FilterCategory {
   name: string;
@@ -193,9 +194,7 @@ const StoreDetails = ({ store, onStoreDeleted }: { store: ApiStore; onStoreDelet
               <InfoItem icon={<MessageSquare size={20} />} title="الوصف">
                 <p className="whitespace-pre-wrap">{store.description || "لا يوجد وصف متاح"}</p>
               </InfoItem>
-              <InfoItem icon={<User size={20} />} title="المالك">
-                {store.owner_id}
-              </InfoItem>
+
               <InfoItem icon={<DollarSign size={20} />} title="عملة المتجر">
                 {currencies?.find((c) => c.id === store.currency_id)?.name || "غير متوفر"}
                 {currencies?.find((c) => c.id === store.currency_id)?.symbol && (
@@ -304,7 +303,7 @@ export default function StoreManagementPage() {
   };
 
   const { isLoading: storesLoading } = useAdminEntityQuery("stores");
-  if (storesLoading) return <div>Loading...</div>;
+  if (storesLoading) return <Loader />;
   return (
     <div className="w-full min-h-screen p-4 sm:p-6 lg:p-8 bg-gray-50" dir="rtl">
       <header className="flex justify-between items-center mb-6">

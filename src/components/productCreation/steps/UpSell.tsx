@@ -183,11 +183,19 @@ const UpSell = () => {
 
   const { replace } = useFieldArray({
     control,
-    name: "upsellProducts",
+    name: "upSells",
   });
 
-  const upsellProductIds = watch("upsellProducts") || [];
+  const upsellProductIds = watch("upSells") || [];
   const selectedProducts = products.filter((product) => upsellProductIds.includes(product.id));
+
+  console.log("UpSell debugging:", {
+    upsellProductIds,
+    selectedProducts,
+    productsLength: products.length,
+    upSellsFromForm: watch("upSells"),
+    formValues: watch(),
+  });
 
   const handleConfirmSelection = (productIds: number[]) => {
     replace(productIds);

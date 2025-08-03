@@ -10,7 +10,7 @@ import toast from "react-hot-toast";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { ApiProduct } from "@/types";
-
+import Loader from "@/components/Loader";
 // Import step components
 import BasicInformation from "./steps/BasicInformation";
 import ProductDetails from "./steps/ProductDetails";
@@ -22,35 +22,42 @@ import UpSell from "./steps/UpSell";
 import { useAuth } from "@/context/AuthContext";
 import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
 
-type VariantType = {
+// Define variant type for dynamic attributes
+type VariantData = {
   color?: string;
   size?: string;
   price: string;
   images: string[];
   isActive: boolean;
+  [key: string]: string | boolean | string[] | undefined;
 };
 
-const variantSchema = z.object({
-  color: z.string().optional(),
-  size: z.string().optional(),
-  price: z.string().min(1, "يرجى إدخال السعر"),
-  images: z.array(z.string()).min(1, "يرجى إضافة صورة واحدة على الأقل للمنتج المتغير"),
-  isActive: z.boolean(),
-});
+const variantSchema = z
+  .object({
+    color: z.string().optional(),
+    size: z.string().optional(),
+    price: z.string().min(1, "يرجى إدخال السعر"),
+    images: z.array(z.string()).min(1, "يرجى إضافة صورة واحدة على الأقل للمنتج المتغير"),
+    isActive: z.boolean(),
+  })
+  .passthrough(); // Allow additional properties for dynamic attributes
 
 const productFormSchema = z.object({
   // First form fields
   productName: z.string().min(3, "اسم المنتج يجب أن يكون 3 أحرف على الأقل"),
   price: z.union([z.string().min(1, "السعر يجب أن يكون أكبر من 0"), z.number().min(1, "السعر يجب أن يكون أكبر من 0")]),
+  section_id: z.string().min(1, "يجب اختيار قسم واحد على الأقل"),
   category_id: z.string().min(1, "يجب اختيار فئة واحدة على الأقل"),
-  status: z.enum(["not_active", "active"], {
-    errorMap: () => ({ message: "يرجى اختيار حالة صحيحة للمنتج" }),
-  }),
+  status: z
+    .enum(["not_active", "active"], {
+      errorMap: () => ({ message: "يرجى اختيار حالة صحيحة للمنتج" }),
+    })
+    .optional(), // Make status optional
   condition: z.enum(["new", "used", "refurbished"], {
     errorMap: () => ({ message: "يرجى اختيار حالة صحيحة للمنتج" }),
   }),
   shortDescription: z.string().min(10, "الوصف الموجز يجب أن يكون 10 أحرف على الأقل"),
-  fullDescription: z.string().min(20, "الوصف الكامل يجب أن يكون 20 حرف على الأقل"),
+  description: z.string().min(20, "الوصف الكامل يجب أن يكون 20 حرف على الأقل"),
   cover: z.string().min(1, "صورة الغلاف مطلوبة"),
   images: z.array(z.string()).min(1, "يجب إضافة صورة واحدة على الأقل"),
 
@@ -79,20 +86,12 @@ const productFormSchema = z.object({
     .array(variantSchema)
     .optional()
     .superRefine((variants, ctx) => {
-      interface FormData {
-        hasVariations: boolean;
-        variantAttributes: string[] | undefined;
-      }
+      // Get the parent form data using a type assertion
+      const parentData = (ctx as { parent?: { hasVariations?: boolean; variantAttributes?: string[] } }).parent;
+      const hasVariations = parentData?.hasVariations || false;
+      const variantAttributes = parentData?.variantAttributes || [];
 
-      const formData: FormData = {
-        hasVariations:
-          (ctx as z.RefinementCtx & { _parent?: { data?: { hasVariations: boolean } } })._parent?.data?.hasVariations ??
-          false,
-        variantAttributes: (ctx as z.RefinementCtx & { _parent?: { data?: { variantAttributes: string[] } } })._parent
-          ?.data?.variantAttributes,
-      };
-
-      if (formData.hasVariations) {
+      if (hasVariations) {
         if (!variants || variants.length === 0) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
@@ -103,20 +102,13 @@ const productFormSchema = z.object({
 
         let isValid = true;
         variants.forEach((variant, index: number) => {
-          (formData.variantAttributes || []).forEach((attr: string) => {
-            if (attr === "color" && !variant.color) {
+          variantAttributes.forEach((attr: string) => {
+            const variantValue = (variant as VariantData)[attr];
+            if (!variantValue) {
               ctx.addIssue({
                 code: z.ZodIssueCode.custom,
-                message: "يرجى إدخال اللون",
-                path: [index, "color"],
-              });
-              isValid = false;
-            }
-            if (attr === "size" && !variant.size) {
-              ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "يرجى إدخال المقاس",
-                path: [index, "size"],
+                message: `يرجى إدخال ${attr === "color" ? "اللون" : attr === "size" ? "المقاس" : attr}`,
+                path: [index, attr],
               });
               isValid = false;
             }
@@ -128,9 +120,8 @@ const productFormSchema = z.object({
     }),
 
   // Fourth form fields
-  relatedProducts: z.array(z.string()).optional(),
 
-  upsellProducts: z.array(z.union([z.string(), z.number()])).optional(),
+  upSells: z.array(z.union([z.string(), z.number()])).optional(),
   upsellDiscountPrice: z.union([z.string(), z.number()]).optional(),
   upsellDiscountEndDate: z.union([z.string(), z.number()]).optional(),
   crossSells: z.array(z.union([z.string(), z.number()])).optional(),
@@ -187,6 +178,9 @@ const ProductCreationForm = ({
   const isEditMode = !!product;
   const { user, isLoading } = useAuth();
 
+  // Get attributes data for mapping
+  const { data: attributesData = [] } = useAdminEntityQuery("attributes");
+
   // Get section_id from search params
   const searchParams = new URLSearchParams(location.search);
   const sectionIdFromParams = searchParams.get("section_id");
@@ -200,11 +194,12 @@ const ProductCreationForm = ({
     defaultValues: {
       productName: "",
       price: "",
-      category_id: "",
-      status: "not_active",
+      section_id: sectionIdFromParams || "",
+      category_id: "1", // Set default category to first category (ID: 1)
+      status: user?.user?.user_type === "admin" ? "active" : "not_active", // Set default status based on user type
       condition: "new",
       shortDescription: "",
-      fullDescription: "",
+      description: "",
       cover: "",
       images: [],
       // Second form default values
@@ -214,18 +209,15 @@ const ProductCreationForm = ({
       hasDelivery: false,
       productType: "",
       mainCategory: "",
-      subCategory: sectionIdFromParams || "",
+
       city: "",
       neighborhood: "",
       // Third form default values
       hasVariations: false,
       variantAttributes: [],
       variants: [],
-      // Fourth form default values
-      relatedProducts: [],
 
-      // Fifth form default values
-      upsellProducts: [],
+      upSells: [],
       upsellDiscountPrice: undefined,
       upsellDiscountEndDate: undefined,
       crossSells: [],
@@ -238,13 +230,25 @@ const ProductCreationForm = ({
   // Populate form with existing product data in edit mode
   useEffect(() => {
     if (product) {
+      console.log("Product data for form:", {
+        upSells: product.upSells,
+        crossSells: product.crossSells,
+        upSellsType: typeof product.upSells,
+        crossSellsType: typeof product.crossSells,
+        variations: product.variations,
+        variationsLength: product.variations?.length,
+        firstVariation: product.variations?.[0],
+        attributeOptions: product.variations?.[0]?.attributeOptions,
+      });
+
       form.reset({
         productName: product.name || "",
         price: product.price?.toString() || "",
+        section_id: product.section_id?.toString() || "",
         category_id: product.category.id ? product.category.id.toString() : "",
         condition: (product.condition as "new" | "used" | "refurbished") || "new",
         shortDescription: product.short_description || "",
-        fullDescription: product.description || "",
+        description: product.description || "",
         specifications: product.specifications || [],
         tags: product.tags?.map((tag: string) => ({ value: tag })) || [],
         cover: product.cover || "",
@@ -253,30 +257,83 @@ const ProductCreationForm = ({
         hasDelivery: false,
         productType: product.type || "",
         mainCategory: product.category_id?.toString() || "",
-        subCategory: sectionIdFromParams || product.section_id?.toString() || "",
+        subCategory: "",
         city: "",
         neighborhood: "",
+        status: product.status === "active" ? "active" : "not_active",
         hasVariations: product.type === "variation",
-        variantAttributes: product.variations?.length > 0 ? ["color", "size"] : [], // Default attributes if variations exist
+        variantAttributes:
+          product.variations?.length > 0
+            ? product.variations[0]?.attributeOptions?.length > 0
+              ? product.variations[0]?.attributeOptions?.map(
+                  (option: { attribute_id: number; attribute?: { title: string } }) => option.attribute_id?.toString()
+                ) || []
+              : []
+            : [],
         variants:
-          product.variations?.map((variation: { price?: number; image?: string }) => ({
-            color: "",
-            size: "",
-            price: variation.price?.toString() || "",
-            images: variation.image ? [variation.image] : [],
-            isActive: true,
-          })) || [],
-        relatedProducts: [],
-        upsellProducts:
-          product.upSells?.map((item: string | number | { id: number }) =>
-            typeof item === "object" ? item.id : item
+          product.variations?.map(
+            (variation: {
+              price?: number;
+              image?: string;
+              attributeOptions?: Array<{
+                attribute_id: number;
+                option_id: number;
+                attribute?: { title: string };
+                option?: { title: string };
+              }>;
+            }) => {
+              const variant: { [key: string]: string | boolean | string[] } = {
+                price: variation.price?.toString() || "",
+                images: variation.image ? [variation.image] : [],
+                isActive: true,
+              };
+
+              console.log("Processing variation for form:", {
+                variation,
+                attributeOptions: variation.attributeOptions,
+              });
+
+              // Map attribute options to variant fields using attribute_id as key
+              variation.attributeOptions?.forEach((option) => {
+                const attrId = option.attribute_id?.toString();
+                if (attrId) {
+                  variant[attrId] = option.option_id?.toString() || "";
+                  console.log(`Mapped attribute ${attrId} to option ${option.option_id}`);
+                }
+              });
+
+              console.log("Final variant object:", variant);
+              return variant;
+            }
           ) || [],
+        upSells:
+          product.upSells
+            ?.map((item: string | number | { id: number } | null | undefined) => {
+              if (typeof item === "object" && item && item.id) {
+                return item.id;
+              } else if (typeof item === "number") {
+                return item;
+              } else if (typeof item === "string") {
+                return parseInt(item);
+              }
+              return null;
+            })
+            .filter((id): id is number => id !== null) || [],
         upsellDiscountPrice: product.cross_sells_price,
         upsellDiscountEndDate: undefined,
         crossSells:
-          product.crossSells?.map((item: string | number | { id: number }) =>
-            typeof item === "object" ? item.id : item
-          ) || [],
+          product.crossSells
+            ?.map((item: string | number | { id: number } | null | undefined) => {
+              if (typeof item === "object" && item && item.id) {
+                return item.id;
+              } else if (typeof item === "number") {
+                return item;
+              } else if (typeof item === "string") {
+                return parseInt(item);
+              }
+              return null;
+            })
+            .filter((id): id is number => id !== null) || [],
       });
     }
   }, [isEditMode, product, form, sectionIdFromParams]);
@@ -334,34 +391,79 @@ const ProductCreationForm = ({
         sku: isEditMode ? productData?.sku : `SKU${Date.now()}`, // Generate SKU for new products
         name: data.productName,
         short_description: data.shortDescription,
-        description: data.fullDescription,
+        description: data.description,
         cover: data.cover?.startsWith("http") ? data.cover : `${data.cover || ""}`, // Cover image
         gallary: data.images || [], // All images as gallery
         type: data.hasVariations ? ("variation" as const) : ("simple" as const),
         condition: data.condition,
         category_id: parseInt(data.category_id) || 1,
-        section_id: parseInt(sectionIdFromParams || data.subCategory) || 1,
+        section_id: parseInt(data.section_id) || 1,
         review_rate: isEditMode ? productData?.review_rate || 0 : 0,
         review_count: isEditMode ? productData?.review_count || 0 : 0,
         price: parseFloat(data.price.toString()),
         cross_sells_price: data.upsellDiscountPrice || 0,
         crossSells: data.crossSells || [],
-        upSells: data.upsellProducts || [],
+        upSells: data.upSells || [],
         tags: data.tags?.map((k: { value: string }) => k.value) || [],
         specifications: data.specifications || [],
+        ...(isAdmin && { status: data.status }), // Only include status for admin users
         variations: data.hasVariations
-          ? data.variants?.map((variant: VariantType, index: number) => ({
-              id: index + 1,
-              price: parseFloat(variant.price),
-              image: variant.images[0]?.startsWith("http") ? variant.images[0] : variant.images[0] || "",
-              attributeOptions: [
-                // TODO: Map attribute options based on variant attributes
-              ],
-            })) || []
+          ? data.variants?.map((variant: any, index: number) => {
+              // Get the attributes data to map attribute names to IDs
+              const variantAttributes = data.variantAttributes || [];
+
+              console.log(`Processing variant ${index}:`, {
+                variant,
+                variantAttributes,
+                attributesData,
+              });
+
+              // Construct attributeOptions array
+              const attributeOptions = variantAttributes
+                .map((attrId: string) => {
+                  // Get the selected value for this attribute
+                  const selectedValue = variant[attrId];
+
+                  console.log(`Processing attribute ID ${attrId}:`, {
+                    selectedValue,
+                    attributeFound: attributesData.find(
+                      (attr: { id: number; title: string }) => attr.id.toString() === attrId
+                    ),
+                  });
+
+                  if (selectedValue) {
+                    // Find the attribute by ID
+                    const attribute = attributesData.find(
+                      (attr: { id: number; title: string }) => attr.id.toString() === attrId
+                    );
+
+                    if (attribute) {
+                      return {
+                        optionable_id: index + 1, // Use variant index + 1 as optionable_id
+                        option_id: parseInt(selectedValue as string),
+                        attribute_id: attribute.id,
+                      };
+                    }
+                  }
+                  return null;
+                })
+                .filter(Boolean);
+
+              console.log(`AttributeOptions for variant ${index}:`, attributeOptions);
+
+              return {
+                id: index + 1,
+                price: parseFloat(variant.price),
+                image: variant.images[0]?.startsWith("http") ? variant.images[0] : variant.images[0] || "",
+                attributeOptions,
+              };
+            }) || []
           : [],
       };
 
       console.log("API Payload:", apiPayload);
+      console.log("Variations with attributeOptions:", apiPayload.variations);
+      console.log("Attributes data:", attributesData);
 
       // Submit to API
       if (isEditMode) {
@@ -386,7 +488,7 @@ const ProductCreationForm = ({
     }
   });
   console.log(form.formState.errors);
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <Loader />;
   const steps: StepConfig[] = [
     {
       id: 1,
@@ -396,10 +498,11 @@ const ProductCreationForm = ({
         ? [
             "productName",
             "price",
+            "section_id",
             "category_id",
             "condition",
             "shortDescription",
-            "fullDescription",
+            "description",
             "cover",
             "images",
             "status",
@@ -407,11 +510,11 @@ const ProductCreationForm = ({
         : [
             "productName",
             "price",
+            "section_id",
             "category_id",
-            "status",
             "condition",
             "shortDescription",
-            "fullDescription",
+            "description",
             "cover",
             "images",
           ],
@@ -448,7 +551,7 @@ const ProductCreationForm = ({
       id: 5,
       title: "منتجات مكملة",
       component: <UpSell />,
-      fields: ["upsellProducts", "upsellDiscountPrice", "upsellDiscountEndDate"],
+      fields: ["upSells", "upsellDiscountPrice", "upsellDiscountEndDate"],
     },
   ];
   return (

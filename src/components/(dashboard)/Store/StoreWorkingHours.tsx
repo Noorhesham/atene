@@ -45,12 +45,17 @@ const StoreWorkingHours = () => {
 
   const openStatusOptions = [
     {
+      value: "open_without_working_times",
+      label: "مفتوح دائماً",
+      description: "متجر مفتوح على مدار الساعة",
+    },
+    {
       value: "open_with_working_times",
       label: "مفتوح خلال ساعات عمل معينة",
       description: "أتبع جدول ساعات العمل المحدد أدناه",
     },
-    { value: "temporarily_closed", label: "مغلق بشكل مؤقت", description: "لا تقبل طلبات جديدة حالياً" },
-    { value: "permanently_closed", label: "مغلق بشكل دائم", description: "أتوقف عن استقبال الطلبات نهائياً" },
+    { value: "temporary_closed", label: "مغلق بشكل مؤقت", description: "لا تقبل طلبات جديدة حالياً" },
+    { value: "closed", label: "مغلق", description: "متجر مغلق" },
   ];
 
   // Initialize or ensure exactly 7 working times
@@ -97,7 +102,7 @@ const StoreWorkingHours = () => {
       newWorkingTime.to = "23:59";
     }
 
-    // If "closed" is selected, uncheck "24 hours"
+    // If "closed" is selected, open_always "24 hours"
     if (field === "closed_always" && value) {
       newWorkingTime.open_always = false;
     }
@@ -148,8 +153,8 @@ const StoreWorkingHours = () => {
         </CardContent>
       </Card>
 
-      {/* Working Hours Table - Only show when store is open with working times */}
-      {openStatus === "open_with_working_times" && (
+      {/* Working Hours Table - Show when store is open (with or without working times) */}
+      {(openStatus === "open_with_working_times" || openStatus === "open_without_working_times") && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg font-medium">جدول أوقات العمل</CardTitle>
@@ -235,18 +240,18 @@ const StoreWorkingHours = () => {
         </Card>
       )}
 
-      {/* Message for non-working status */}
-      {openStatus !== "open_with_working_times" && (
+      {/* Message for closed status */}
+      {(openStatus === "temporary_closed" || openStatus === "closed") && (
         <Card>
           <CardContent className="p-8 text-center">
             <div className="text-gray-500">
               <h4 className="font-medium text-lg mb-2">
-                {openStatus === "temporarily_closed" && "المتجر مغلق مؤقتاً"}
-                {openStatus === "permanently_closed" && "المتجر مغلق نهائياً"}
+                {openStatus === "temporary_closed" && "المتجر مغلق مؤقتاً"}
+                {openStatus === "closed" && "المتجر مغلق"}
               </h4>
               <p className="text-sm">
-                {openStatus === "temporarily_closed" && "لن يتم قبول أي طلبات جديدة حتى يتم تغيير حالة المتجر"}
-                {openStatus === "permanently_closed" && "تم إيقاف المتجر عن استقبال الطلبات نهائياً"}
+                {openStatus === "temporary_closed" && "لن يتم قبول أي طلبات جديدة حتى يتم تغيير حالة المتجر"}
+                {openStatus === "closed" && "تم إيقاف المتجر عن استقبال الطلبات"}
               </p>
             </div>
           </CardContent>

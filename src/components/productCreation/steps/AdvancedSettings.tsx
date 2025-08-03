@@ -123,11 +123,20 @@ const RelatedProducts = () => {
   });
 
   const relatedProductIds = watch("crossSells") || [];
-  const selectedProducts = products.filter((product) => relatedProductIds.includes(product.id.toString()));
-  console.log(selectedProducts);
+  const selectedProducts = products.filter((product) => relatedProductIds.includes(product.id));
+  console.log("AdvancedSettings debugging:", {
+    relatedProductIds,
+    selectedProducts,
+    productsLength: products.length,
+    crossSellsFromForm: watch("crossSells"),
+    formValues: watch(),
+  });
   const handleConfirmSelection = (productIds: string[]) => {
-    // Ensure we only store IDs, not objects
-    const cleanIds = productIds.filter((id) => id !== "[object Object]" && id !== "undefined" && id !== "null");
+    // Convert string IDs to numbers
+    const cleanIds = productIds
+      .filter((id) => id !== "[object Object]" && id !== "undefined" && id !== "null")
+      .map((id) => parseInt(id))
+      .filter((id) => !isNaN(id));
     replace(cleanIds);
   };
 
@@ -135,17 +144,15 @@ const RelatedProducts = () => {
     replace([]);
   };
 
-  const handleRemoveProduct = (productId: string) => {
-    const newIds = relatedProductIds.filter((id: string) => id !== productId);
+  const handleRemoveProduct = (productId: number) => {
+    const newIds = relatedProductIds.filter((id: number) => id !== productId);
     replace(newIds);
   };
 
   // Clean up crossSells field on mount to remove any bad data
   useEffect(() => {
     if (relatedProductIds.length > 0) {
-      const cleanIds = relatedProductIds.filter(
-        (id: string) => id !== "[object Object]" && id !== "undefined" && id !== "null" && id !== ""
-      );
+      const cleanIds = relatedProductIds.filter((id: number) => typeof id === "number" && !isNaN(id) && id > 0);
       if (cleanIds.length !== relatedProductIds.length) {
         replace(cleanIds);
       }
@@ -218,7 +225,7 @@ const RelatedProducts = () => {
                 variant="ghost"
                 size="icon"
                 className="w-8 h-8 text-red-500 bg-red-50 hover:bg-red-100"
-                onClick={() => handleRemoveProduct(product.id.toString())}
+                onClick={() => handleRemoveProduct(product.id)}
               >
                 <Trash2 size={16} />
               </Button>

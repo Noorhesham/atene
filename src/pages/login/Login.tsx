@@ -10,7 +10,7 @@ const Login = () => {
   const location = useLocation();
 
   // Get the intended destination from location state, default to products page
-  const from = location.state?.from?.pathname || "/products";
+  const from = location.state?.from?.pathname || "/";
 
   useEffect(() => {
     if (isAuthenticated && !isLoading) {

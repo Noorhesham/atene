@@ -1,6 +1,6 @@
 "use client";
 
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { ChevronDown, Package, Users, Home, ShoppingCart, MoreHorizontal, Shirt, Store } from "lucide-react";
 import StoreSelector from "./StoreSelector";
 import { Badge } from "@/components/ui/badge";
@@ -14,12 +14,48 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import MaxWidthDashboard from "./(dashboard)/components/MaxWidthDashboard";
 import { useAuth } from "@/context/AuthContext";
+import Loader from "./Loader";
 
 const DashboardNavbar = () => {
   const { user, isLoading } = useAuth();
-  if (isLoading) return <div>Loading...</div>;
-  const isAdmin = user?.user.roles.includes("superadmin");
+  const location = useLocation();
+
+  if (isLoading) return <Loader />;
+
+  const isAdmin = user?.user.user_type === "admin";
   const preLink = isAdmin ? "/admin" : "/dashboard";
+
+  // Helper function to check if a link is active
+  const isActive = (path: string) => {
+    return location.pathname === path || location.pathname.startsWith(path + "/");
+  };
+
+  // Helper function to check if a dropdown item is active (more specific)
+  const isDropdownItemActive = (path: string) => {
+    return location.pathname === path;
+  };
+
+  // Helper function to check if a main section is active (for dropdown triggers)
+  const isSectionActive = (sectionPath: string) => {
+    // Check if we're on the main section page or any of its sub-pages
+    return location.pathname === sectionPath || location.pathname.startsWith(sectionPath + "/");
+  };
+
+  // Helper function to get button styles based on active state
+  const getButtonStyles = (path: string) => {
+    const active = isActive(path);
+    return active
+      ? "bg-[#2D496A] text-white hover:bg-[#2D496A]/90 px-4 py-2 h-auto rounded-md flex items-center gap-2"
+      : "text-[#2D496A] hover:bg-white/20 px-4 py-2 h-auto rounded-md flex items-center gap-2";
+  };
+
+  // Helper function to get dropdown button styles based on section active state
+  const getDropdownButtonStyles = (sectionPath: string) => {
+    const active = isSectionActive(sectionPath);
+    return active
+      ? "bg-[#2D496A] text-white hover:bg-[#2D496A]/90 px-4 py-2 h-auto rounded-md flex items-center gap-1"
+      : "text-[#2D496A] hover:bg-white/20 px-4 py-2 h-auto rounded-md flex items-center gap-1";
+  };
   return (
     <nav dir="rtl" className="w-full bg-[#C8D7E8] border-b border-gray-200 shadow-sm">
       <MaxWidthDashboard className="bg-[#C8D7E8]">
@@ -34,11 +70,7 @@ const DashboardNavbar = () => {
             {/* Navigation Links */}
             <div className="hidden md:flex font-[500] items-center gap-2">
               {/* Home */}
-              <Button
-                variant="ghost"
-                className="bg-[#2D496A] text-white  hover:bg-[#2D496A]/90 px-4 py-2 h-auto rounded-md flex items-center gap-2"
-                asChild
-              >
+              <Button variant="ghost" className={getButtonStyles("/dashboard")} asChild>
                 <Link to="/dashboard">
                   <Home className="w-4 h-4" />
                   الرئيسية
@@ -48,22 +80,19 @@ const DashboardNavbar = () => {
               {/* Stores Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="text-[#2D496A] hover:bg-white/20 px-4 py-2 h-auto rounded-md flex items-center gap-1"
-                  >
+                  <Button variant="ghost" className={getDropdownButtonStyles(`${preLink}/stores`)}>
                     <Store className="w-4 h-4" />
                     المتاجر
                     <ChevronDown className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48 text-right">
-                  <DropdownMenuItem>
+                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/stores`) ? "bg-blue-50" : ""}>
                     <Link to={`${preLink}/stores`} className="w-full">
                       إدارة المتاجر
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/stores/add`) ? "bg-blue-50" : ""}>
                     <Link to={`${preLink}/stores/add`} className="w-full">
                       إضافة متجر
                     </Link>
@@ -74,27 +103,24 @@ const DashboardNavbar = () => {
               {/* Orders Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="text-[#2D496A] hover:bg-white/20 px-4 py-2 h-auto rounded-md flex items-center gap-1"
-                  >
+                  <Button variant="ghost" className={getDropdownButtonStyles(`${preLink}/orders`)}>
                     <ShoppingCart className="w-4 h-4" />
                     الطلبات
                     <ChevronDown className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48 text-right">
-                  <DropdownMenuItem>
+                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/orders`) ? "bg-blue-50" : ""}>
                     <Link to={`${preLink}/orders`} className="w-full">
                       جميع الطلبات
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/orders/pending`) ? "bg-blue-50" : ""}>
                     <Link to={`${preLink}/orders/pending`} className="w-full">
                       الطلبات المعلقة
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/orders/completed`) ? "bg-blue-50" : ""}>
                     <Link to={`${preLink}/orders/completed`} className="w-full">
                       الطلبات المكتملة
                     </Link>
@@ -105,27 +131,24 @@ const DashboardNavbar = () => {
               {/* Products Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="text-[#2D496A] hover:bg-white/20 px-4 py-2 h-auto rounded-md flex items-center gap-1"
-                  >
+                  <Button variant="ghost" className={getDropdownButtonStyles(`${preLink}/products`)}>
                     <Shirt className="w-4 h-4" />
                     المنتجات
                     <ChevronDown className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48 text-right">
-                  <DropdownMenuItem>
+                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/products`) ? "bg-blue-50" : ""}>
                     <Link to={`${preLink}/products`} className="w-full">
                       إدارة المنتجات
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/products/add`) ? "bg-blue-50" : ""}>
                     <Link to={`${preLink}/products/add`} className="w-full">
                       إضافة منتج
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/categories`) ? "bg-blue-50" : ""}>
                     <Link to={`${preLink}/categories`} className="w-full">
                       الفئات
                     </Link>
@@ -136,27 +159,24 @@ const DashboardNavbar = () => {
               {/* More Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="text-[#2D496A] hover:bg-white/20 px-4 py-2 h-auto rounded-md flex items-center gap-1"
-                  >
+                  <Button variant="ghost" className={getDropdownButtonStyles(`${preLink}/users`)}>
                     <MoreHorizontal className="w-4 h-4" />
                     المزيد
                     <ChevronDown className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48 text-right   ">
-                  <DropdownMenuItem>
+                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/users`) ? "bg-blue-50" : ""}>
                     <Link to={`${preLink}/users`} className="w-full">
                       إدارة المستخدمين
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/reports`) ? "bg-blue-50" : ""}>
                     <Link to={`${preLink}/reports`} className="w-full">
                       التقارير
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/settings`) ? "bg-blue-50" : ""}>
                     <Link to={`${preLink}/settings`} className="w-full">
                       الإعدادات
                     </Link>

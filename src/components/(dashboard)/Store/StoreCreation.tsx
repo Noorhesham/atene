@@ -80,7 +80,6 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
       address: "",
       lng: "",
       lat: "",
-      owner_id: "1", // Default owner ID
       currency_id: "1", // Default currency ID
       phone: "",
       whats_app: null,
@@ -112,7 +111,7 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
         address: store.address || "",
         lng: store.lng?.toString() || "",
         lat: store.lat?.toString() || "",
-        owner_id: store.owner_id.toString() || "1",
+
         currency_id: store.currency_id.toString() || "1",
         phone: store.phone || "",
         whats_app: store.whats_app || null,
@@ -124,8 +123,11 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
         linkedin: store.linkedin || null,
         pinterest: store.pinterest || null,
         open_status:
-          (store.open_status as "open_always" | "open_with_working_times" | "closed_always") ||
-          "open_with_working_times",
+          (store.open_status as
+            | "open_without_working_times"
+            | "open_with_working_times"
+            | "temporary_closed"
+            | "closed") || "open_with_working_times",
         workingtimes: store.workingtimes || [],
         managers: store.managers.map((manager) => ({ ...manager, email: manager.user_email })) || [],
         specifications: store.specifications || [],
@@ -147,7 +149,7 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
         "address",
         "lng",
         "lat",
-        "owner_id",
+
         "currency_id",
         "phone",
       ] as Array<keyof StoreFormData>,
@@ -221,7 +223,6 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
         lng: data.lng ? parseFloat(data.lng) : null,
         lat: data.lat ? parseFloat(data.lat) : null,
         email: data.email,
-        owner_id: parseInt(data.owner_id as string),
         currency_id: parseInt(data.currency_id as string),
         phone: data.phone,
         whats_app: data.whats_app || null,

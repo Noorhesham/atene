@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import FormInput from "@/components/inputs/FormInput";
 import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
 import { useSearchParams } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { useEffect } from "react";
+import Loader from "@/components/Loader";
 
 const statusOptions = [
   { value: "not_active", label: "مسودة" },
@@ -22,17 +25,63 @@ const BasicInformation = () => {
   const {
     control,
     formState: { errors },
+    setValue,
   } = useFormContext();
+  const { user } = useAuth();
   const searchParams = useSearchParams();
-  const sectionId = searchParams[0].get("section_id");
+  const form = useFormContext();
+  const sectionId = form.watch("section_id") || searchParams[0].get("section_id");
   const { data: sections = [], isLoading } = useAdminEntityQuery("sections", {});
-  const { data: categories = [], isLoading: isLoadingCategories } = useAdminEntityQuery("categories-select");
-  if (isLoading || isLoadingCategories) return <div>Loading...</div>;
-  const categoryOptions = categories.data.map((cat) => ({
-    value: cat.id.toString(),
+  const { data: categories = [], isLoading: isLoadingCategories } = useAdminEntityQuery("categories", {});
+
+  const isAdmin = user?.user?.user_type === "admin";
+
+  // Set store_id from localStorage for non-admin users
+  useEffect(() => {
+    if (!isAdmin) {
+      const storeId = localStorage.getItem("storeId");
+      if (storeId) {
+        setValue("storeVisibility", storeId);
+      }
+    }
+  }, [isAdmin, setValue]);
+
+  // Ensure category_id is set correctly when categories load
+  useEffect(() => {
+    if (categories.length > 0) {
+      const currentCategoryId = form.getValues("category_id");
+      console.log("Categories loaded, current category_id:", currentCategoryId);
+
+      // If we have a category_id but it's not in the options, try to find it
+      if (currentCategoryId && !categories.find((cat: any) => cat.id.toString() === currentCategoryId)) {
+        console.log("Category ID not found in options, resetting...");
+        setValue("category_id", "");
+      }
+
+      // If no category_id is set, set it to the first category
+      if (!currentCategoryId && categories.length > 0) {
+        console.log("No category_id set, setting to first category:", categories[0].id);
+        setValue("category_id", categories[0].id.toString());
+      }
+    }
+  }, [categories, form, setValue]);
+
+  if (isLoading || isLoadingCategories) return <Loader />;
+
+  const categoryOptions = categories.map((cat: any) => ({
+    value: cat.id.toString(), // Convert to string to match form field type
     label: cat.name,
   }));
-  const section = sections.find((section) => section.id.toString() === sectionId);
+  console.log("Category options:", categoryOptions);
+  console.log("Current category_id value:", form.getValues("category_id"));
+  console.log("Categories data:", categories);
+
+  // Check if the current category_id value exists in the options
+  const currentCategoryId = form.getValues("category_id");
+  const selectedCategory = categoryOptions.find((option) => option.value === currentCategoryId);
+  console.log("Selected category:", selectedCategory);
+
+  const section = sections.find((section: any) => section.id.toString() === sectionId);
   console.log(section, sections);
 
   return (
@@ -75,14 +124,16 @@ const BasicInformation = () => {
           options={categoryOptions}
           error={errors.category_id?.message as string}
         />
-        <FormInput
-          select
-          placeholder="اختر حالة المنتج"
-          label="حالة المنتج"
-          name="status"
-          options={statusOptions}
-          error={errors.status?.message as string}
-        />
+        {isAdmin && (
+          <FormInput
+            select
+            placeholder="اختر حالة المنتج"
+            label="حالة المنتج"
+            name="status"
+            options={statusOptions}
+            error={errors.status?.message as string}
+          />
+        )}
         <FormInput
           select
           placeholder="اختر حالة المنتج"
@@ -135,7 +186,7 @@ const BasicInformation = () => {
       <FormInput
         info="وصف المنتج"
         area
-        name="fullDescription"
+        name="description"
         label="وصف المنتج"
         placeholder="اكتب وصف المنتج..."
         className="w-full"

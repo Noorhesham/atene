@@ -93,7 +93,6 @@ const StoreBasicInfo = () => {
           label="عملة المتجر"
           options={currencies?.map((currency) => ({ value: currency.id.toString(), label: currency.name }))}
         />
-        <FormInput select name="owner_id" label="المالك" options={[{ value: "1", label: "كيراس عادل" }]} />
         <FormInput name="phone" label="رقم الهاتف" placeholder="01234567890" />
       </div>
 

@@ -33,7 +33,7 @@ export const storeSchema = z.object({
   lng: z.string().optional(),
   lat: z.string().optional(),
   email: z.string().email("بريد إلكتروني غير صالح"),
-  owner_id: z.string(),
+
   currency_id: z.string(),
   phone: z.string().min(11, "رقم الهاتف غير صالح"),
 
@@ -48,13 +48,7 @@ export const storeSchema = z.object({
   pinterest: z.string().optional().nullable(),
 
   // Store settings
-  open_status: z.enum([
-    "open_always",
-    "open_with_working_times",
-    "closed_always",
-    "temporarily_closed",
-    "permanently_closed",
-  ]),
+  open_status: z.enum(["open_without_working_times", "open_with_working_times", "temporary_closed", "closed"]),
 
   // Arrays
   workingtimes: z.array(workingTimeSchema),
