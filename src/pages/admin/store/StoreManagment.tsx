@@ -235,7 +235,7 @@ const StoreDetails = ({ store, onStoreDeleted }: { store: ApiStore; onStoreDelet
       <Card className="p-6">
         <h3 className="text-base font-bold mb-4 text-black">أوقات عمل المتجر</h3>
         <div className="space-y-3">
-          {store.workingtimes.map((wh) => (
+          {store.workingtimes?.map((wh) => (
             <div key={wh.id} className="flex justify-between items-center text-sm">
               <p className="font-semibold text-gray-800">{wh.day}</p>
               <p className="text-gray-600">
