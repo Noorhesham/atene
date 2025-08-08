@@ -1,8 +1,21 @@
-import { useState } from "react";
+import React, { useState, useMemo } from "react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
+import { Calendar, Users, Store, Package, ShoppingCart, AlertCircle, ChevronLeft, RefreshCw } from "lucide-react";
 import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
-import { Users, Store, AlertCircle, Package, ShoppingCart, Calendar } from "lucide-react";
-import { useMemo } from "react";
-import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Line, BarChart, Bar } from "recharts";
+
 type Period =
   | "current_day"
   | "last_day"
@@ -45,11 +58,13 @@ const PeriodSelector = ({ period, setPeriod }: { period: Period; setPeriod: (p: 
   );
 };
 
-// --- Content Analytics Component (First Image) ---
+const Card = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+  <div className={`bg-white rounded-xl shadow-sm ${className}`}>{children}</div>
+);
+
 const ContentAnalytics = () => {
   const [period, setPeriod] = useState<Period>("current_month");
   const { data, isLoading } = useAnalyticsQuery("content", period);
-
   const StatCard = ({
     title,
     value,
@@ -69,23 +84,20 @@ const ContentAnalytics = () => {
       </div>
     </div>
   );
-
   const chartData = useMemo(() => data?.storesGrowthChart || [], [data]);
   const completedOrders = data?.totalCompletedOrders || 0;
   const canceledOrders = data?.totalCanceledOrders || 0;
-  const totalOrders = completedOrders + canceledOrders;
-  const completedPercentage = totalOrders > 0 ? (completedOrders / totalOrders) * 100 : 0;
-  const canceledPercentage = totalOrders > 0 ? (canceledOrders / totalOrders) * 100 : 0;
+  const completedPercentage = data?.totalOrders > 0 ? (completedOrders / data.totalOrders) * 100 : 0;
+  const canceledPercentage = data?.totalOrders > 0 ? (canceledOrders / data.totalOrders) * 100 : 0;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6" dir="rtl">
+    <Card className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="font-bold text-gray-800 flex items-center gap-2">
           <Users className="w-5 h-5" /> إحصائيات المنصة
         </h2>
         <PeriodSelector period={period} setPeriod={setPeriod} />
       </div>
-
       <div className="grid grid-cols-2 md:grid-cols-4 gap-y-6 mb-6">
         <StatCard
           title="إجمالي التجار"
@@ -120,47 +132,24 @@ const ContentAnalytics = () => {
           bgColor="bg-yellow-100"
         />
       </div>
-
-      <div className="space-y-5 mb-6">
-        {/* Completed bar */}
-        <div>
-          <div className="flex justify-start text-sm font-semibold mb-1">
-            <span>طلبات مكتملة ({completedOrders})</span>
-          </div>
-          <div className="relative w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-            <span
-              className="absolute text-[10px] font-bold text-green-600 -top-4"
-              style={{ left: `${Math.min(100, Math.max(0, completedPercentage))}%`, transform: "translateX(-50%)" }}
-            >
-              {Math.round(completedPercentage)}%
-            </span>
-            <div
-              className="h-full bg-green-500 rounded-full"
-              style={{ width: `${Math.min(100, Math.max(0, completedPercentage))}%` }}
-            />
-          </div>
+      <div className="space-y-2 mb-6">
+        <div className="flex justify-between text-sm font-semibold">
+          <span>طلبات مكتملة ({completedOrders})</span>
+          <span>{Math.round(completedPercentage)}%</span>
         </div>
-
-        {/* Canceled bar */}
-        <div>
-          <div className="flex justify-start text-sm font-semibold mb-1">
-            <span>طلبات مرفوضة ({canceledOrders})</span>
-          </div>
-          <div className="relative w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-            <span
-              className="absolute text-[10px] font-bold text-rose-500 -top-4"
-              style={{ left: `${Math.min(100, Math.max(0, canceledPercentage))}%`, transform: "translateX(-50%)" }}
-            >
-              {Math.round(canceledPercentage)}%
-            </span>
-            <div
-              className="h-full bg-rose-500 rounded-full"
-              style={{ width: `${Math.min(100, Math.max(0, canceledPercentage))}%` }}
-            />
-          </div>
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="bg-green-500 h-2 rounded-full" style={{ width: `${completedPercentage}%` }}></div>
         </div>
       </div>
-
+      <div className="space-y-2 mb-6">
+        <div className="flex justify-between text-sm font-semibold">
+          <span>طلبات مرفوضة ({canceledOrders})</span>
+          <span>{Math.round(canceledPercentage)}%</span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="bg-red-500 h-2 rounded-full" style={{ width: `${canceledPercentage}%` }}></div>
+        </div>
+      </div>
       <div className="h-64">
         {isLoading ? (
           <SkeletonLoader className="h-full w-full" />
@@ -180,82 +169,265 @@ const ContentAnalytics = () => {
           </ResponsiveContainer>
         )}
       </div>
-    </div>
+    </Card>
   );
 };
 
-const CustomersAnalytics = () => {
-  const [period, setPeriod] = useState<Period>("current_month");
-  const { data, isLoading } = useAnalyticsQuery("customers", period);
-
-  const chartData = useMemo(() => {
-    if (!data?.customers)
-      return [] as { name: string; total: number; part1: number; part2: number; part3: number; part4: number }[];
-    // To create the stacked effect from the image, we split each value into parts
-    return Object.entries(data.customers).map(([name, value]) => {
-      const v = Number(value || 0);
-      return {
-        name,
-        total: v,
-        part1: v * 0.4,
-        part2: v * 0.3,
-        part3: v * 0.2,
-        part4: v * 0.1,
-      };
-    });
-  }, [data]);
-
-  const totalCustomers = useMemo(() => {
-    if (!data?.customers) return 0;
-    return Object.values(data.customers).reduce((sum: number, val: unknown) => sum + Number(val || 0), 0);
-  }, [data]);
-
+const ProductsAnalytics = () => {
+  const { data, isLoading } = useAnalyticsQuery("analytics", "current_month");
+  const chartData = useMemo(() => data?.productsGrowthChart || [], [data]);
+  const StatRow = ({
+    label,
+    value,
+    subLabel,
+    subValue,
+  }: {
+    label: string;
+    value: number;
+    subLabel: string;
+    subValue: number;
+  }) => (
+    <div>
+      <p className="text-sm text-gray-500">{label}</p>
+      <p className="text-2xl font-bold text-gray-800">
+        {isLoading ? <SkeletonLoader className="h-8 w-16 mt-1" /> : value}
+        <span className="text-base font-normal"> منتج</span>
+      </p>
+      <p className="text-xs text-gray-400 mt-1">
+        {subLabel}: {isLoading ? "..." : subValue}
+      </p>
+    </div>
+  );
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6" dir="rtl">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="font-bold text-gray-800">احصائيات العملاء ({isLoading ? "..." : totalCustomers})</h2>
-        <PeriodSelector period={period} setPeriod={setPeriod} />
+    <Card className="p-6">
+      <h2 className="font-bold text-gray-800 mb-4">
+        احصائيات المنتجات ({isLoading ? "..." : data?.totalProducts || 0})
+      </h2>
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <StatRow
+          label="منتجات الشهر"
+          value={data?.totalProductsThisMonth || 0}
+          subLabel="الشهر الماضي"
+          subValue={data?.totalProductsLastMonth || 0}
+        />
+        <StatRow
+          label="منتجات اليوم"
+          value={data?.totalProductsThisDay || 0}
+          subLabel="منتجات الامس"
+          subValue={data?.totalProductsYesterday || 0}
+        />
       </div>
-      <div className="h-64">
+      <div className="border-t pt-4">
+        <StatRow
+          label="جميع المنتجات"
+          value={data?.totalProducts || 0}
+          subLabel="هذه السنة"
+          subValue={data?.totalProductsThisYear || 0}
+        />
+      </div>
+      <div className="h-24 mt-4">
         {isLoading ? (
           <SkeletonLoader className="h-full w-full" />
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
-              <XAxis dataKey="name" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
-              <YAxis
-                domain={[0, 40]}
-                ticks={[0, 10, 20, 30, 40]}
-                tick={{ fontSize: 12 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip cursor={{ fill: "rgba(243, 244, 246, 0.5)" }} contentStyle={{ display: "none" }} />
-              <Bar dataKey="part1" stackId="a" fill="#E0E7FF" barSize={30} radius={[4, 4, 0, 0]} />
-              <Bar dataKey="part2" stackId="a" fill="#C7D2FE" barSize={30} />
-              <Bar dataKey="part3" stackId="a" fill="#A5B4FC" barSize={30} />
-              <Bar dataKey="part4" stackId="a" fill="#6366F1" barSize={30} />
+            <BarChart data={chartData}>
+              <Bar dataKey="count" fill="#3B82F6" />
             </BarChart>
           </ResponsiveContainer>
         )}
+        <p className="text-center text-xs text-gray-400 mt-1">منتجات الأيام الماضية</p>
       </div>
-    </div>
+    </Card>
   );
 };
 
-const AdminAnalysis = () => {
+const CustomerOrigin = ({ data, isLoading }: { data: any[]; isLoading: boolean }) => (
+  <Card className="p-6">
+    <h3 className="font-bold text-gray-800 mb-4">من أين أتى العملاء</h3>
+    {isLoading ? (
+      <SkeletonLoader className="h-48" />
+    ) : (
+      <div className="flex gap-4">
+        <div className="w-1/2 h-40">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={data}
+                dataKey="count"
+                nameKey="country"
+                cx="50%"
+                cy="50%"
+                outerRadius={60}
+                innerRadius={40}
+                paddingAngle={5}
+              >
+                {data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="w-1/2 space-y-2 my-auto">
+          {data.map((item) => (
+            <div key={item.country}>
+              <div className="flex items-center justify-between text-sm mb-1">
+                <div className="flex items-center">
+                  <span className="w-2.5 h-2.5 rounded-full mr-2" style={{ backgroundColor: item.color }}></span>
+                  <span className="text-gray-600">{item.country}</span>
+                </div>
+                <span className="font-semibold text-gray-800">{item.count}</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-1.5">
+                <div
+                  className="h-1.5 rounded-full"
+                  style={{ width: `${item.percentage}%`, backgroundColor: item.color }}
+                ></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+  </Card>
+);
+
+const TopRatedStores = ({ data, isLoading }: { data: any[]; isLoading: boolean }) => (
+  <Card className="p-6">
+    <div className="flex justify-between items-center mb-4">
+      <h3 className="font-bold text-gray-800">المتاجر الأكثر تقييماً</h3>
+      <ChevronLeft className="w-5 h-5 text-gray-400" />
+    </div>
+    {isLoading ? (
+      <SkeletonLoader className="h-32" />
+    ) : (
+      <div className="space-y-3">
+        {data.map((store, index) => (
+          <div key={store.id} className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="font-bold text-gray-400">{index + 1}</span>
+              <img
+                src={`https://i.pravatar.cc/150?img=${store.id}`}
+                className="w-10 h-10 rounded-full"
+                alt={store.name}
+              />
+              <span className="font-semibold">{store.name}</span>
+            </div>
+            <div className="text-sm text-gray-500">{store.reviews_count} تقييم</div>
+          </div>
+        ))}
+      </div>
+    )}
+  </Card>
+);
+
+const LatestProducts = ({ data, isLoading }: { data: any[]; isLoading: boolean }) => {
+  const getStatusChip = (status: string) => {
+    if (status.includes("موافقة"))
+      return <span className="text-xs font-semibold text-green-600 bg-green-100 px-2 py-1 rounded-full">{status}</span>;
+    if (status.includes("مرفوض"))
+      return <span className="text-xs font-semibold text-red-600 bg-red-100 px-2 py-1 rounded-full">{status}</span>;
+    return <span className="text-xs font-semibold text-yellow-600 bg-yellow-100 px-2 py-1 rounded-full">{status}</span>;
+  };
   return (
-    <div className="bg-gray-50 min-h-screen w-full p-4 sm:p-8" dir="rtl">
-      <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-8">
+    <Card className="p-0 lg:col-span-2">
+      <div className="flex justify-between items-center p-6 pb-2">
+        <h3 className="font-bold text-gray-800">أحدث المنتجات (20)</h3>
+        <RefreshCw className="w-5 h-5 text-gray-400 cursor-pointer" />
+      </div>
+      <div className="overflow-x-auto">
+        {isLoading ? (
+          <SkeletonLoader className="h-48 m-6" />
+        ) : (
+          <table className="w-full text-sm text-right">
+            <thead>
+              <tr className="text-gray-500">
+                {["رقم المنتج", "حالة الطلب", "التاجر", "تاريخ الإنشاء"].map((h) => (
+                  <th key={h} className="font-semibold p-3 px-6">
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((p) => (
+                <tr key={p.id} className="border-t">
+                  <td className="p-3 px-6 font-medium text-blue-600">#{p.id}</td>
+                  <td className="p-3 px-6">{getStatusChip(p.status)}</td>
+                  <td className="p-3 px-6">{p.name}</td>
+                  <td className="p-3 px-6">4/2/2025 - 05:00PM</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </Card>
+  );
+};
+
+const RecentReports = ({ data, isLoading }: { data: any[]; isLoading: boolean }) => (
+  <Card className="p-0">
+    <div className="flex justify-between items-center p-6 pb-2">
+      <h3 className="font-bold text-gray-800">الشكاوي (10)</h3>
+      <RefreshCw className="w-5 h-5 text-gray-400 cursor-pointer" />
+    </div>
+    <div className="overflow-x-auto">
+      {isLoading ? (
+        <SkeletonLoader className="h-32 m-6" />
+      ) : (
+        <table className="w-full text-sm text-right">
+          <thead>
+            <tr className="text-gray-500">
+              {["رقم الشكوي", "الطلب", "حالة الشكوي"].map((h) => (
+                <th key={h} className="font-semibold p-3 px-6">
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((r) => (
+              <tr key={r.id} className="border-t">
+                <td className="p-3 px-6 font-medium text-blue-600">#{r.id}</td>
+                <td className="p-3 px-6">{r.order_id}</td>
+                <td className="p-3 px-6 text-green-600">{r.status}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  </Card>
+);
+
+export default function AdminAnalysis() {
+  const { data: latestsData, isLoading: latestsLoading } = useAnalyticsQuery("latests", "current_month");
+
+  return (
+    <div className="bg-gray-50 w-full min-h-screen p-4 sm:p-6" dir="rtl">
+      {/* Top Row: big analytics + right column */}
+      <div className="grid grid-cols-12 gap-6 mb-6">
+        <div className="col-span-12 lg:col-span-8">
           <ContentAnalytics />
         </div>
-        <div className="col-span-4">
-          <CustomersAnalytics />
+        <div className="col-span-12 lg:col-span-4 space-y-6">
+          <ProductsAnalytics />
+          <CustomerOrigin data={latestsData?.customerOrigins || []} isLoading={latestsLoading} />
+          <TopRatedStores data={latestsData?.hightRatedStores || []} isLoading={latestsLoading} />
+        </div>
+      </div>
+
+      {/* Bottom Row: latest tables stacked */}
+      <div className="grid grid-cols-12 gap-6">
+        <div className="col-span-12">
+          <LatestProducts data={latestsData?.latestsProducts || []} isLoading={latestsLoading} />
+        </div>
+        <div className="col-span-12">
+          <RecentReports data={latestsData?.recentReports || []} isLoading={latestsLoading} />
         </div>
       </div>
     </div>
   );
-};
-
-export default AdminAnalysis;
+}

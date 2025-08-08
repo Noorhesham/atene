@@ -217,11 +217,15 @@ const DashboardNavbar = () => {
                       القصص
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/settings`) ? "bg-main text-white" : ""}>
-                    <Link to={`${preLink}/settings`} className="w-full">
-                      الإعدادات
-                    </Link>
-                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem
+                      className={isDropdownItemActive(`${preLink}/settings`) ? "bg-main text-white" : ""}
+                    >
+                      <Link to={`${preLink}/settings`} className="w-full">
+                        الإعدادات
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

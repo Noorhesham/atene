@@ -43,7 +43,7 @@ const getAuthHeaders = (storeId?: string) => {
   return {
     "Content-Type": "application/json",
     ...(token && { Authorization: `Bearer ${token}` }),
-    ...(currentStoreId && { store_id: currentStoreId }),
+    ...(currentStoreId && { storeId: currentStoreId }),
   };
 };
 
