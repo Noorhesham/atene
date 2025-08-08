@@ -48,7 +48,7 @@ const productFormSchema = z.object({
   price: z.union([z.string().min(1, "السعر يجب أن يكون أكبر من 0"), z.number().min(1, "السعر يجب أن يكون أكبر من 0")]),
   section_id: z.string().min(1, "يجب اختيار قسم واحد على الأقل"),
   category_id: z.string().min(1, "يجب اختيار فئة واحدة على الأقل"),
-  owner_id: z.string().min(1, "يجب اختيار مالك للمنتج").optional(),
+  client_id: z.string().optional(),
   status: z
     .enum(["not_active", "active"], {
       errorMap: () => ({ message: "يرجى اختيار حالة صحيحة للمنتج" }),
@@ -198,7 +198,7 @@ const ProductCreationForm = ({
       price: "",
       section_id: sectionIdFromParams || "1",
       category_id: "",
-      owner_id: isAdmin ? "" : user?.user?.id?.toString() || "",
+      client_id: isAdmin ? "" : user?.user?.id?.toString() || "",
       status: user?.user?.user_type === "admin" ? "active" : "not_active", // Set default status based on user type
       condition: "new",
       shortDescription: "",
@@ -249,7 +249,7 @@ const ProductCreationForm = ({
         cover: product.cover || "",
         images: product.gallary || [],
         storeVisibility: product.store_id?.toString() || "",
-        owner_id: product.owner_id?.toString() || "",
+        client_id: product.client_id?.toString() || "",
         status: product.status === "active" ? "active" : "not_active",
         hasVariations: product.type === "variation",
         cross_sells_price: product.cross_sells_price?.toString() || "",
@@ -524,7 +524,7 @@ const ProductCreationForm = ({
             "cover",
             "images",
             "status",
-            "owner_id",
+            "client_id",
           ]
         : [
             "productName",

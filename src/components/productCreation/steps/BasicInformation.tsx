@@ -128,9 +128,9 @@ const BasicInformation = () => {
             select
             placeholder="اختر المالك"
             label="المالك"
-            name="owner_id"
+            name="client_id"
             options={userOptions}
-            error={errors.owner_id?.message as string}
+            error={errors.client_id?.message as string}
           />
         )}
         {isAdmin && (

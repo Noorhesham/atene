@@ -38,6 +38,7 @@ import SectionsPage from "./pages/admin/sections/SectionsPage";
 import SectionCreatPage from "./pages/admin/sections/add/SectionCreatPage";
 import ReportsPage from "./pages/admin/reports/ReportsPage";
 import SettingsPage from "./pages/SettingsPage/SettingsPage";
+import AdminAnalysis from "./pages/admin/analysis/AdminAnalysis";
 
 // Admin Layout Component
 const AdminLayout = () => {
@@ -149,6 +150,8 @@ function App() {
 
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminProtectedLayout />}>
+          {" "}
+          <Route index element={<AdminAnalysis />} />
           <Route path="reports" element={<ReportsPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route index element={<DashboardHome />} />
@@ -166,7 +169,6 @@ function App() {
             <Route path="roles" element={<RolesAndPermissionsPage />} />
             <Route path="add" element={<UserCreation />} />
           </Route>
-
           <Route path="stores">
             <Route index element={<StoreManagementPage />} />
             <Route path="add" element={<StoreCratePage />} />

@@ -1,5 +1,4 @@
-import { Edit, Trash, User } from "@/components/icons";
-import { Mail, Phone } from "lucide-react";
+import { Edit, Trash, User as UserIcon, Mail, Phone } from "lucide-react";
 import { ApiOrder } from "@/types";
 
 export const OrdersList = ({
@@ -34,11 +33,13 @@ export const OrdersList = ({
                 checked={selectedOrderId === order.id}
                 readOnly
                 className="mt-1 form-radio h-5 w-5 text-blue-600 focus:ring-blue-500"
+                aria-label={`اختيار الطلب ${order.reference_id}`}
+                title={`اختيار الطلب ${order.reference_id}`}
               />
               <div>
                 <p className="font-bold text-main">#{order.reference_id}</p>
                 <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                  <User className="w-4 h-4" />
+                  <UserIcon className="w-4 h-4" />
                   <span>{order.name}</span>
                 </div>
               </div>
@@ -60,7 +61,7 @@ export const OrderDetails = ({ order, onEdit }: { order: ApiOrder; onEdit: (orde
       </div>
     </div>
   );
-
+  console.log(order);
   return (
     <div className="bg-white rounded-lg border border-gray-200 h-full p-4 overflow-y-auto">
       <div className="flex justify-between items-center mb-4">
@@ -92,20 +93,31 @@ export const OrderDetails = ({ order, onEdit }: { order: ApiOrder; onEdit: (orde
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <InfoRow label="البريد الالكتروني" value={order.email} icon={<Mail className="w-4 h-4 text-gray-600" />} />
             <InfoRow label="الهاتف" value={order.phone} icon={<Phone className="w-4 h-4 text-gray-600" />} />
-            <InfoRow label="العنوان" value={order.address} icon={<User className="w-4 h-4 text-gray-600" />} />
+            <InfoRow label="العنوان" value={order.address} icon={<UserIcon className="w-4 h-4 text-gray-600" />} />
           </div>
         </div>
         <div className="p-3 border rounded-lg">
           <h4 className="font-bold mb-2">تفاصيل المنتجات</h4>
-          {order.items.map((item) => (
-            <div key={item.id} className="flex justify-between items-center py-2 border-b last:border-none">
-              <div>
-                <p className="font-semibold">{item.product?.name || `Product ID: ${item.product_id}`}</p>
-                <p className="text-sm text-gray-500">الكمية: {item.quantity}</p>
+          {order.items.map((item) => {
+            const productData = item.product as { cover?: string; cover_url?: string } | undefined;
+            const cover = productData?.cover || productData?.cover_url || "";
+            return (
+              <div key={item.id} className="flex justify-between items-center py-2 border-b last:border-none">
+                <div className="flex items-center gap-3">
+                  <img
+                    src={cover}
+                    alt={item.product?.name || String(item.product_id)}
+                    className="w-12 h-12 rounded object-cover bg-gray-100"
+                  />
+                  <div>
+                    <p className="font-semibold">{item.product?.name || `Product ID: ${item.product_id}`}</p>
+                    <p className="text-sm text-gray-500">الكمية: {item.quantity}</p>
+                  </div>
+                </div>
+                <p className="font-semibold">{item.price.toFixed(2)} ₪</p>
               </div>
-              <p className="font-semibold">{item.price.toFixed(2)} ₪</p>
-            </div>
-          ))}
+            );
+          })}
           <div className="mt-2 pt-2 border-t font-semibold flex justify-between">
             <span>الإجمالي:</span>
             <span>{order.total.toFixed(2)} ₪</span>

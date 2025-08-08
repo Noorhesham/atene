@@ -114,36 +114,38 @@ const DashboardNavbar = () => {
               </DropdownMenu>
 
               {/* Orders Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className={getDropdownButtonStyles(`${preLink}/orders`)}>
-                    <ShoppingCart className="w-4 h-4" />
-                    الطلبات
-                    <ChevronDown className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 text-right">
-                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/orders`) ? "bg-main text-white" : ""}>
-                    <Link to={`${preLink}/orders`} className="w-full">
-                      جميع الطلبات
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className={isDropdownItemActive(`${preLink}/orders/pending`) ? "bg-main text-white" : ""}
-                  >
-                    <Link to={`${preLink}/orders/pending`} className="w-full">
-                      الطلبات المعلقة
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className={isDropdownItemActive(`${preLink}/orders/completed`) ? "bg-main text-white" : ""}
-                  >
-                    <Link to={`${preLink}/orders/completed`} className="w-full">
-                      الطلبات المكتملة
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {!isAdmin && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className={getDropdownButtonStyles(`${preLink}/orders`)}>
+                      <ShoppingCart className="w-4 h-4" />
+                      الطلبات
+                      <ChevronDown className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48 text-right">
+                    <DropdownMenuItem className={isDropdownItemActive(`${preLink}/orders`) ? "bg-main text-white" : ""}>
+                      <Link to={`${preLink}/orders`} className="w-full">
+                        جميع الطلبات
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className={isDropdownItemActive(`${preLink}/orders/pending`) ? "bg-main text-white" : ""}
+                    >
+                      <Link to={`${preLink}/orders/pending`} className="w-full">
+                        الطلبات المعلقة
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className={isDropdownItemActive(`${preLink}/orders/completed`) ? "bg-main text-white" : ""}
+                    >
+                      <Link to={`${preLink}/orders/completed`} className="w-full">
+                        الطلبات المكتملة
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
 
               {/* Products Dropdown */}
               <DropdownMenu>

@@ -9,44 +9,34 @@ import { Loader2 } from "lucide-react";
 const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack: () => void }) => {
   const { data: products, isLoading: productsLoading } = useAdminEntityQuery("products");
   const { update, isUpdating } = useAdminEntityQuery("orders");
-  const [cartItems, setCartItems] = useState<ApiOrder["items"]>([]);
+  type CartItem = ApiOrder["items"][number] & { variation_id?: number };
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [productForVariants, setProductForVariants] = useState<ApiProduct | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<Set<number>>(new Set());
 
-  console.log(products);
+  // Selected product ids used only for UI highlighting
 
   useEffect(() => {
-    // Initialize cart with items from the order being edited
-    if (orderToEdit) {
-      setCartItems(orderToEdit.items);
-      // Mark existing items as selected
-      const existingProductIds = new Set(orderToEdit.items.map((item) => item.product_id));
-      setSelectedProducts(existingProductIds);
-    }
-  }, [orderToEdit]);
+    // Prefill cart with existing order items so they are visible/editable
+    setCartItems(orderToEdit?.items || []);
+    // Highlight those products in the product grid
+    const existingProductIds = new Set((orderToEdit?.items || []).map((item) => item.product_id));
+    setSelectedProducts(existingProductIds);
+  }, [orderToEdit?.id]);
 
-  // Simple hash function to replace hashCode
-  const simpleHash = (str: string): number => {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash = hash & hash; // Convert to 32-bit integer
-    }
-    return Math.abs(hash);
-  };
+  // Simple hash previously used for variant id; no longer needed after using real variation_id
 
   const handleAddToCart = (product: ApiProduct) => {
-    if (product.type === "variation" && product.variants) {
+    if (product.type === "variation" && Array.isArray(product.variations) && product.variations.length > 0) {
       setProductForVariants(product);
       return;
     }
 
-    const existingItem = cartItems.find((item) => item.product_id === product.id);
+    const existingItem = cartItems.find((item) => item.product_id === product.id && !item.variation_id);
     if (existingItem) {
-      updateQuantity(product.id, existingItem.quantity + 1);
+      updateQuantity(existingItem.id, existingItem.quantity + 1);
     } else {
-      const newItem: ApiOrder["items"][number] = {
+      const newItem: CartItem = {
         id: Date.now(), // Temporary ID for new item
         product_id: product.id,
         product: {
@@ -66,24 +56,41 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
 
   const handleAddVariantToCart = (product: ApiProduct, selectedVariants: Record<string, string>) => {
     const variantName = `${product.name} (${Object.values(selectedVariants).join(", ")})`;
-    const variantId = product.id + simpleHash(Object.values(selectedVariants).join("-")); // Simple unique ID for variant
+    // Find matching variation by comparing selected variant titles with attributeOptions titles
+    type VariationAO = { attribute?: { title?: string; name?: string }; option?: { title?: string; name?: string } };
+    type Variation = { id: number; price?: number; attributeOptions?: VariationAO[] };
+    const variations: Variation[] = Array.isArray(product.variations) ? (product.variations as Variation[]) : [];
+    const matchedVariation = variations.find((v) => {
+      const opts: VariationAO[] = v?.attributeOptions || [];
+      // Every selected key must exist in this variation
+      return Object.entries(selectedVariants).every(([attrTitle, optTitle]) =>
+        opts.some(
+          (ao) =>
+            (ao?.attribute?.title || ao?.attribute?.name) === attrTitle &&
+            (ao?.option?.title || ao?.option?.name) === optTitle
+        )
+      );
+    });
+    const variationId: number | undefined = matchedVariation?.id;
+    const priceForVariation: number = Number(matchedVariation?.price ?? product.price);
 
-    const existingItem = cartItems.find((item) => item.id === variantId);
+    const existingItem = cartItems.find((item) => item.product_id === product.id && item.variation_id === variationId);
     if (existingItem) {
-      updateQuantity(variantId, existingItem.quantity + 1);
+      updateQuantity(existingItem.id, existingItem.quantity + 1);
     } else {
-      const newItem: ApiOrder["items"][number] = {
-        id: variantId,
+      const newItem: CartItem = {
+        id: Date.now(),
         product_id: product.id,
+        variation_id: variationId,
         product: {
           id: product.id,
           name: variantName,
           sku: product.sku,
-          price: product.price,
+          price: priceForVariation,
         },
         quantity: 1,
-        price: product.price,
-        price_after_discount: product.price,
+        price: priceForVariation,
+        price_after_discount: priceForVariation,
       };
       setCartItems((prev) => [...prev, newItem]);
       setSelectedProducts((prev) => new Set([...prev, product.id]));
@@ -109,18 +116,55 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
   };
 
   const handleSaveChanges = () => {
-    // Spread the whole order data and update items
-    const updatedOrderData = {
-      ...orderToEdit,
-      items: cartItems.map((item) => ({
-        id: item.id,
+    // Compute totals
+    const shippingCost = Number(orderToEdit.shipping_cost || 0);
+    const subTotal = cartItems.reduce((sum, item) => sum + Number(item.price) * Number(item.quantity), 0);
+    const discountTotal = cartItems.reduce((sum, item) => {
+      const priceAfter = Number(item.price_after_discount ?? item.price);
+      const perUnitDiscount = Number(item.price) - priceAfter;
+      return sum + perUnitDiscount * Number(item.quantity);
+    }, 0);
+    const total = subTotal - discountTotal + shippingCost;
+
+    // Map items to expected API payload (no nested product).
+    // Include id only for items that existed on the original order.
+    const originalItemIds = new Set(orderToEdit.items.map((i) => i.id));
+    const itemsPayload = cartItems.map((item) => {
+      const base = {
         product_id: item.product_id,
-        product: item.product,
+        variation_id: item.variation_id,
         quantity: item.quantity,
         price: item.price,
-        price_after_discount: item.price_after_discount,
-      })),
-    } as Partial<ApiOrder>;
+        price_after_discount: item.price_after_discount ?? item.price,
+      } as {
+        id?: number;
+        product_id: number;
+        variation_id?: number;
+        quantity: number;
+        price: number;
+        price_after_discount: number;
+      };
+      if (originalItemIds.has(item.id)) {
+        base.id = item.id;
+      }
+      return base;
+    });
+
+    const updatedOrderData = {
+      status: orderToEdit.status,
+      client_id: orderToEdit.client_id,
+      name: orderToEdit.name,
+      email: orderToEdit.email,
+      phone: orderToEdit.phone,
+      notes: orderToEdit.notes,
+      address: orderToEdit.address,
+      sub_total: subTotal,
+      discount_total: discountTotal,
+      shipping_cost: shippingCost,
+      total,
+      items: itemsPayload,
+    } as unknown as Partial<ApiOrder>;
+
     update(orderToEdit.id, updatedOrderData);
     onBack();
   };

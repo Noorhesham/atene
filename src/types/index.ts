@@ -97,7 +97,7 @@ export interface Store extends BaseEntity {
   phone: string;
   email: string;
   is_active: boolean;
-  owner_id: number;
+  client_id: number;
   owner: User;
   categories: Category[];
 }
@@ -406,7 +406,7 @@ export interface ApiStore extends BaseEntity {
   lng: number | null;
   lat: number | null;
   email: string;
-  owner_id: number;
+  client_id: number;
   currency_id: number;
   phone: string;
   whats_app: string | null;

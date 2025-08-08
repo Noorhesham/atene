@@ -3,6 +3,8 @@ import { useLocation } from "react-router-dom";
 import People from "./People";
 import Chat from "./Chat";
 import { type Conversation, conversationAPI } from "@/utils/api/store";
+import { CreateGroupModal } from "./GroupModal";
+import { UserPlus } from "lucide-react";
 
 // Default state component when no chat is selected
 const DefaultChatState = () => {
@@ -39,6 +41,7 @@ const DefaultChatState = () => {
 const MessagePage = () => {
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [showMobileChat, setShowMobileChat] = useState(false);
+  const [isAddParticipantsOpen, setIsAddParticipantsOpen] = useState(false);
   const location = useLocation();
 
   // Handle navigation state (when coming from product page)
@@ -88,13 +91,30 @@ const MessagePage = () => {
       </div>
 
       {/* Chat Area - Show default state or selected chat */}
-      <div className={`${showMobileChat ? "flex" : "hidden lg:flex"} lg:flex flex-1`}>
+      <div className={`${showMobileChat ? "flex" : "hidden lg:flex"} lg:flex flex-1 relative`}>
         {selectedConversation ? (
-          <Chat selectedConversation={selectedConversation} onBack={handleBackToList} />
+          <>
+            <button
+              onClick={() => setIsAddParticipantsOpen(true)}
+              className="absolute top-3 right-20 px-3 py-1.5 bg-blue-600 text-white rounded-md text-sm flex items-center gap-2 shadow-md hover:bg-blue-700"
+              aria-label="إضافة مشاركين"
+            >
+              <UserPlus className="w-4 h-4" />
+              إضافة أعضاء
+            </button>
+            <Chat selectedConversation={selectedConversation} onBack={handleBackToList} />
+          </>
         ) : (
           <DefaultChatState />
         )}
       </div>
+      {selectedConversation && (
+        <CreateGroupModal
+          isOpen={isAddParticipantsOpen}
+          onClose={() => setIsAddParticipantsOpen(false)}
+          conversation={selectedConversation}
+        />
+      )}
     </div>
   );
 };

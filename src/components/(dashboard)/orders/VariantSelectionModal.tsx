@@ -1,5 +1,5 @@
-import { ApiProduct } from "@/types/api";
-import { useState } from "react";
+import { ApiProduct } from "@/types";
+import { useMemo, useState } from "react";
 
 export const VariantSelectionModal = ({
   product,
@@ -10,13 +10,31 @@ export const VariantSelectionModal = ({
   onClose: () => void;
   onConfirm: (product: ApiProduct, selectedVariants: Record<string, string>) => void;
 }) => {
+  // Build attribute -> options map from product.variations[].attributeOptions
+  const attributesMap = useMemo(() => {
+    const map = new Map<string, Set<string>>();
+    const variations = (product as unknown as any)?.variations as any[] | undefined;
+    if (Array.isArray(variations)) {
+      variations.forEach((variation) => {
+        const attrOpts = variation?.attributeOptions || [];
+        attrOpts.forEach((ao: any) => {
+          const attrName = ao?.attribute?.title || ao?.attribute?.name || "";
+          const optTitle = ao?.option?.title || ao?.option?.name || "";
+          if (!attrName || !optTitle) return;
+          if (!map.has(attrName)) map.set(attrName, new Set<string>());
+          map.get(attrName)!.add(optTitle);
+        });
+      });
+    }
+    return map;
+  }, [product]);
+
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>(() => {
     const initialState: Record<string, string> = {};
-    if (product.variants) {
-      for (const key in product.variants) {
-        initialState[key] = product.variants[key][0]; // Default to the first option
-      }
-    }
+    attributesMap.forEach((options, key) => {
+      const first = Array.from(options)[0];
+      if (first) initialState[key] = first;
+    });
     return initialState;
   });
 
@@ -36,27 +54,26 @@ export const VariantSelectionModal = ({
           يحتوي هذا المنتج على اختلافات، يرجى اختيار أي اختلاف تريد
         </p>
         <div className="space-y-4 text-right">
-          {product.variants &&
-            Object.entries(product.variants).map(([type, options]) => (
-              <div key={type}>
-                <h4 className="font-semibold mb-2">{type}</h4>
-                <div className="flex flex-wrap gap-2 justify-end">
-                  {options.map((option) => (
-                    <button
-                      key={option}
-                      onClick={() => handleSelect(type, option)}
-                      className={`px-4 py-1.5 rounded-md border text-sm font-medium ${
-                        selectedVariants[type] === option
-                          ? "bg-blue-600 text-white border-blue-600"
-                          : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                      }`}
-                    >
-                      {option}
-                    </button>
-                  ))}
-                </div>
+          {Array.from(attributesMap.entries()).map(([type, options]) => (
+            <div key={type}>
+              <h4 className="font-semibold mb-2">{type}</h4>
+              <div className="flex flex-wrap gap-2 justify-end">
+                {Array.from(options).map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => handleSelect(type, option)}
+                    className={`px-4 py-1.5 rounded-md border text-sm font-medium ${
+                      selectedVariants[type] === option
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
               </div>
-            ))}
+            </div>
+          ))}
         </div>
         <div className="mt-8 flex gap-3 justify-end">
           <button onClick={onClose} className="px-6 py-2 rounded-lg border bg-gray-100 hover:bg-gray-200 font-semibold">
