@@ -5,45 +5,19 @@ import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { STORAGE_URL } from "@/constants/api";
 
-// Mock products data (same as in AdvancedSettings.tsx)
-const mockProducts = [
-  {
-    id: "prod1",
-    name: "بنطلون جينز و",
-    category: "ملابس و اكسسوارات",
-    price: 927.0,
-    image: "https://placehold.co/40x40/E2E8F0/4A5568?text=P1",
-    stock: 10,
-  },
-  {
-    id: "prod2",
-    name: "اسم المنتج",
-    category: "ملابس و اكسسوارات",
-    price: 117.0,
-    image: "https://placehold.co/40x40/E2E8F0/4A5568?text=P2",
-    stock: 10,
-  },
-  // ... other mock products
-];
-
 const ProductPreview = () => {
   const { watch } = useFormContext();
   const [activeTab, setActiveTab] = useState("card");
-
+  
   const productName = watch("productName");
   const price = watch("price");
   const imagesData = watch("images");
   const images = Array.isArray(imagesData) ? imagesData : [];
   const shortDescription = watch("shortDescription");
-  const relatedProductsData = watch("relatedProducts");
-  const relatedProducts = Array.isArray(relatedProductsData) ? relatedProductsData : [];
 
   const hasContent = productName || price || images.length > 0;
   const primaryImage = images.length > 0 ? images[0] : null;
 
-  // Get related product details from mock data
-  const selectedRelatedProducts = mockProducts.filter((product) => relatedProducts.includes(product.id));
-  console.log(primaryImage, images, imagesData);
   return (
     <Card className="p-6 h-full flex flex-col">
       <div className="flex justify-center mb-6">
@@ -104,28 +78,6 @@ const ProductPreview = () => {
               <p className="text-sm text-gray-600 mt-1 line-clamp-2">{shortDescription || "وصف المنتج..."}</p>
               <p className="text-gray-500 font-semibold mt-2">${price ? price : "0.00"}</p>
             </div>
-
-            {/* Related Products Section */}
-            {selectedRelatedProducts.length > 0 && (
-              <div className="mt-6 border-t pt-4">
-                <h5 className="text-right font-semibold text-gray-800 mb-3">منتجات مرتبطة</h5>
-                <div className="grid grid-cols-2 gap-2">
-                  {selectedRelatedProducts.map((product) => (
-                    <div key={product.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
-                      <img
-                        src={product.image.startsWith("http") ? product.image : `${STORAGE_URL}${product.image}`}
-                        alt={product.name}
-                        className="w-10 h-10 rounded object-cover"
-                      />
-                      <div className="text-right flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-800 truncate">{product.name}</p>
-                        <p className="text-xs text-gray-500">${product.price}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         ) : (
           <>

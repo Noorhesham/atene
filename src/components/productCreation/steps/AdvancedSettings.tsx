@@ -18,7 +18,7 @@ const SelectRelatedProductsModal = ({
   products: ApiProduct[];
 }) => {
   const { watch } = useFormContext();
-  const currentlyRelated = watch("crossSells") || [];
+  const currentlyRelated = watch("upSells") || [];
   const [selectedProducts, setSelectedProducts] = useState<string[]>(
     currentlyRelated
       .filter((id: string | number) => typeof id === "string" || typeof id === "number")
@@ -119,16 +119,16 @@ const RelatedProducts = () => {
   const { data: products = [], isLoading } = useAdminEntityQuery("products", {});
   const { replace } = useFieldArray({
     control,
-    name: "crossSells",
+    name: "upSells",
   });
 
-  const relatedProductIds = watch("crossSells") || [];
+  const relatedProductIds = watch("upSells") || [];
   const selectedProducts = products.filter((product) => relatedProductIds.includes(product.id));
   console.log("AdvancedSettings debugging:", {
     relatedProductIds,
     selectedProducts,
     productsLength: products.length,
-    crossSellsFromForm: watch("crossSells"),
+    upSellsFromForm: watch("upSells"),
     formValues: watch(),
   });
   const handleConfirmSelection = (productIds: string[]) => {
@@ -149,7 +149,7 @@ const RelatedProducts = () => {
     replace(newIds);
   };
 
-  // Clean up crossSells field on mount to remove any bad data
+  // Clean up upSells field on mount to remove any bad data
   useEffect(() => {
     if (relatedProductIds.length > 0) {
       const cleanIds = relatedProductIds.filter((id: number) => typeof id === "number" && !isNaN(id) && id > 0);

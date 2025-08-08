@@ -36,6 +36,8 @@ import StoriesPage from "./pages/admin/stories/StoriesPage";
 import FollowersPage from "./pages/admin/followers/FollowersPage";
 import SectionsPage from "./pages/admin/sections/SectionsPage";
 import SectionCreatPage from "./pages/admin/sections/add/SectionCreatPage";
+import ReportsPage from "./pages/admin/reports/ReportsPage";
+import SettingsPage from "./pages/SettingsPage/SettingsPage";
 
 // Admin Layout Component
 const AdminLayout = () => {
@@ -127,6 +129,7 @@ function App() {
         {/* Regular Dashboard Routes */}
         <Route path="/dashboard" element={<RegularDashboardLayout />}>
           {" "}
+          <Route path="chat" element={<MessagePage />} />
           <Route path="coupons" element={<CouponsManagement />} />
           <Route index element={<DashboardHome />} />
           <Route path="orders" element={<OrdersPage />} />
@@ -146,6 +149,8 @@ function App() {
 
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminProtectedLayout />}>
+          <Route path="reports" element={<ReportsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
           <Route index element={<DashboardHome />} />
           <Route path="orders" element={<OrdersPage />} />
           <Route path="categories">
@@ -154,7 +159,7 @@ function App() {
             <Route path="add" element={<CategoryCreatePage />} />
             <Route path="edit/:id" element={<CategoryCreatePage />} />
           </Route>
-
+          <Route path="chat" element={<MessagePage />} />
           {/* Admin Protected Routes */}
           <Route path="users" element={<AdminLayout />}>
             <Route index element={<UsersPage />} />
@@ -180,7 +185,7 @@ function App() {
           </Route>
           <Route path="reports" element={<ReportsManagement />} />
           <Route path="notifications" element={<NotificationsManagement />} />
-          <Route path="settings" element={<Settings />} />
+          <Route path="settings" element={<SettingsPage />} />
           <Route path="attributes">
             <Route index element={<AttributesPage />} />
             <Route path="add" element={<AttributeCreatPage />} />
@@ -198,6 +203,5 @@ const StoresManagement = () => <StoreCreationForm />;
 const CouponsManagement = () => <CouponsPage />;
 const ReportsManagement = () => <div className="p-4">Reports Management Page</div>;
 const NotificationsManagement = () => <div className="p-4">Notifications Management Page</div>;
-const Settings = () => <div className="p-4">Settings Page</div>;
 
 export default App;

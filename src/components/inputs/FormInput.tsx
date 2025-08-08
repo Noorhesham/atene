@@ -13,6 +13,7 @@ import CalendarInput from "./CalendarInput";
 import MediaCenter from "./MediaCenter";
 import { ApiMediaFile } from "@/types";
 import { STORAGE_URL } from "@/constants/api";
+import PhoneNumberInput from "./PhoneNumberInput";
 
 interface FormInputProps {
   control?: Control<Record<string, unknown>>;
@@ -87,7 +88,7 @@ const FormInput = ({
   multiple = false,
   maxFiles = 10,
   mainCoverField,
-  grid=5,
+  grid = 5,
 }: FormInputProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isMediaCenterOpen, setIsMediaCenterOpen] = useState(false);
@@ -112,19 +113,28 @@ const FormInput = ({
           const currentValue = form.getValues(name) || [];
           const currentArray = Array.isArray(currentValue) ? currentValue : [];
 
-          // Check if file is already selected
-          const fileIndex = currentArray.findIndex((fileName: string) => fileName === file.file_name);
+          // Check if file is already selected - handle both string and object formats
+          const fileIndex = currentArray.findIndex((item: any) => {
+            const itemFileName = typeof item === "string" ? item : item?.file || item?.url || item?.name || "";
+            return itemFileName === file.file_name;
+          });
 
           if (fileIndex >= 0) {
             // Remove if already selected
-            const newArray = currentArray.filter((_: string, index: number) => index !== fileIndex);
+            const newArray = currentArray.filter((_: any, index: number) => index !== fileIndex);
             form.setValue(name, newArray, { shouldValidate: true });
 
             // If this was the main cover, reset main cover field
             if (mainCoverField) {
               const mainCover = form.getValues(mainCoverField);
               if (mainCover === file.file_name) {
-                form.setValue(mainCoverField, newArray.length > 0 ? newArray[0] : "", { shouldValidate: true });
+                const firstFileName =
+                  newArray.length > 0
+                    ? typeof newArray[0] === "string"
+                      ? newArray[0]
+                      : newArray[0]?.file || newArray[0]?.url || newArray[0]?.name || ""
+                    : "";
+                form.setValue(mainCoverField, firstFileName, { shouldValidate: true });
               }
             }
           } else {
@@ -161,14 +171,26 @@ const FormInput = ({
     if (form && multiple) {
       const currentValue = form.getValues(name) || [];
       const currentArray = Array.isArray(currentValue) ? currentValue : [];
-      const newArray = currentArray.filter((f: string) => f !== fileName);
+
+      // Handle both string and object formats
+      const newArray = currentArray.filter((item: any) => {
+        const itemFileName = typeof item === "string" ? item : item?.file || item?.url || item?.name || "";
+        return itemFileName !== fileName;
+      });
+
       form.setValue(name, newArray, { shouldValidate: true });
 
       // If this was the main cover, set the first remaining as main
       if (mainCoverField) {
         const mainCover = form.getValues(mainCoverField);
         if (mainCover === fileName) {
-          form.setValue(mainCoverField, newArray.length > 0 ? newArray[0] : "", { shouldValidate: true });
+          const firstFileName =
+            newArray.length > 0
+              ? typeof newArray[0] === "string"
+                ? newArray[0]
+                : newArray[0]?.file || newArray[0]?.url || newArray[0]?.name || ""
+              : "";
+          form.setValue(mainCoverField, firstFileName, { shouldValidate: true });
         }
       }
     }
@@ -181,12 +203,20 @@ const FormInput = ({
       form.setValue(mainCoverField, fileName, { shouldValidate: true });
 
       // Reorder the array to put the main cover first
-      const currentFiles = form.getValues(name) as string[];
+      const currentFiles = form.getValues(name) as any[];
       if (Array.isArray(currentFiles)) {
-        const fileIndex = currentFiles.indexOf(fileName);
+        const fileIndex = currentFiles.findIndex((item: any) => {
+          const itemFileName = typeof item === "string" ? item : item?.file || item?.url || item?.name || "";
+          return itemFileName === fileName;
+        });
+
         if (fileIndex > 0) {
           // Only reorder if not already first
-          const newFiles = [fileName, ...currentFiles.slice(0, fileIndex), ...currentFiles.slice(fileIndex + 1)];
+          const newFiles = [
+            currentFiles[fileIndex],
+            ...currentFiles.slice(0, fileIndex),
+            ...currentFiles.slice(fileIndex + 1),
+          ];
           form.setValue(name, newFiles, { shouldValidate: true });
         }
       }
@@ -263,23 +293,28 @@ const FormInput = ({
                           multiple ? (
                             // Multiple images display
                             <div className="p-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary">
-                              {Array.isArray(field.value) && (field.value as string[]).length > 0 ? (
+                              {Array.isArray(field.value) && (field.value as any[]).length > 0 ? (
                                 <>
                                   <div className={`grid grid-cols-${grid} gap-2`}>
-                                    {(field.value as string[]).map((fileName: string, index: number) => {
+                                    {(field.value as any[]).map((item: any, index: number) => {
+                                      // Handle both string and object formats
+                                      const fileName =
+                                        typeof item === "string" ? item : item?.file || item?.url || item?.name || "";
                                       const mainCover = mainCoverField ? formContext?.getValues(mainCoverField) : null;
                                       const isMainCover = mainCover === fileName;
 
                                       return (
-                                        <div key={index} className="relative w-fit group">
+                                        <div key={index} className="relative w-full group">
                                           <img
                                             src={
-                                              fileName?.startsWith("http")
+                                              fileName && typeof fileName === "string" && fileName.startsWith("http")
                                                 ? fileName
-                                                : `https://aatene.com/storage/${fileName}`
+                                                : fileName && typeof fileName === "string"
+                                                ? `https://aatene.com/storage/${fileName}`
+                                                : ""
                                             }
                                             alt={`Selected media ${index + 1}`}
-                                            className={`w-20 h-20 object-cover rounded-lg ${
+                                            className={`w-full h-32 object-cover object-top rounded-lg ${
                                               isMainCover ? "ring-2 ring-main" : ""
                                             }`}
                                           />
@@ -332,25 +367,6 @@ const FormInput = ({
                                       );
                                     })}
                                   </div>
-
-                                  {/* Progress bar showing main cover */}
-                                  {mainCoverField && (
-                                    <div className="mt-3 w-full bg-gray-200 rounded-full h-2">
-                                      <div
-                                        className="bg-main h-2 rounded-full transition-all duration-300"
-                                        style={{
-                                          width: `${
-                                            (((field.value as string[]).findIndex(
-                                              (f: string) => f === formContext?.getValues(mainCoverField)
-                                            ) +
-                                              1) /
-                                              (field.value as string[]).length) *
-                                            100
-                                          }%`,
-                                        }}
-                                      />
-                                    </div>
-                                  )}
                                 </>
                               ) : (
                                 <div className="flex flex-col items-center justify-center h-32">
@@ -367,9 +383,13 @@ const FormInput = ({
                             // Single image display
                             <img
                               src={
-                                (field.value as string)?.startsWith("http")
+                                (field.value as string) &&
+                                typeof field.value === "string" &&
+                                field.value.startsWith("http")
                                   ? (field.value as string)
-                                  : `${STORAGE_URL}/${field.value as string}`
+                                  : (field.value as string) && typeof field.value === "string"
+                                  ? `${STORAGE_URL}/${field.value as string}`
+                                  : ""
                               }
                               alt="Selected media"
                               className="w-32 h-32 object-cover rounded-lg border-2 border-dashed border-gray-300 hover:border-primary"
@@ -403,6 +423,10 @@ const FormInput = ({
                   <Label className="md:text-sm uppercase flex-grow  text-xs  text-muted-foreground" htmlFor="sale">
                     {label || ""}
                   </Label>
+                </div>
+              ) : phone ? (
+                <div className="flex items-center gap-2 w-full ml-auto">
+                  <PhoneNumberInput  name={name} label={label} icon={icon} />
                 </div>
               ) : rate ? (
                 <div className="flex items-center gap-2 ml-auto">

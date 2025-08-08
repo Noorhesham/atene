@@ -18,7 +18,7 @@ const StorePreview = () => {
             <img
               src={storeCover?.[0]?.startsWith("http") ? storeCover[0] : `https://aatene.com/storage/${storeCover[0]}`}
               alt="Store Cover"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-top object-cover"
             />
           ) : (
             <ImageIcon className="w-10 h-10 text-gray-400" />

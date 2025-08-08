@@ -27,7 +27,7 @@ type VariantData = {
   color?: string;
   size?: string;
   price: string;
-  images: string[];
+  image: string;
   isActive: boolean;
   [key: string]: string | boolean | string[] | undefined;
 };
@@ -37,7 +37,7 @@ const variantSchema = z
     color: z.string().optional(),
     size: z.string().optional(),
     price: z.string().min(1, "يرجى إدخال السعر"),
-    images: z.array(z.string()).min(1, "يرجى إضافة صورة واحدة على الأقل للمنتج المتغير"),
+    image: z.string().min(1, "يرجى إضافة صورة واحدة على الأقل للمنتج المتغير"),
     isActive: z.boolean(),
   })
   .passthrough(); // Allow additional properties for dynamic attributes
@@ -48,6 +48,7 @@ const productFormSchema = z.object({
   price: z.union([z.string().min(1, "السعر يجب أن يكون أكبر من 0"), z.number().min(1, "السعر يجب أن يكون أكبر من 0")]),
   section_id: z.string().min(1, "يجب اختيار قسم واحد على الأقل"),
   category_id: z.string().min(1, "يجب اختيار فئة واحدة على الأقل"),
+  owner_id: z.string().min(1, "يجب اختيار مالك للمنتج").optional(),
   status: z
     .enum(["not_active", "active"], {
       errorMap: () => ({ message: "يرجى اختيار حالة صحيحة للمنتج" }),
@@ -72,12 +73,6 @@ const productFormSchema = z.object({
       })
     )
     .optional(),
-  hasDelivery: z.boolean(),
-  productType: z.string().min(1, "يرجى اختيار نوع المنتج من القائمة"),
-  mainCategory: z.string().min(1, "يرجى اختيار القسم الرئيسي للمنتج"),
-  subCategory: z.string().min(1, "يرجى اختيار القسم الفرعي المناسب للمنتج"),
-  city: z.string().min(1, "يرجى اختيار المدينة التي يتوفر فيها المنتج"),
-  neighborhood: z.string().min(1, "يرجى تحديد الحي أو المنطقة لتسهيل عملية التوصيل"),
 
   // Third form fields - Variants
   hasVariations: z.boolean(),
@@ -122,9 +117,8 @@ const productFormSchema = z.object({
   // Fourth form fields
 
   upSells: z.array(z.union([z.string(), z.number()])).optional(),
-  upsellDiscountPrice: z.union([z.string(), z.number()]).optional(),
-  upsellDiscountEndDate: z.union([z.string(), z.number()]).optional(),
   crossSells: z.array(z.union([z.string(), z.number()])).optional(),
+  cross_sells_price: z.union([z.string(), z.number()]).optional(),
 });
 
 type ProductFormData = z.infer<typeof productFormSchema>;
@@ -142,20 +136,29 @@ const AccordionStep = ({
   onToggle,
   children,
   isCompleted,
+  hasErrors,
 }: {
   title: string;
   isOpen: boolean;
   onToggle: () => void;
   children: React.ReactNode;
   isCompleted: boolean;
+  hasErrors: boolean;
 }) => (
   <div
     className={`border rounded-lg bg-white transition-all duration-300 ${
-      isOpen ? "border-blue-500 shadow-md" : "border-gray-200"
+      isOpen ? "border-blue-500 shadow-md" : hasErrors ? "border-red-500" : "border-gray-200"
     }`}
   >
     <button type="button" onClick={onToggle} className="w-full flex justify-between items-center p-4 text-right">
-      <h3 className={`text-lg font-bold ${isCompleted && !isOpen ? "text-gray-900" : "text-gray-600"}`}>{title}</h3>
+      <h3
+        className={`text-lg font-bold ${isCompleted && !isOpen ? "text-gray-900" : "text-gray-600"} ${
+          hasErrors ? "text-red-600" : ""
+        }`}
+      >
+        {title}
+        {hasErrors && <span className="text-red-500 ml-2">⚠️</span>}
+      </h3>
       {isOpen ? <MinusCircle className="w-6 h-6 text-gray-500" /> : <PlusCircle className="w-6 h-6 text-gray-500" />}
     </button>
     {isOpen && <div className="p-6 border-t border-gray-200">{children}</div>}
@@ -187,15 +190,15 @@ const ProductCreationForm = ({
   console.log(user);
   // Use the create/update methods from the hook
   const { create: createProduct, update: updateProduct } = useAdminEntityQuery("products");
-
   const isAdmin = user?.user?.user_type === "admin";
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productFormSchema),
     defaultValues: {
       productName: "",
       price: "",
-      section_id: sectionIdFromParams || "",
+      section_id: sectionIdFromParams || "1",
       category_id: "",
+      owner_id: isAdmin ? "" : user?.user?.id?.toString() || "",
       status: user?.user?.user_type === "admin" ? "active" : "not_active", // Set default status based on user type
       condition: "new",
       shortDescription: "",
@@ -206,20 +209,14 @@ const ProductCreationForm = ({
       storeVisibility: "",
       tags: [],
       specifications: [],
-      hasDelivery: false,
-      productType: "",
-      mainCategory: "",
 
-      city: "",
-      neighborhood: "",
       // Third form default values
       hasVariations: false,
       variantAttributes: [],
       variants: [],
 
       upSells: [],
-      upsellDiscountPrice: undefined,
-      upsellDiscountEndDate: undefined,
+      cross_sells_price: undefined,
       crossSells: [],
     },
     mode: "onChange",
@@ -233,8 +230,6 @@ const ProductCreationForm = ({
       console.log("Product data for form:", {
         upSells: product.upSells,
         crossSells: product.crossSells,
-        upSellsType: typeof product.upSells,
-        crossSellsType: typeof product.crossSells,
         variations: product.variations,
         variationsLength: product.variations?.length,
         firstVariation: product.variations?.[0],
@@ -254,13 +249,10 @@ const ProductCreationForm = ({
         cover: product.cover || "",
         images: product.gallary || [],
         storeVisibility: product.store_id?.toString() || "",
-        hasDelivery: false,
-        productType: product.type || "",
-        subCategory: "",
-        city: "",
-        neighborhood: "",
+        owner_id: product.owner_id?.toString() || "",
         status: product.status === "active" ? "active" : "not_active",
         hasVariations: product.type === "variation",
+        cross_sells_price: product.cross_sells_price?.toString() || "",
         variantAttributes:
           product.variations?.length > 0
             ? product.variations[0]?.attributeOptions?.length > 0
@@ -283,7 +275,7 @@ const ProductCreationForm = ({
             }) => {
               const variant: { [key: string]: string | boolean | string[] } = {
                 price: variation.price?.toString() || "",
-                images: variation.image ? [variation.image] : [],
+                image: variation.image || "",
                 isActive: true,
               };
 
@@ -318,8 +310,6 @@ const ProductCreationForm = ({
               return null;
             })
             .filter((id): id is number => id !== null) || [],
-        upsellDiscountPrice: product.cross_sells_price,
-        upsellDiscountEndDate: undefined,
         crossSells:
           product.crossSells
             ?.map((item: string | number | { id: number } | null | undefined) => {
@@ -362,12 +352,41 @@ const ProductCreationForm = ({
     }
   };
 
+  const handleStepClick = async (stepId: number) => {
+    // If trying to navigate to a step ahead of current step, validate current step first
+    if (stepId > currentStep) {
+      const stepFields = steps[currentStep - 1].fields;
+      const isValid = await form.trigger(stepFields);
+
+      if (!isValid) {
+        const errorMessages = Object.values(form.formState.errors)
+          .map((error) => error?.message)
+          .filter(Boolean)
+          .join("\n");
+        toast.error(errorMessages || "يرجى تصحيح جميع الأخطاء قبل الانتقال للخطوة التالية");
+        return;
+      }
+    }
+
+    setCurrentStep(stepId);
+  };
+
   const handleSubmit = form.handleSubmit(async (data) => {
     setIsSubmitting(true);
     try {
       const isValid = await form.trigger();
       if (!isValid) {
-        toast.error("يرجى تصحيح جميع الأخطاء قبل الإرسال");
+        // Show all validation errors
+        const allErrors = Object.values(form.formState.errors)
+          .map((error) => error?.message)
+          .filter(Boolean);
+
+        if (allErrors.length > 0) {
+          toast.error(allErrors.join("\n"));
+        } else {
+          toast.error("يرجى تصحيح جميع الأخطاء قبل الإرسال");
+        }
+
         // Find the first step with an error and open it
         for (const step of steps) {
           const stepHasError = step.fields.some((field) => formState.errors[field as keyof typeof formState.errors]);
@@ -400,14 +419,14 @@ const ProductCreationForm = ({
         review_rate: isEditMode ? productData?.review_rate || 0 : 0,
         review_count: isEditMode ? productData?.review_count || 0 : 0,
         price: parseFloat(data.price.toString()),
-        cross_sells_price: data.upsellDiscountPrice || 0,
+        cross_sells_price: data.cross_sells_price || 0,
         crossSells: data.crossSells || [],
         upSells: data.upSells || [],
         tags: data.tags?.map((k: { value: string }) => k.value) || [],
         specifications: data.specifications || [],
         ...(isAdmin && { status: data.status }), // Only include status for admin users
         variations: data.hasVariations
-          ? data.variants?.map((variant: any, index: number) => {
+          ? data.variants?.map((variant: { [key: string]: any }, index: number) => {
               // Get the attributes data to map attribute names to IDs
               const variantAttributes = data.variantAttributes || [];
 
@@ -453,7 +472,7 @@ const ProductCreationForm = ({
               return {
                 id: index + 1,
                 price: parseFloat(variant.price),
-                image: variant.images[0]?.startsWith("http") ? variant.images[0] : variant.images[0] || "",
+                image: variant.image?.startsWith("http") ? variant.image : variant.image || "",
                 attributeOptions,
               };
             }) || []
@@ -505,6 +524,7 @@ const ProductCreationForm = ({
             "cover",
             "images",
             "status",
+            "owner_id",
           ]
         : [
             "productName",
@@ -522,17 +542,7 @@ const ProductCreationForm = ({
       id: 2,
       title: "تفاصيل المنتج",
       component: <ProductDetails />,
-      fields: [
-        "storeVisibility",
-        "tags",
-        "specifications",
-        "hasDelivery",
-        "productType",
-        "mainCategory",
-        "subCategory",
-        "city",
-        "neighborhood",
-      ],
+      fields: ["storeVisibility", "tags", "specifications"],
     },
     {
       id: 3,
@@ -544,13 +554,13 @@ const ProductCreationForm = ({
       id: 4,
       title: "منتجات مرتبطة",
       component: <RelatedProducts />,
-      fields: ["crossSells"],
+      fields: ["upSells"],
     },
     {
       id: 5,
       title: "منتجات مكملة",
       component: <UpSell />,
-      fields: ["upSells", "upsellDiscountPrice", "upsellDiscountEndDate"],
+      fields: ["crossSells", "cross_sells_price"],
     },
   ];
   return (
@@ -598,17 +608,25 @@ const ProductCreationForm = ({
               {/* Form Accordion Column */}
               <div className="lg:col-span-2">
                 <div className="space-y-4">
-                  {steps.map((step) => (
-                    <AccordionStep
-                      key={step.id}
-                      title={step.title}
-                      isOpen={currentStep === step.id}
-                      onToggle={() => setCurrentStep(step.id)}
-                      isCompleted={currentStep > step.id}
-                    >
-                      {step.component}
-                    </AccordionStep>
-                  ))}
+                  {steps.map((step) => {
+                    // Check if this step has any validation errors
+                    const stepHasError = step.fields.some(
+                      (field) => formState.errors[field as keyof typeof formState.errors]
+                    );
+
+                    return (
+                      <AccordionStep
+                        key={step.id}
+                        title={step.title}
+                        isOpen={currentStep === step.id}
+                        onToggle={() => handleStepClick(step.id)}
+                        isCompleted={currentStep > step.id}
+                        hasErrors={stepHasError}
+                      >
+                        {step.component}
+                      </AccordionStep>
+                    );
+                  })}
                 </div>
               </div>
               {/* Preview Column */}

@@ -1,8 +1,8 @@
 import { useFormContext } from "react-hook-form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X, PlusCircle, Settings, Package, Trash2 } from "lucide-react";
+import { Search, X, PlusCircle, Settings, Package, Trash2, ChevronDown } from "lucide-react";
 import { FormLabel } from "@/components/ui/form";
 import FormInput from "@/components/inputs/FormInput";
 import { Controller, useFieldArray } from "react-hook-form";
@@ -11,6 +11,7 @@ import ModalCustom from "@/components/ModalCustom";
 import { useAuth } from "@/context/AuthContext";
 import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
 import Loader from "@/components/Loader";
+import { ApiAttribute, ApiAttributeOption } from "@/types";
 
 interface VariantErrors {
   variants?: {
@@ -27,10 +28,107 @@ interface Variant {
   color?: string;
   size?: string;
   price: string;
-  images: string[]; // Changed to string[] to be compatible with FormInput
+  image: string; // Changed to single string for image
   isActive: boolean;
   [key: string]: string | boolean | string[] | undefined; // More specific type for dynamic attributes
 }
+
+// Autocomplete Input Component
+const AutocompleteInput = ({
+  name,
+  placeholder,
+  options,
+  error,
+  className,
+}: {
+  name: string;
+  placeholder: string;
+  options: ApiAttributeOption[];
+  error?: string;
+  className?: string;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+  const { setValue, watch } = useFormContext();
+  const currentValue = watch(name);
+
+  // Convert ID to title for display
+  const getDisplayValue = (value: string) => {
+    if (!value) return "";
+    // If the value is already a title (not a number), return it as is
+    if (isNaN(Number(value))) return value;
+    // If it's a number (ID), find the corresponding option title
+    const option = options.find((opt) => opt.id.toString() === value);
+    return option?.title || value;
+  };
+
+  // Initialize input value when component mounts or currentValue changes
+  useEffect(() => {
+    if (currentValue && !inputValue) {
+      setInputValue(getDisplayValue(currentValue));
+    }
+  }, [currentValue, inputValue, options]);
+
+  const displayValue = inputValue || getDisplayValue(currentValue);
+
+  const filteredOptions = options.filter((option) => option.title.toLowerCase().includes(inputValue.toLowerCase()));
+
+  const handleSelect = (option: ApiAttributeOption) => {
+    setValue(name, option.id.toString()); // Store the ID in the form
+    setInputValue(option.title);
+    setIsOpen(false);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputValue(value);
+    setValue(name, value); // Update the form value so input reflects changes
+    setIsOpen(true);
+  };
+
+  const handleInputFocus = () => {
+    setIsOpen(true);
+    setInputValue(displayValue || "");
+  };
+
+  const handleInputBlur = () => {
+    // Delay closing to allow for option selection
+    setTimeout(() => setIsOpen(false), 200);
+  };
+
+  return (
+    <div className="relative">
+      <Input
+        name={name}
+        placeholder={placeholder}
+        value={displayValue}
+        onChange={handleInputChange}
+        onFocus={handleInputFocus}
+        onBlur={handleInputBlur}
+        className={`h-10 text-sm placeholder:text-[#667085] pr-8 ${className} ${error ? "border-red-500" : ""}`}
+        title={placeholder}
+        aria-label={placeholder}
+      />
+      <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+
+      {isOpen && filteredOptions.length > 0 && (
+        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+          {filteredOptions.map((option) => (
+            <div
+              key={option.id}
+              className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+              onClick={() => handleSelect(option)}
+            >
+              {option.title}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+    </div>
+  );
+};
 
 const AddVariantAttributeModal = ({
   onConfirm,
@@ -112,6 +210,8 @@ const AddVariantAttributeModal = ({
             className="mt-2"
             value={otherValue}
             onChange={(e) => setOtherValue(e.target.value)}
+            title="إدخال صفة مخصصة"
+            aria-label="إدخال صفة مخصصة"
           />
         )}
       </div>
@@ -173,7 +273,7 @@ const VariantsForm = () => {
         color: "",
         size: "",
         price: "",
-        images: [] as string[],
+        image: "",
         isActive: true,
       } as Variant);
     } else if (attributes.length === 0) {
@@ -184,9 +284,9 @@ const VariantsForm = () => {
       const currentVariants = watch("variants") || [];
       const updatedVariants = currentVariants.map((variant: Variant) => {
         const newVariant = { ...variant };
-        // Ensure images is always an array
-        if (!Array.isArray(newVariant.images)) {
-          newVariant.images = [];
+        // Ensure image is always a string (not an array)
+        if (Array.isArray(newVariant.image)) {
+          newVariant.image = newVariant.image[0] || "";
         }
         // Remove fields that are no longer in attributes
         if (!attributes.includes("color")) delete newVariant.color;
@@ -211,7 +311,7 @@ const VariantsForm = () => {
 
   // Debug variant attributes with titles
   const variantAttributesWithTitles = variantAttributes.map((attr: string) => {
-    const attribute = attributes.find((attrData: any) => attrData.id.toString() === attr);
+    const attribute = attributes.find((attrData: ApiAttribute) => attrData.id.toString() === attr);
     return {
       id: attr,
       title: attribute?.title || attr,
@@ -291,7 +391,7 @@ const VariantsForm = () => {
               <div className="flex flex-wrap gap-2 mt-2">
                 {variantAttributes.map((attr: string, index: number) => {
                   // Find the attribute title from the attributes data
-                  const attribute = attributes.find((attrData: any) => attrData.id.toString() === attr);
+                  const attribute = attributes.find((attrData: ApiAttribute) => attrData.id.toString() === attr);
                   const attributeTitle = attribute?.title || attr;
 
                   return (
@@ -319,7 +419,7 @@ const VariantsForm = () => {
                   type="button"
                   variant="outline"
                   className=" justify-start text-base font-[500] bg-blue-100  w-fit "
-                  onClick={() => append({ color: "", size: "", price: "", images: [] as string[], isActive: true })}
+                  onClick={() => append({ color: "", size: "", price: "", image: "", isActive: true })}
                 >
                   <PlusCircle size={16} className="ml-2" /> قيمة جديدة
                 </Button>
@@ -327,13 +427,13 @@ const VariantsForm = () => {
 
               <div className="overflow-x-auto">
                 <div
-                  className={`grid ${
-                    isAdmin ? "grid-cols-[1fr_1fr_100px_150px_120px_80px]" : "grid-cols-[1fr_1fr_100px_150px_120px]"
+                  className={`grid grid-cols-${
+                    variantAttributes.length + 3
                   } gap-4 p-3 bg-[#F9FAFB] rounded-t-lg text-sm font-medium text-[#667085] min-w-[600px]`}
                 >
                   {variantAttributes.map((attr: string) => {
                     // Find the attribute title from the attributes data
-                    const attribute = attributes.find((attrData: any) => attrData.id.toString() === attr);
+                    const attribute = attributes.find((attrData: ApiAttribute) => attrData.id.toString() === attr);
                     const attributeTitle = attribute?.title || attr;
 
                     return <span key={attr}>{attributeTitle}</span>;
@@ -347,8 +447,8 @@ const VariantsForm = () => {
                   {fields.map((field, index) => (
                     <div
                       key={field.id}
-                      className={`grid ${
-                        isAdmin ? "grid-cols-[1fr_1fr_100px_150px_120px_80px]" : "grid-cols-[1fr_1fr_100px_150px_120px]"
+                      className={`grid grid-cols-${
+                        variantAttributes.length + 3
                       } gap-4 items-center p-3 bg-white border border-[#E7EAEE] last:rounded-b-lg`}
                     >
                       {variantAttributes.map((attr: string) => {
@@ -358,21 +458,14 @@ const VariantsForm = () => {
                         console.log(attribute?.options);
                         return (
                           <div key={attr}>
-                            <FormInput
+                            <AutocompleteInput
                               name={`variants.${index}.${attr}`}
                               placeholder={attr === "color" ? "اسود" : attr === "size" ? "XL" : attr}
+                              options={attribute?.options || []}
                               error={
                                 variantErrors?.variants?.[index]?.[
                                   attr as keyof (typeof variantErrors.variants)[number]
                                 ]?.message
-                              }
-                              className="h-10 text-sm placeholder:text-[#667085]"
-                              select
-                              options={
-                                attribute?.options?.map((option) => ({
-                                  value: option.id.toString(),
-                                  label: option.title,
-                                })) || []
                               }
                             />
                           </div>
@@ -393,11 +486,9 @@ const VariantsForm = () => {
                       <div className="relative">
                         <FormInput
                           grid={1}
-                          name={`variants.${index}.images`}
+                          name={`variants.${index}.image`}
                           photo
-                          multiple
-                          maxFiles={5}
-                          placeholder="اختر صور للمنتج المتغير"
+                          placeholder="اختر صورة للمنتج المتغير"
                         />
                       </div>
                       {isAdmin && (

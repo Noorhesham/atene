@@ -1,137 +1,270 @@
-import React from "react";
-import { ApiOrder } from "@/hooks/useUsersQuery";
+import React, { useState, useEffect, useMemo } from "react";
+import { ApiOrder, ApiProduct } from "@/types";
+import Loader from "@/components/Loader";
+import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
+import { VariantSelectionModal } from "./VariantSelectionModal";
+import { Search, X, Plus, Minus } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
-interface EditOrderViewProps {
-  order?: ApiOrder | null;
-  onBack: () => void;
-}
+const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack: () => void }) => {
+  const { data: products, isLoading: productsLoading } = useAdminEntityQuery("products");
+  const { update, isUpdating } = useAdminEntityQuery("orders");
+  const [cartItems, setCartItems] = useState<ApiOrder["items"]>([]);
+  const [productForVariants, setProductForVariants] = useState<ApiProduct | null>(null);
+  const [selectedProducts, setSelectedProducts] = useState<Set<number>>(new Set());
 
-const EditOrderView: React.FC<EditOrderViewProps> = ({ order, onBack }) => {
+  console.log(products);
+
+  useEffect(() => {
+    // Initialize cart with items from the order being edited
+    if (orderToEdit) {
+      setCartItems(orderToEdit.items);
+      // Mark existing items as selected
+      const existingProductIds = new Set(orderToEdit.items.map((item) => item.product_id));
+      setSelectedProducts(existingProductIds);
+    }
+  }, [orderToEdit]);
+
+  // Simple hash function to replace hashCode
+  const simpleHash = (str: string): number => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash);
+  };
+
+  const handleAddToCart = (product: ApiProduct) => {
+    if (product.type === "variation" && product.variants) {
+      setProductForVariants(product);
+      return;
+    }
+
+    const existingItem = cartItems.find((item) => item.product_id === product.id);
+    if (existingItem) {
+      updateQuantity(product.id, existingItem.quantity + 1);
+    } else {
+      const newItem: ApiOrder["items"][number] = {
+        id: Date.now(), // Temporary ID for new item
+        product_id: product.id,
+        product: {
+          id: product.id,
+          name: product.name,
+          sku: product.sku,
+          price: product.price,
+        },
+        quantity: 1,
+        price: product.price,
+        price_after_discount: product.price,
+      };
+      setCartItems((prev) => [...prev, newItem]);
+      setSelectedProducts((prev) => new Set([...prev, product.id]));
+    }
+  };
+
+  const handleAddVariantToCart = (product: ApiProduct, selectedVariants: Record<string, string>) => {
+    const variantName = `${product.name} (${Object.values(selectedVariants).join(", ")})`;
+    const variantId = product.id + simpleHash(Object.values(selectedVariants).join("-")); // Simple unique ID for variant
+
+    const existingItem = cartItems.find((item) => item.id === variantId);
+    if (existingItem) {
+      updateQuantity(variantId, existingItem.quantity + 1);
+    } else {
+      const newItem: ApiOrder["items"][number] = {
+        id: variantId,
+        product_id: product.id,
+        product: {
+          id: product.id,
+          name: variantName,
+          sku: product.sku,
+          price: product.price,
+        },
+        quantity: 1,
+        price: product.price,
+        price_after_discount: product.price,
+      };
+      setCartItems((prev) => [...prev, newItem]);
+      setSelectedProducts((prev) => new Set([...prev, product.id]));
+    }
+    setProductForVariants(null);
+  };
+
+  const updateQuantity = (itemId: number, quantity: number) => {
+    if (quantity < 1) {
+      setCartItems((prev) => prev.filter((item) => item.id !== itemId));
+      // Remove from selected products if quantity becomes 0
+      const itemToRemove = cartItems.find((item) => item.id === itemId);
+      if (itemToRemove) {
+        setSelectedProducts((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(itemToRemove.product_id);
+          return newSet;
+        });
+      }
+    } else {
+      setCartItems((prev) => prev.map((item) => (item.id === itemId ? { ...item, quantity } : item)));
+    }
+  };
+
+  const handleSaveChanges = () => {
+    // Spread the whole order data and update items
+    const updatedOrderData = {
+      ...orderToEdit,
+      items: cartItems.map((item) => ({
+        id: item.id,
+        product_id: item.product_id,
+        product: item.product,
+        quantity: item.quantity,
+        price: item.price,
+        price_after_discount: item.price_after_discount,
+      })),
+    } as Partial<ApiOrder>;
+    update(orderToEdit.id, updatedOrderData);
+    onBack();
+  };
+
+  const cartTotal = useMemo(() => {
+    return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+  }, [cartItems]);
+
   return (
-    <div className="bg-white rounded-lg p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold">تعديل الطلب {order?.reference_id}</h2>
-        <button onClick={onBack} className="text-gray-500 hover:text-gray-700">
-          عودة
-        </button>
+    <div className="grid grid-cols-12 gap-6 h-[calc(100vh-150px)]">
+      {productForVariants && (
+        <VariantSelectionModal
+          product={productForVariants}
+          onClose={() => setProductForVariants(null)}
+          onConfirm={handleAddVariantToCart}
+        />
+      )}
+      {/* Left: Product Categories (Placeholder) */}
+      <div className="col-span-12 lg:col-span-3 bg-white rounded-lg border p-4">
+        <h3 className="font-bold mb-4">جميع المنتجات</h3>
+        {/* Category list can be implemented here */}
       </div>
 
-      {order ? (
-        <div className="space-y-6">
-          <div>
-            <h3 className="font-medium mb-4">المنتجات في الطلب:</h3>
-            <div className="space-y-4">
-              {order.items.map((item) => (
-                <div key={item.id} className="border rounded-lg p-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-medium">{item.product.name}</h4>
-                      <p className="text-sm text-gray-500">SKU: {item.product.sku}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">{item.price} ريال</p>
-                      {item.price_after_discount !== item.price && (
-                        <p className="text-sm text-red-500">{item.price_after_discount} ريال</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="mt-2 flex items-center gap-4">
-                    <div>
-                      <label className="text-sm text-gray-500">الكمية</label>
-                      <input
-                        type="number"
-                        defaultValue={item.quantity}
-                        min="1"
-                        className="ml-2 w-20 border rounded p-1"
-                        title={`كمية ${item.product.name}`}
-                        placeholder="الكمية"
-                      />
-                    </div>
-                    <button className="text-red-500 text-sm hover:text-red-700">حذف</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="border-t pt-4">
-            <h3 className="font-medium mb-4">تفاصيل الطلب:</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm text-gray-500 mb-1">المجموع الفرعي</label>
-                <p className="font-medium">{order.sub_total} ريال</p>
-              </div>
-              <div>
-                <label className="block text-sm text-gray-500 mb-1">الخصم</label>
-                <p className="font-medium">{order.discount_total} ريال</p>
-              </div>
-              <div>
-                <label className="block text-sm text-gray-500 mb-1">تكلفة الشحن</label>
-                <p className="font-medium">{order.shipping_cost} ريال</p>
-              </div>
-              <div>
-                <label className="block text-sm text-gray-500 mb-1">الإجمالي</label>
-                <p className="font-medium">{order.total} ريال</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="border-t pt-4">
-            <h3 className="font-medium mb-4">معلومات العميل:</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm text-gray-500 mb-1">الاسم</label>
-                <input
-                  type="text"
-                  defaultValue={order.name}
-                  className="w-full border rounded p-2"
-                  title="اسم العميل"
-                  placeholder="اسم العميل"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-500 mb-1">البريد الإلكتروني</label>
-                <input
-                  type="email"
-                  defaultValue={order.email}
-                  className="w-full border rounded p-2"
-                  title="البريد الإلكتروني"
-                  placeholder="البريد الإلكتروني"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-500 mb-1">رقم الهاتف</label>
-                <input
-                  type="tel"
-                  defaultValue={order.phone}
-                  className="w-full border rounded p-2"
-                  title="رقم الهاتف"
-                  placeholder="رقم الهاتف"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-500 mb-1">العنوان</label>
-                <input
-                  type="text"
-                  defaultValue={order.address}
-                  className="w-full border rounded p-2"
-                  title="العنوان"
-                  placeholder="العنوان"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-4 mt-8">
-            <button onClick={onBack} className="px-4 py-2 border rounded-lg hover:bg-gray-50">
-              إلغاء
-            </button>
-            <button className="px-4 py-2 bg-main text-white rounded-lg hover:bg-main/90">حفظ التغييرات</button>
+      {/* Middle: Product List */}
+      <div className="col-span-12 lg:col-span-5 bg-white rounded-lg border h-full flex flex-col">
+        <div className="p-4 border-b">
+          <div className="relative">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input placeholder="ابحث عن منتج" className="w-full pr-10 pl-4 py-2 border rounded-lg bg-gray-50" />
           </div>
         </div>
-      ) : (
-        <div className="text-center text-gray-500">لم يتم اختيار طلب للتعديل</div>
-      )}
+        {productsLoading ? (
+          <div className="flex-grow flex items-center justify-center">
+            <Loader2 className="animate-spin" />
+          </div>
+        ) : (
+          <div className="flex-grow overflow-y-auto p-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {products.map((product: ApiProduct) => {
+                const isSelected = selectedProducts.has(product.id);
+                return (
+                  <div
+                    key={product.id}
+                    onClick={() => handleAddToCart(product)}
+                    className={`border rounded-lg p-2 cursor-pointer hover:shadow-md transition-all ${
+                      isSelected ? "ring-2 ring-main bg-main/5" : ""
+                    }`}
+                  >
+                    <div className="relative">
+                      <img
+                        src={product.cover_url || ""}
+                        alt={product.name}
+                        className="w-full h-28 object-cover rounded-md mb-2 bg-gray-100"
+                      />
+                      {isSelected && (
+                        <div className="absolute top-1 right-1 w-6 h-6 bg-main text-white rounded-full flex items-center justify-center text-xs">
+                          ✓
+                        </div>
+                      )}
+                    </div>
+                    <p className="font-semibold text-gray-800 truncate text-sm">{product.name}</p>
+                    <p className="font-bold text-main">{product.price.toFixed(2)} ₪</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Right: Shopping Cart */}
+      <div className="col-span-12 lg:col-span-4 bg-white rounded-lg border h-full flex flex-col p-4">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="font-bold text-main">سلة الطلب ({cartItems.length} قطع)</h3>
+          <button
+            onClick={() => {
+              setCartItems([]);
+              setSelectedProducts(new Set());
+            }}
+            className="bg-red-50 text-red-600 px-2 py-1 text-xs font-semibold rounded-md flex items-center gap-1 hover:bg-red-100"
+          >
+            <X className="w-4 h-4" /> تفريغ السلة
+          </button>
+        </div>
+        {cartItems.length === 0 ? (
+          <div className="flex-grow flex flex-col items-center justify-center text-gray-400">لم يتم اختيار منتج</div>
+        ) : (
+          <div className="flex-grow overflow-y-auto space-y-3">
+            {cartItems.map((item) => {
+              // Find the original product data to get cover_url
+              const originalProduct = products?.find((p) => p.id === item.product_id);
+              return (
+                <div key={item.id} className="flex items-center gap-3">
+                  <img
+                    src={originalProduct?.cover_url || ""}
+                    alt={item.product?.name}
+                    className="w-16 h-16 rounded-md object-cover bg-gray-100"
+                  />
+                  <div className="flex-grow">
+                    <p className="font-semibold text-main text-sm">{item.product?.name}</p>
+                    <p className="font-bold text-main">{item.price.toFixed(2)} ₪</p>
+                  </div>
+                  <div className="flex items-center border rounded-md">
+                    <button
+                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                      className="h-8 w-8 flex items-center justify-center hover:bg-gray-100"
+                      title="زيادة الكمية"
+                    >
+                      <Plus size={14} />
+                    </button>
+                    <span className="px-3 font-semibold text-sm">{item.quantity}</span>
+                    <button
+                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                      className="h-8 w-8 flex items-center justify-center hover:bg-gray-100"
+                      title="تقليل الكمية"
+                    >
+                      <Minus size={14} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        <div className="border-t pt-4 mt-4 space-y-3">
+          <div className="flex justify-between font-semibold text-lg">
+            <span>الاجمالي:</span>
+            <span>{cartTotal.toFixed(2)} ₪</span>
+          </div>
+          <button
+            onClick={handleSaveChanges}
+            disabled={isUpdating}
+            className="w-full bg-main text-white hover:bg-main/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+          >
+            {isUpdating ? <Loader /> : "حفظ التغييرات"}
+          </button>
+          <button
+            onClick={onBack}
+            className="w-full text-center py-2 text-gray-600 font-semibold hover:bg-gray-100 rounded-lg"
+          >
+            إلغاء
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

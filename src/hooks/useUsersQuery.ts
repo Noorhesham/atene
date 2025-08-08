@@ -110,6 +110,28 @@ const ENTITY_ENDPOINTS: Record<string, EndpointConfig> = {
     merchant: `${API_ENDPOINTS.BASE}/merchants/sections`,
     requiresAuth: true,
   },
+  conversations: {
+    admin: `${API_ENDPOINTS.BASE}/conversations`,
+    merchant: `${API_ENDPOINTS.BASE}/conversations`,
+    requiresAuth: true,
+  },
+  messages: {
+    admin: `${API_ENDPOINTS.BASE}/messages`,
+    merchant: `${API_ENDPOINTS.BASE}/messages`,
+    requiresAuth: true,
+  },
+  reports: {
+    admin: `${API_ENDPOINTS.ADMIN}/reports`,
+    requiresAuth: true,
+  },
+  settings: {
+    admin: `${API_ENDPOINTS.ADMIN}/settings/get`,
+    requiresAuth: true,
+  },
+  "settings-update": {
+    admin: `${API_ENDPOINTS.ADMIN}/settings`,
+    requiresAuth: true,
+  },
 };
 
 interface UseAdminEntityQueryReturn<K extends keyof EntityTypeMap> {
@@ -264,7 +286,30 @@ export function useAdminEntityQuery<K extends keyof EntityTypeMap>(
         message: queryResult.message || "",
       } as ApiFollowersResponse;
     }
-
+    if (entityName === "conversations") {
+      return {
+        data: queryResult.conversations || [],
+        total: queryResult.total || 0,
+        status: queryResult.status,
+        message: queryResult.message || "",
+      } as ApiResponseWithTotal;
+    }
+    if (entityName === "messages") {
+      return {
+        data: queryResult.messages || [],
+        total: queryResult.total || 0,
+        status: queryResult.status,
+        message: queryResult.message || "",
+      } as ApiResponseWithTotal;
+    }
+    if (entityName === "settings") {
+      return {
+        data: queryResult.settings || {},
+        total: queryResult.total || 0,
+        status: queryResult.status,
+        message: queryResult.message || "",
+      } as ApiResponseWithTotal;
+    }
     // For regular entities
     return queryResult.data || [];
   }, [queryResult, entityName]);
@@ -377,7 +422,6 @@ export function useAdminEntityQuery<K extends keyof EntityTypeMap>(
         Authorization: `Bearer ${localStorage.getItem("token")}`,
         "Content-Type": "application/json",
         ...(options?.headers || {}),
-        storeId: localStorage.getItem("storeId") || "",
       });
 
       if (!response.status) {

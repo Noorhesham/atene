@@ -11,6 +11,8 @@ import { Link } from "react-router-dom";
 import Actions from "@/components/Actions";
 import { useAuth } from "@/context/AuthContext";
 import Loader from "@/components/Loader";
+import { API_BASE_URL } from "@/constants/api";
+import { toast } from "react-hot-toast";
 
 interface FilterCategory {
   name: string;
@@ -41,7 +43,7 @@ const FilterPanel = ({
     <div className="px-4">
       <h3 className="font-bold text-gray-800 mb-4">تصفية</h3>
       <ul className="space-y-1">
-        {categories.map((cat, index) => (
+        {categories?.map((cat, index) => (
           <li key={index}>
             <button
               onClick={() => onFilterChange(cat.value)}
@@ -78,14 +80,16 @@ const StoreListItem = ({
   );
 
   return (
-    <div className="flex items-center gap-3 p-3 border-b">
+    <label htmlFor={store.id.toString()} className="flex items-center gap-3 p-3 border-b cursor-pointer">
       <input
-        type="checkbox"
-        checked={isSelected}
+        type="radio"
+        value={store.id}
         onChange={() => onSelect(store)}
-        className="form-checkbox h-5 w-5 text-main accent-main rounded border-gray-300 focus:ring-main"
+        className="form-radio h-5 w-5 text-main accent-main border-gray-300 focus:ring-main"
         title="تحديد المتجر"
         aria-label="تحديد المتجر"
+        checked={isSelected}
+        id={store.id.toString()}
       />
       <img
         src={store.logo_url || "/placeholder-store.png"}
@@ -96,7 +100,7 @@ const StoreListItem = ({
         <p className="font-semibold text-gray-800">{store.name}</p>
         <StatusIndicator status={store.status} />
       </div>
-    </div>
+    </label>
   );
 };
 
@@ -114,6 +118,28 @@ interface SocialLinkProps {
 
 const StoreDetails = ({ store, onStoreDeleted }: { store: ApiStore; onStoreDeleted: () => void }) => {
   const storeQuery = useAdminEntityQuery("stores");
+  const token = localStorage.getItem("token");
+  const updateStoreStatus = async (store: ApiStore) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/stores/update-status`, {
+        method: "POST",
+        body: JSON.stringify({ ...store }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          store_id: store.id.toString(),
+        },
+      });
+      if (!res.ok) {
+        throw new Error("Failed to update store status");
+      }
+      toast.success("تم تفعيل المتجر بنجاح");
+      storeQuery.refetch();
+    } catch (error) {
+      console.error("Failed to update store status:", error);
+      toast.error("فشل تفعيل المتجر");
+    }
+  };
   const { data: currencies } = useAdminEntityQuery("currencies");
   console.log(store);
   const { user } = useAuth();
@@ -149,7 +175,7 @@ const StoreDetails = ({ store, onStoreDeleted }: { store: ApiStore; onStoreDelet
           user?.user.user_type === "admin"
             ? async () => {
                 try {
-                  await storeQuery.update(store.id, { status: "active" });
+                  await updateStoreStatus(store);
                 } catch (error) {
                   console.error("Failed to update store status:", error);
                 }
@@ -261,7 +287,7 @@ export default function StoreManagementPage() {
   const [selectedStore, setSelectedStore] = useState<ApiStore | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [orderDir, setOrderDir] = useState<"asc" | "desc">("desc");
-  const [selectedStores, setSelectedStores] = useState<Set<number>>(new Set());
+  const [selectedStoreId, setSelectedStoreId] = useState<number | null>(null);
   const { user } = useAuth();
   const { data: stores = [] } = useAdminEntityQuery("stores");
 
@@ -280,26 +306,12 @@ export default function StoreManagementPage() {
   };
 
   const handleStoreSelect = (store: ApiStore) => {
-    setSelectedStores((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(store.id)) {
-        newSet.delete(store.id);
-      } else {
-        newSet.add(store.id);
-      }
-      return newSet;
-    });
+    setSelectedStoreId(selectedStoreId === store.id ? null : store.id);
   };
 
   const handleStoreDeleted = () => {
     setSelectedStore(null);
-    setSelectedStores((prev) => {
-      const newSet = new Set(prev);
-      if (selectedStore) {
-        newSet.delete(selectedStore.id);
-      }
-      return newSet;
-    });
+    setSelectedStoreId(null);
   };
 
   const { isLoading: storesLoading } = useAdminEntityQuery("stores");
@@ -394,7 +406,7 @@ export default function StoreManagementPage() {
                   return null;
                 }
                 return (
-                  <StoreListItem store={store} isSelected={selectedStores.has(store.id)} onSelect={handleStoreSelect} />
+                  <StoreListItem store={store} isSelected={selectedStoreId === store.id} onSelect={handleStoreSelect} />
                 );
               }}
               searchQuery={searchQuery}

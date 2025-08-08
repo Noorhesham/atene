@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { ChevronLeft, Add, ShoppingCart } from "../../../components/icons";
 import { FilterPanelProps, Order } from "@/types/orders";
 import { OrdersList, OrderDetails } from "./OrdersList";
 import { Header } from "./Header";
 import EditOrderView from "./EditOrderView";
 import { Input } from "@/components/ui/input";
-import { useAdminEntityQuery, ApiOrder } from "@/hooks/useUsersQuery";
+import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
+import { ApiOrder } from "@/types/api";
 import { Loader2 } from "lucide-react";
 
 const filterCategories = [
@@ -49,71 +50,27 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ categories, onFilterChange })
   </div>
 );
 
-const EmptyState: React.FC = () => (
-  <div className="bg-white rounded-lg border border-gray-200 h-full flex flex-col items-center justify-center text-center p-6">
-    <div className="w-24 h-24 flex items-center justify-center bg-gray-100 rounded-full mb-4">
-      <ShoppingCart />
-    </div>
-    <h3 className="text-xl font-bold text-main mb-1">لم يتم اختيار طلب</h3>
-    <p className="text-gray-500">قم بتحديد الطلب لمشاهدة تفاصيله هنا</p>
-  </div>
-);
-
 const OrdersPage = () => {
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [activeStatus, setActiveStatus] = useState<string | null>(null);
-  const {
-    data: orders,
-    isLoading,
-    error,
-    totalPages,
-    setSearchQuery: setOrderSearchQuery,
-    setCurrentPage: setOrderCurrentPage,
-  } = useAdminEntityQuery("orders", {
-    initialPage: currentPage,
-    queryParams: { search: searchQuery },
-  }) as {
-    data: ApiOrder[];
-    isLoading: boolean;
-    error: string | null;
-    totalPages: number;
-    setSearchQuery: (query: string) => void;
-    setCurrentPage: (page: number) => void;
+
+  // Use your hook to fetch orders
+  const { data: orders, isLoading } = useAdminEntityQuery("orders");
+
+  const selectedOrder = useMemo(() => {
+    return orders.find((o: ApiOrder) => o.id === selectedOrderId) || null;
+  }, [orders, selectedOrderId]);
+
+  const handleSelectOrder = (id: number) => {
+    setSelectedOrderId(id);
+    setIsEditing(false); // Always show details first when a new order is selected
   };
 
-  const handleSelectOrder = (orderId: string) => {
-    setSelectedOrders((prev) => {
-      const newSelection = new Set(prev);
-      if (newSelection.has(orderId)) {
-        newSelection.delete(orderId);
-      } else {
-        newSelection.add(orderId);
-      }
-      return Array.from(newSelection);
-    });
+  const handleEditOrder = () => {
+    if (selectedOrder) {
+      setIsEditing(true);
+    }
   };
-
-  const orderForDetails =
-    selectedOrders.length === 1 ? orders.find((o: ApiOrder) => o.reference_id === selectedOrders[0]) : null;
-
-  // Update filter categories counts
-  const filteredOrders = orders?.filter((order: ApiOrder) => {
-    if (!activeStatus) return true;
-    return order.status === activeStatus;
-  });
-
-  const updatedFilterCategories = filterCategories.map((cat) => ({
-    ...cat,
-    active: cat.status === activeStatus,
-    count:
-      orders?.filter((order: ApiOrder) => {
-        if (cat.status === null) return true;
-        return order.status === cat.status;
-      }).length || 0,
-  }));
 
   if (isLoading) {
     return (
@@ -123,90 +80,39 @@ const OrdersPage = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="w-full min-h-screen flex items-center justify-center text-red-500">
-        حدث خطأ أثناء تحميل الطلبات
-      </div>
-    );
-  }
-  console.log(orders);
   return (
-    <div className="w-full min-h-screen p-4 lg:p-6 font-sans bg-gray-50">
-      <Header mode="orders" onAddOrder={() => setIsEditing(true)} />
+    <div className="w-full min-h-screen p-4 lg:p-6 font-sans bg-gray-50" dir="rtl">
+      <header className="mb-4">
+        <p className="text-gray-500 text-sm">الرئيسية / الطلبات</p>
+        {isEditing && <h2 className="text-xl font-bold">تعديل الطلب #{selectedOrder?.reference_id}</h2>}
+      </header>
 
-      {isEditing ? (
-        <EditOrderView order={orderForDetails} onBack={() => setIsEditing(false)} />
+      {isEditing && selectedOrder ? (
+        <EditOrderView orderToEdit={selectedOrder} onBack={() => setIsEditing(false)} />
       ) : (
-        <div>
-          <div className="w-full lg:w-auto flex items-center gap-4 mb-6">
-            <Input
-              placeholder="البحث في الطلبات..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setOrderSearchQuery(e.target.value);
-              }}
-              className="max-w-sm"
-            />
+        <div className="grid grid-cols-12 gap-6 h-[calc(100vh-120px)]">
+          {/* Left: Filter Panel (Placeholder) */}
+          <div className="col-span-12 lg:col-span-3 bg-white rounded-lg border p-4">
+            <h3 className="font-bold mb-4">فلترة الطلبات</h3>
+            {/* Filter UI goes here */}
           </div>
-          <div className="grid grid-cols-12 gap-6" dir="rtl">
-            <div className="col-span-12 lg:col-span-3">
-              <FilterPanel
-                categories={updatedFilterCategories}
-                onFilterChange={(status) => {
-                  setActiveStatus(status);
-                  setSelectedOrders([]);
-                }}
-              />
-            </div>
-            <div className="col-span-12 lg:col-span-4">
-              <OrdersList
-                orders={(filteredOrders || []).map((order: ApiOrder) => ({
-                  id: order.reference_id,
-                  customerName: order.name,
-                  date: "-",
-                  price: order.total.toString(),
-                  client: order.client,
-                  items: order.items,
-                  address: order.address,
-                  email: order.email,
-                  phone: order.phone,
-                  notes: order.notes,
-                  status: order.status,
-                  sub_total: order.sub_total,
-                  discount_total: order.discount_total,
-                  shipping_cost: order.shipping_cost,
-                  total: order.total,
-                  reference_id: order.reference_id,
-                  name: order.name,
-                }))}
-                selectedOrders={selectedOrders}
-                onSelectOrder={handleSelectOrder}
-              />
-            </div>
-            <div className="col-span-12 lg:col-span-5">
-              {orderForDetails ? <OrderDetails order={orderForDetails as unknown as Order} /> : <EmptyState />}
-            </div>
+
+          {/* Middle: Orders List */}
+          <div className="col-span-12 lg:col-span-4">
+            <OrdersList orders={orders} selectedOrderId={selectedOrderId} onSelectOrder={handleSelectOrder} />
           </div>
-          {totalPages > 1 && (
-            <div className="mt-4 flex justify-center">
-              <div className="flex gap-2">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => {
-                      setCurrentPage(page);
-                      setOrderCurrentPage(page);
-                    }}
-                    className={`px-3 py-1 rounded ${currentPage === page ? "bg-main text-white" : "bg-gray-100"}`}
-                  >
-                    {page}
-                  </button>
-                ))}
+
+          {/* Right: Order Details or Empty State */}
+          <div className="col-span-12 lg:col-span-5">
+            {selectedOrder ? (
+              <OrderDetails order={selectedOrder} onEdit={handleEditOrder} />
+            ) : (
+              <div className="bg-white rounded-lg border h-full flex flex-col items-center justify-center text-center p-6">
+                <h3 className="text-xl font-bold text-main mb-1">لم يتم اختيار طلب</h3>
+                <p className="text-gray-500">قم بتحديد الطلب لمشاهدة تفاصيله هنا</p>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
     </div>

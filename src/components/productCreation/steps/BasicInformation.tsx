@@ -33,7 +33,7 @@ const BasicInformation = () => {
   const sectionId = form.watch("section_id") || searchParams[0].get("section_id");
   const { data: sections = [], isLoading } = useAdminEntityQuery("sections", {});
   const { data: categories = [], isLoading: isLoadingCategories } = useAdminEntityQuery("categories", {});
-
+  const { data: users = [], isLoading: isLoadingUsers } = useAdminEntityQuery("users");
   const isAdmin = user?.user?.user_type === "admin";
 
   // Set store_id from localStorage for non-admin users
@@ -57,16 +57,10 @@ const BasicInformation = () => {
         console.log("Category ID not found in options, resetting...");
         setValue("category_id", "");
       }
-
-      // If no category_id is set, set it to the first category
-      if (!currentCategoryId && categories.length > 0) {
-        console.log("No category_id set, setting to first category:", categories[0].id);
-        setValue("category_id", categories[0].id.toString());
-      }
     }
   }, [categories, form, setValue]);
 
-  if (isLoading || isLoadingCategories) return <Loader />;
+  if (isLoading || isLoadingCategories || isLoadingUsers) return <Loader />;
 
   const categoryOptions = categories.map((cat: any) => ({
     value: cat.id.toString(), // Convert to string to match form field type
@@ -83,6 +77,11 @@ const BasicInformation = () => {
 
   const section = sections.find((section: any) => section.id.toString() === sectionId);
   console.log(section, sections);
+  console.log(users);
+  const userOptions = users.map((user: any) => ({
+    value: user.id.toString(),
+    label: `${user.first_name} ${user.last_name}`,
+  }));
 
   return (
     <div className="space-y-6">
@@ -124,6 +123,16 @@ const BasicInformation = () => {
           options={categoryOptions}
           error={errors.category_id?.message as string}
         />
+        {isAdmin && (
+          <FormInput
+            select
+            placeholder="اختر المالك"
+            label="المالك"
+            name="owner_id"
+            options={userOptions}
+            error={errors.owner_id?.message as string}
+          />
+        )}
         {isAdmin && (
           <FormInput
             select

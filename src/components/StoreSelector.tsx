@@ -10,17 +10,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/context/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
-
-interface Store {
-  id: number;
-  name: string;
-  logo?: string;
-}
+import { ApiStore } from "@/types";
 
 const StoreSelector = () => {
-  const [selectedStore, setSelectedStore] = useState<Store | null>(null);
+  const [selectedStore, setSelectedStore] = useState<ApiStore | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const { logout } = useAuth();
+  const queryClient = useQueryClient();
+
   const { data: stores, isLoading } = useAdminEntityQuery(
     "stores",
     {
@@ -28,9 +25,9 @@ const StoreSelector = () => {
         type: "merchants/stores/my-stores",
       },
     },
-    false
+    "merchant"
   );
-  const queryClient = useQueryClient();
+
   useEffect(() => {
     // Set initial selected store from localStorage
     const storedId = localStorage.getItem("storeId");
@@ -44,10 +41,18 @@ const StoreSelector = () => {
     }
   }, [stores]);
 
-  const handleStoreSelect = (store: Store) => {
+  const handleStoreSelect = (store: ApiStore) => {
     setSelectedStore(store);
     localStorage.setItem("storeId", store.id.toString());
-    queryClient.invalidateQueries({ queryKey: ["merchant", "coupons"] });
+
+    // Invalidate and refetch all queries in the cache
+    queryClient.invalidateQueries();
+
+    // Optionally, you can also clear the entire cache
+    // queryClient.clear();
+
+    // Force refetch all active queries
+    queryClient.refetchQueries();
   };
 
   const filteredStores = stores?.filter((store) => store.name.toLowerCase().includes(searchQuery.toLowerCase()));

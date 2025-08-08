@@ -1,7 +1,19 @@
 "use client";
 
 import { Link, useLocation } from "react-router-dom";
-import { ChevronDown, Package, Users, Home, ShoppingCart, MoreHorizontal, Shirt, Store } from "lucide-react";
+import {
+  ChevronDown,
+  Package,
+  Users,
+  Home,
+  ShoppingCart,
+  MoreHorizontal,
+  Shirt,
+  Store,
+  ChartArea,
+  FileText,
+  Settings,
+} from "lucide-react";
 import StoreSelector from "./StoreSelector";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -69,9 +81,8 @@ const DashboardNavbar = () => {
 
             {/* Navigation Links */}
             <div className="hidden md:flex font-[500] items-center gap-2">
-              {/* Home */}
               <Button variant="ghost" className={getButtonStyles("/dashboard")} asChild>
-                <Link to="/dashboard">
+                <Link to={preLink}>
                   <Home className="w-4 h-4" />
                   الرئيسية
                 </Link>
@@ -97,11 +108,6 @@ const DashboardNavbar = () => {
                   >
                     <Link to={`${preLink}/stores/add`} className="w-full">
                       إضافة متجر
-                    </Link>
-                  </DropdownMenuItem>{" "}
-                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/coupons`) ? "bg-main  text-white" : ""}>
-                    <Link to={`${preLink}/coupons`} className="w-full">
-                      الكوبونات
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -161,35 +167,32 @@ const DashboardNavbar = () => {
                       إضافة منتج
                     </Link>
                   </DropdownMenuItem>
-                  {isAdmin && (
-                    <>
-                      {" "}
-                      <DropdownMenuItem
-                        className={isDropdownItemActive(`${preLink}/categories`) ? "bg-main text-white" : ""}
-                      >
-                        <Link to={`${preLink}/categories`} className="w-full">
-                          الفئات
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className={isDropdownItemActive(`${preLink}/attributes`) ? "bg-main text-white" : ""}
-                      >
-                        <Link to={`${preLink}/attributes`} className="w-full">
-                          الخصائص
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className={isDropdownItemActive(`${preLink}/sections`) ? "bg-main text-white" : ""}
-                      >
-                        <Link to={`${preLink}/sections`} className="w-full">
-                          الأقسام
-                        </Link>
-                      </DropdownMenuItem>
-                    </>
-                  )}
+                  <DropdownMenuItem
+                    className={isDropdownItemActive(`${preLink}/categories`) ? "bg-main text-white" : ""}
+                  >
+                    <Link to={`${preLink}/categories`} className="w-full">
+                      الفئات
+                    </Link>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              {!isAdmin && (
+                <Link to={`${preLink}/chat`}>
+                  <Button variant="ghost" className={getDropdownButtonStyles(`${preLink}/chat`)}>
+                    <ChartArea className="w-4 h-4" />
+                    الدردشة
+                  </Button>
+                </Link>
+              )}
 
+              {isAdmin && (
+                <Link to={`${preLink}/reports`}>
+                  <Button variant="ghost" className={getDropdownButtonStyles(`${preLink}/reports`)}>
+                    <FileText className="w-4 h-4" />
+                    الشكاوي
+                  </Button>
+                </Link>
+              )}
               {/* More Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -212,7 +215,6 @@ const DashboardNavbar = () => {
                       القصص
                     </Link>
                   </DropdownMenuItem>
-
                   <DropdownMenuItem className={isDropdownItemActive(`${preLink}/settings`) ? "bg-main text-white" : ""}>
                     <Link to={`${preLink}/settings`} className="w-full">
                       الإعدادات

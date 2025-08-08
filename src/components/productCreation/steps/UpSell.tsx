@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar, Tag, PlusCircle, Trash2, Shirt, Package } from "lucide-react";
+import { Tag, PlusCircle, Trash2, Shirt, Package } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
 import ModalCustom from "@/components/ModalCustom";
@@ -118,7 +118,7 @@ const AddDiscountModal = ({
   closeModal,
   products,
 }: {
-  onConfirm: (data: { price: number; date: string }) => void;
+  onConfirm: (data: { price: number }) => void;
   closeModal: () => void;
   products: RelatedProduct[];
 }) => {
@@ -134,21 +134,7 @@ const AddDiscountModal = ({
         <p className="text-3xl font-bold text-gray-800">₪ {originalPrice.toFixed(2)}</p>
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <FormInput
-          control={control}
-          name="temp_discount_price"
-          label="السعر المخفض"
-          type="number"
-          placeholder="800.00"
-        />
-        <FormInput
-          control={control}
-          name="temp_end_date"
-          label="تاريخ انتهاء العرض"
-          type="text"
-          placeholder="مايو 25, 2025 12:00 م"
-          icon={<Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />}
-        />
+        <FormInput control={control} name="up_sells_price" label="السعر المخفض" type="number" placeholder="800.00" />
       </div>
       <p className="text-xs text-gray-400 mt-2 text-right">يجب ان يكون اقل من السعر الاصلي</p>
       <div className="flex justify-between items-center mt-8">
@@ -160,9 +146,8 @@ const AddDiscountModal = ({
           <Button
             type="button"
             onClick={() => {
-              const discountPrice = control._formValues.temp_discount_price;
-              const endDate = control._formValues.temp_end_date;
-              onConfirm({ price: Number(discountPrice), date: endDate });
+              const discountPrice = control._formValues.up_sells_price;
+              onConfirm({ price: Number(discountPrice) });
               closeModal();
             }}
             className="bg-main text-white hover:bg-main/90"
@@ -183,17 +168,17 @@ const UpSell = () => {
 
   const { replace } = useFieldArray({
     control,
-    name: "upSells",
+    name: "crossSells",
   });
 
-  const upsellProductIds = watch("upSells") || [];
+  const upsellProductIds = watch("crossSells") || [];
   const selectedProducts = products.filter((product) => upsellProductIds.includes(product.id));
 
   console.log("UpSell debugging:", {
     upsellProductIds,
     selectedProducts,
     productsLength: products.length,
-    upSellsFromForm: watch("upSells"),
+    crossSellsFromForm: watch("crossSells"),
     formValues: watch(),
   });
 
@@ -201,15 +186,13 @@ const UpSell = () => {
     replace(productIds);
   };
 
-  const handleConfirmDiscount = ({ price, date }: { price: number; date: string }) => {
-    setValue("upsellDiscountPrice", price);
-    setValue("upsellDiscountEndDate", date);
+  const handleConfirmDiscount = ({ price }: { price: number }) => {
+    setValue("cross_sells_price", price);
   };
 
   const handleRemoveAll = () => {
     replace([]);
-    setValue("upsellDiscountPrice", undefined);
-    setValue("upsellDiscountEndDate", undefined);
+    setValue("cross_sells_price", undefined);
   };
   if (isLoading) return <div>Loading...</div>;
   return (

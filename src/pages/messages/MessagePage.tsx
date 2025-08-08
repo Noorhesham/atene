@@ -81,7 +81,7 @@ const MessagePage = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100 w-full">
       {/* People List - Hidden on mobile when chat is shown */}
       <div className={`${showMobileChat ? "hidden lg:flex" : "flex"} lg:flex`}>
         <People onSelectConversation={handleSelectConversation} selectedConversationId={selectedConversation?.id} />

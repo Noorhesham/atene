@@ -69,6 +69,31 @@ const StoreEmployeeManagement = () => {
     { value: "not-active", label: "غير نشط" },
   ];
 
+  // Arabic translations for job titles
+  const jobTitleTranslations: Record<string, string> = {
+    general_manager: "مدير عام",
+    store_data: "بيانات المتجر",
+    products_data: "بيانات المنتجات",
+    coupons_data: "بيانات الكوبونات",
+    orders_data: "بيانات الطلبات",
+  };
+
+  // Arabic translations for status values
+  const statusTranslations: Record<string, string> = {
+    active: "نشط",
+    "not-active": "غير نشط",
+    inactive: "غير نشط",
+    pending: "في انتظار الموافقة",
+  };
+
+  const getJobTitleTranslation = (title: string) => {
+    return jobTitleTranslations[title] || title;
+  };
+
+  const getStatusTranslation = (status: string) => {
+    return statusTranslations[status] || status;
+  };
+
   const validateEmployee = (data: typeof employeeData) => {
     const errors: Record<string, string> = {};
 
@@ -164,15 +189,17 @@ const StoreEmployeeManagement = () => {
   };
 
   const getStatusBadge = (status: string) => {
+    const translatedStatus = getStatusTranslation(status);
     switch (status) {
       case "active":
-        return <Badge className="bg-green-100 text-green-800">نشط</Badge>;
+        return <Badge className="bg-green-100 text-green-800">{translatedStatus}</Badge>;
       case "inactive":
-        return <Badge className="bg-red-100 text-red-800">غير نشط</Badge>;
+      case "not-active":
+        return <Badge className="bg-red-100 text-red-800">{translatedStatus}</Badge>;
       case "pending":
-        return <Badge className="bg-yellow-100 text-yellow-800">في انتظار الموافقة</Badge>;
+        return <Badge className="bg-yellow-100 text-yellow-800">{translatedStatus}</Badge>;
       default:
-        return <Badge>{status}</Badge>;
+        return <Badge>{translatedStatus}</Badge>;
     }
   };
 
@@ -226,7 +253,7 @@ const StoreEmployeeManagement = () => {
                           <tr key={index} className="border-b hover:bg-gray-50">
                             <td className="p-3">
                               <div className="flex items-center gap-3">
-                                <span className="font-medium">{emp.title}</span>
+                                <span className="font-medium">{getJobTitleTranslation(emp.title)}</span>
                               </div>
                             </td>
                             <td className="p-3">{getStatusBadge(emp.status)}</td>

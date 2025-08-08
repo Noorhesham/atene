@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
 import { ApiProduct, ApiCategory, BaseEntity } from "@/types";
 import EntityList from "@/components/EntityList";
-import { Link } from "react-router-dom";
 import { ProductCreationForm } from "@/components/productCreation";
 import Actions from "@/components/Actions";
 import ModalCustom from "@/components/ModalCustom";
@@ -19,10 +18,8 @@ import Loader from "@/components/Loader";
 
 const FILTER_CATEGORIES = [
   { name: "الكل", value: null },
-  { name: "منشور", value: "published" },
-  { name: "مسودة", value: "draft" },
-  { name: "نفذ من المخزون", value: "out_of_stock" },
-  { name: "مميز", value: "featured" },
+  { name: "منشور", value: "active" },
+  { name: "مغلق", value: "not-active" },
 ];
 
 interface FilterCategory {
