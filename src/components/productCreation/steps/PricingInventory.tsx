@@ -427,9 +427,7 @@ const VariantsForm = () => {
 
               <div className="overflow-x-auto">
                 <div
-                  className={`grid grid-cols-${
-                    variantAttributes.length + 3
-                  } gap-4 p-3 bg-[#F9FAFB] rounded-t-lg text-sm font-medium text-[#667085] min-w-[600px]`}
+                  className={`grid grid-cols-5 gap-4 p-3 bg-[#F9FAFB] rounded-t-lg text-sm font-medium text-[#667085] min-w-[600px]`}
                 >
                   {variantAttributes.map((attr: string) => {
                     // Find the attribute title from the attributes data
@@ -446,10 +444,11 @@ const VariantsForm = () => {
                 <div className="space-y-px min-w-[600px]">
                   {fields.map((field, index) => (
                     <div
+                      style={{
+                        gridTemplateColumns: `repeat(${variantAttributes.length + 4}, 1fr)`,
+                      }}
                       key={field.id}
-                      className={`grid grid-cols-${
-                        variantAttributes.length + 3
-                      } gap-4 items-center p-3 bg-white border border-[#E7EAEE] last:rounded-b-lg`}
+                      className={`grid  gap-4 items-center p-3 bg-white border border-[#E7EAEE] last:rounded-b-lg`}
                     >
                       {variantAttributes.map((attr: string) => {
                         const attribute = attributes.find(

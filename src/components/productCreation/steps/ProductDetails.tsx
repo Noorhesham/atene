@@ -13,7 +13,7 @@ type FormValues = {
   tags: { value: string }[];
   specifications: { icon: string; title: string }[];
   hasDelivery: boolean;
-  storeVisibility: string;
+  store_id: string;
   productType: string;
   mainCategory: string;
   subCategory: string;
@@ -55,7 +55,7 @@ const ProductDetails = () => {
     <div className=" flex flex-col gap-4 p-6">
       <FormInput
         select
-        name="storeVisibility"
+        name="store_id"
         label="إظهار المنتج في متجر"
         options={storeOptions}
         placeholder="المتجر الرئيسي"

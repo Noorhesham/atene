@@ -4,7 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useAdminEntityQuery, ApiAttribute, ApiAttributeOption } from "@/hooks/useUsersQuery";
+import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
+import { ApiAttribute, ApiAttributeOption } from "@/types";
 import FormInput from "@/components/inputs/FormInput";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -12,7 +13,7 @@ import toast from "react-hot-toast";
 
 // Schema for attribute option
 const attributeOptionSchema = z.object({
-  id: z.number().optional(),
+  id: z.union([z.string(), z.number()]).optional(),
   title: z.string().min(1, "عنوان الخيار مطلوب"),
   attribute_id: z.number().optional(),
 });
@@ -65,8 +66,8 @@ const AttributeCreation: React.FC<AttributeCreationProps> = ({ attribute }) => {
         status: attribute.status,
         options:
           attribute.options && attribute.options.length > 0
-            ? attribute.options.map((option) => ({
-                id: option.id,
+            ? attribute.options.map((option: ApiAttributeOption) => ({
+                id: option.id.toString(),
                 title: option.title,
                 attribute_id: option.attribute_id,
               }))
@@ -83,7 +84,6 @@ const AttributeCreation: React.FC<AttributeCreationProps> = ({ attribute }) => {
     if (options.length > 1) {
       removeOption(index);
     } else {
-      toast.error("يجب أن تحتوي الخاصية على خيار واحد على الأقل");
     }
   };
 
@@ -94,33 +94,32 @@ const AttributeCreation: React.FC<AttributeCreationProps> = ({ attribute }) => {
       const validOptions = data.options.filter((option) => option.title.trim() !== "");
 
       if (validOptions.length === 0) {
-        toast.error("يجب إضافة خيار واحد على الأقل");
         setIsSubmitting(false);
         return;
       }
 
       const attributeData = {
         ...data,
-        options: validOptions,
+        options: validOptions.map((option) => ({
+          ...option,
+          id: option.id?.toString() || undefined, // Only include id if it exists
+        })),
       };
 
       if (isEditMode) {
-        await updateAttribute(Number(id), attributeData);
-        toast.success("تم تحديث الخاصية بنجاح");
+        await updateAttribute(Number(id), attributeData as unknown as Partial<ApiAttribute>);
       } else {
-        await createAttribute(attributeData);
-        toast.success("تم إنشاء الخاصية بنجاح");
+        await createAttribute(attributeData as unknown as Partial<ApiAttribute>);
       }
 
       navigate("/admin/attributes");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error saving attribute:", error);
-      toast.error(error?.message || "حدث خطأ أثناء حفظ الخاصية");
     } finally {
       setIsSubmitting(false);
     }
   };
-
+  console.log(form.formState.errors);
   return (
     <div className="p-6 w-full mx-auto" dir="rtl">
       <div className="space-y-6">
@@ -145,7 +144,7 @@ const AttributeCreation: React.FC<AttributeCreationProps> = ({ attribute }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Attribute Title */}
                 <FormInput
-                  control={form.control}
+                  control={form.control as any}
                   name="title"
                   label="عنوان الخاصية"
                   placeholder="مثل: اللون، الحجم، الوزن..."
@@ -153,7 +152,7 @@ const AttributeCreation: React.FC<AttributeCreationProps> = ({ attribute }) => {
 
                 {/* Status */}
                 <FormInput
-                  control={form.control}
+                  control={form.control as any}
                   name="status"
                   label="حالة الخاصية"
                   select
@@ -180,7 +179,7 @@ const AttributeCreation: React.FC<AttributeCreationProps> = ({ attribute }) => {
                   <div key={field.id} className="flex items-end gap-3">
                     <div className="flex-1">
                       <FormInput
-                        control={form.control}
+                        control={form.control as any}
                         name={`options.${index}.title`}
                         label={`الخيار ${index + 1}`}
                         placeholder="مثل: أحمر، كبير، 1كغ..."

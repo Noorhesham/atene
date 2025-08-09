@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { FormMessage } from "@/components/ui/form";
 import MapAddressInput from "./MapAddressInput";
 import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
+import Loader from "@/components/Loader";
 const typeOptions = [{ value: "rings", label: "خواتم" }];
 const mainCategoryOptions = [{ value: "women-fashion", label: "أزياء - موضة نسائية" }];
 const subCategoryOptions = [{ value: "accessories", label: "اكسسوارات - مجوهرات" }];
@@ -22,7 +23,10 @@ const StoreBasicInfo = () => {
     formState: { errors },
   } = useFormContext();
   const { data: currencies } = useAdminEntityQuery("currencies");
+  const { data: users, isLoading } = useAdminEntityQuery("users");
+  const userOptions = users?.map((user) => ({ value: user.id.toString(), label: user.first_name + " " + user.last_name }));
   console.log(currencies);
+  if (isLoading) return <Loader />;
   return (
     <Card className="p-6 space-y-3">
       <h2 className="text-xl font-semibold text-gray-900">البيانات الأساسية</h2>
@@ -41,7 +45,7 @@ const StoreBasicInfo = () => {
         <p className="text-sm text-gray-500">المقاسات المفضلة 680 X 180</p>
         <FormInput photo name="cover" multiple mainCoverField="mainCover" maxFiles={10} />
       </div>
-
+      <FormInput select name="owner_id" label="المالك" options={userOptions} />
       {/* Store Description */}
       {/* <FormInput area name="storeDescription" label="وصف المتجر" placeholder="اكتب وصف متجرك..." /> */}
       <FormField

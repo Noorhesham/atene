@@ -90,6 +90,7 @@ const Chat: React.FC<ChatProps> = ({ selectedConversation, onBack }) => {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
+            storeId: localStorage.getItem("storeId"),
           },
         }
       );

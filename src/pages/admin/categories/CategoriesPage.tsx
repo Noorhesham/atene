@@ -3,134 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, ChevronRight, ChevronDown, Loader2, Trash2 } from "lucide-react";
+import { Plus, Search, Loader2, Trash2, FolderTree } from "lucide-react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import { useAdminEntityQuery, ApiCategory } from "@/hooks/useUsersQuery";
+import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
+import { ApiCategory } from "@/types";
 import { Pagination } from "@/components/ui/pagination";
 import ModalCustom from "@/components/ModalCustom";
 
 import CategoryCreation from "./add/CategoryCreation";
-
-interface CategoryWithSubs extends ApiCategory {
-  subCategories?: CategoryWithSubs[];
-}
-
-const CategoryTree: React.FC<{
-  categories: CategoryWithSubs[];
-  onDelete: (id: number) => Promise<void>;
-  level?: number;
-  onEdit: (category: CategoryWithSubs) => void;
-  showDeleteConfirm: number | null;
-  setShowDeleteConfirm: (id: number | null) => void;
-}> = ({ categories, onDelete, level = 0, onEdit, showDeleteConfirm, setShowDeleteConfirm }) => {
-  const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set());
-
-  const toggleExpanded = (categoryId: number) => {
-    const newExpanded = new Set(expandedCategories);
-    if (newExpanded.has(categoryId)) {
-      newExpanded.delete(categoryId);
-    } else {
-      newExpanded.add(categoryId);
-    }
-    setExpandedCategories(newExpanded);
-  };
-
-  return (
-    <div className={`space-y-2 ${level > 0 ? "mr-6 border-r border-gray-200 pr-4" : ""}`}>
-      {categories.map((category) => (
-        <div key={category.id} className="space-y-2">
-          <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {category.subCategories && category.subCategories.length > 0 && (
-                  <button onClick={() => toggleExpanded(category.id)} className="text-gray-500 hover:text-gray-700">
-                    {expandedCategories.has(category.id) ? (
-                      <ChevronDown className="w-4 h-4" />
-                    ) : (
-                      <ChevronRight className="w-4 h-4" />
-                    )}
-                  </button>
-                )}
-                <div className="flex items-center gap-3">
-                  {category.image ? (
-                    <img src={category.image} alt={category.name} className="w-10 h-10 rounded-md object-cover" />
-                  ) : (
-                    <div className="w-10 h-10 bg-gray-100 rounded-md flex items-center justify-center">
-                      <span className="text-gray-400 text-xs">صورة</span>
-                    </div>
-                  )}
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{category.name}</h3>
-                    <p className="text-sm text-gray-500">الرقم: {category.id}</p>
-                  </div>
-                </div>
-                <Badge variant={category.status === "active" ? "default" : "secondary"}>
-                  {category.status === "active" ? "نشط" : "غير نشط"}
-                </Badge>
-              </div>
-              <div className="flex items-center w-fit mr-auto gap-2">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onEdit(category)}
-                    className="text-blue-600 hover:text-blue-700"
-                  >
-                    تعديل
-                  </Button>
-                  <ModalCustom
-                    isOpen={showDeleteConfirm === category.id}
-                    onOpenChange={(isOpen) => !isOpen && setShowDeleteConfirm(null)}
-                    btn={
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowDeleteConfirm(category.id)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4 ml-2" />
-                        حذف
-                      </Button>
-                    }
-                    title="تأكيد الحذف"
-                    content={
-                      <p className="text-center">
-                        هل أنت متأكد من حذف هذا التصنيف؟ سيتم حذف جميع التصنيفات الفرعية أيضاً. لا يمكن التراجع عن هذا
-                        الإجراء.
-                      </p>
-                    }
-                    functionalbtn={
-                      <div className="flex gap-2 w-full justify-end">
-                        <Button variant="ghost" onClick={() => setShowDeleteConfirm(null)}>
-                          إلغاء
-                        </Button>
-                        <Button variant="destructive" onClick={() => onDelete(category.id)}>
-                          حذف
-                        </Button>
-                      </div>
-                    }
-                  />
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {category.subCategories && category.subCategories.length > 0 && expandedCategories.has(category.id) && (
-            <CategoryTree
-              categories={category.subCategories}
-              onDelete={onDelete}
-              onEdit={onEdit}
-              level={level + 1}
-              showDeleteConfirm={showDeleteConfirm}
-              setShowDeleteConfirm={setShowDeleteConfirm}
-            />
-          )}
-        </div>
-      ))}
-    </div>
-  );
-};
 
 const CategoriesPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -158,33 +39,6 @@ const CategoriesPage: React.FC = () => {
     },
   });
 
-  // Transform flat categories into hierarchical structure
-  const buildCategoryTree = (cats: ApiCategory[]): CategoryWithSubs[] => {
-    const categoryMap = new Map<number, CategoryWithSubs>();
-    const rootCategories: CategoryWithSubs[] = [];
-
-    // First pass: create all category objects
-    cats.forEach((cat) => {
-      categoryMap.set(cat.id, { ...cat, subCategories: [] });
-    });
-
-    // Second pass: build hierarchy
-    cats.forEach((cat) => {
-      const categoryWithSubs = categoryMap.get(cat.id)!;
-      if (cat.parent_id === null) {
-        rootCategories.push(categoryWithSubs);
-      } else {
-        const parent = categoryMap.get(cat.parent_id);
-        if (parent) {
-          parent.subCategories = parent.subCategories || [];
-          parent.subCategories.push(categoryWithSubs);
-        }
-      }
-    });
-
-    return rootCategories;
-  };
-
   const handleDelete = async (id: number) => {
     try {
       await remove(id);
@@ -201,8 +55,6 @@ const CategoriesPage: React.FC = () => {
     setCurrentPage(1);
     setApiCurrentPage(1);
   };
-
-  const categoryTree = buildCategoryTree(categories);
 
   if (isLoading) {
     return (
@@ -226,7 +78,7 @@ const CategoriesPage: React.FC = () => {
   }
 
   return (
-    <div className="flex  w-full h-full" dir="rtl">
+    <div className="flex w-full h-full" dir="rtl">
       <div className="flex-1 h-fit sticky top-0 p-6 space-y-6">
         {/* Main Content */}
         <div className="space-y-6">
@@ -236,12 +88,20 @@ const CategoriesPage: React.FC = () => {
               <h1 className="text-2xl font-bold text-gray-900">إدارة التصنيفات</h1>
               <p className="text-gray-600">إدارة تصنيفات المنتجات والفئات الفرعية</p>
             </div>
-            <Link to="/admin/categories/add">
-              <Button className="bg-main hover:bg-main/90">
-                <Plus className="w-4 h-4 ml-2" />
-                إضافة تصنيف جديد
-              </Button>
-            </Link>
+            <div className="flex gap-2">
+              <Link to="/admin/categories/tree">
+                <Button variant="outline" className="flex items-center gap-2">
+                  <FolderTree className="w-4 h-4" />
+                  إدارة الهيكل
+                </Button>
+              </Link>
+              <Link to="/admin/categories/add">
+                <Button className="bg-main hover:bg-main/90">
+                  <Plus className="w-4 h-4 ml-2" />
+                  إضافة تصنيف جديد
+                </Button>
+              </Link>
+            </div>
           </div>
 
           {/* Search and Filters */}
@@ -265,17 +125,80 @@ const CategoriesPage: React.FC = () => {
             </div>
           </Card>
 
-          {/* Categories Tree */}
+          {/* Categories List */}
           <div className="space-y-4">
-            {categoryTree.length > 0 ? (
+            {categories.length > 0 ? (
               <>
-                <CategoryTree
-                  categories={categoryTree}
-                  onDelete={handleDelete}
-                  onEdit={setSelectedCategory}
-                  showDeleteConfirm={showDeleteConfirm}
-                  setShowDeleteConfirm={setShowDeleteConfirm}
-                />
+                <div className="grid gap-4">
+                  {categories.map((category) => (
+                    <Card key={category.id} className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          {category.image ? (
+                            <img
+                              src={category.image}
+                              alt={category.name}
+                              className="w-10 h-10 rounded-md object-cover"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 bg-gray-100 rounded-md flex items-center justify-center">
+                              <span className="text-gray-400 text-xs">صورة</span>
+                            </div>
+                          )}
+                          <div>
+                            <h3 className="font-semibold text-gray-900">{category.name}</h3>
+                            <p className="text-sm text-gray-500">الرقم: {category.id}</p>
+                            {category.parent_id && <p className="text-xs text-blue-600">تصنيف فرعي</p>}
+                          </div>
+                          <Badge variant={category.status === "active" ? "default" : "secondary"}>
+                            {category.status === "active" ? "نشط" : "غير نشط"}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedCategory(category)}
+                            className="text-blue-600 hover:text-blue-700"
+                          >
+                            تعديل
+                          </Button>
+                          <ModalCustom
+                            isOpen={showDeleteConfirm === category.id}
+                            onOpenChange={(isOpen) => !isOpen && setShowDeleteConfirm(null)}
+                            btn={
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setShowDeleteConfirm(category.id)}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <Trash2 className="w-4 h-4 ml-2" />
+                                حذف
+                              </Button>
+                            }
+                            title="تأكيد الحذف"
+                            content={
+                              <p className="text-center">
+                                هل أنت متأكد من حذف هذا التصنيف؟ لا يمكن التراجع عن هذا الإجراء.
+                              </p>
+                            }
+                            functionalbtn={
+                              <div className="flex gap-2 w-full justify-end">
+                                <Button variant="ghost" onClick={() => setShowDeleteConfirm(null)}>
+                                  إلغاء
+                                </Button>
+                                <Button variant="destructive" onClick={() => handleDelete(category.id)}>
+                                  حذف
+                                </Button>
+                              </div>
+                            }
+                          />
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
 
                 {/* Pagination and Per Page */}
                 {totalPages > 1 && (

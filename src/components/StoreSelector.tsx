@@ -56,7 +56,6 @@ const StoreSelector = () => {
   };
 
   const filteredStores = stores?.filter((store) => store.name.toLowerCase().includes(searchQuery.toLowerCase()));
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -129,7 +128,6 @@ const StoreSelector = () => {
             ))
           )}
           <DropdownMenuItem>
-            {" "}
             <button
               onClick={() => {
                 logout();

@@ -71,6 +71,7 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
   const form = useForm<StoreFormData>({
     resolver: zodResolver(storeSchema),
     defaultValues: {
+      owner_id: user?.user?.id.toString() || "",
       name: "",
       logo: null,
       cover: [],
@@ -102,6 +103,7 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
   useEffect(() => {
     if (store) {
       form.reset({
+        owner_id: store.owner_id.toString() || "",
         name: store.name || "",
         logo: store.logo || null,
         cover: store.cover || [],
@@ -134,13 +136,14 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
       });
     }
   }, [store, form]);
-
+  const isAdmin = user?.user?.user_type === "admin";
   const steps = [
     {
       id: 1,
       title: "البيانات الأساسية",
       component: <StoreBasicInfo />,
       fields: [
+        ...(isAdmin ? ["owner_id"] : []),
         "name",
         "logo",
         "cover",
@@ -215,6 +218,7 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
 
       // Prepare the data for API submission using the provided structure
       const apiData = {
+        ...(isAdmin ? { owner_id: parseInt(data.owner_id as string) } : {}),
         name: data.name,
         logo: data.logo,
         cover: data.cover,

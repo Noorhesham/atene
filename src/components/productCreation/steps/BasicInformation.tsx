@@ -11,7 +11,7 @@ import { useEffect } from "react";
 import Loader from "@/components/Loader";
 
 const statusOptions = [
-  { value: "not_active", label: "مسودة" },
+  { value: "not-active", label: "مسودة" },
   { value: "active", label: "منشور" },
 ];
 

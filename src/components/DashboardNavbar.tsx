@@ -13,6 +13,7 @@ import {
   ChartArea,
   FileText,
   Settings,
+  LogOut,
 } from "lucide-react";
 import StoreSelector from "./StoreSelector";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +30,7 @@ import { useAuth } from "@/context/AuthContext";
 import Loader from "./Loader";
 
 const DashboardNavbar = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, logout } = useAuth();
   const location = useLocation();
 
   if (isLoading) return <Loader />;
@@ -115,36 +116,11 @@ const DashboardNavbar = () => {
 
               {/* Orders Dropdown */}
               {!isAdmin && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className={getDropdownButtonStyles(`${preLink}/orders`)}>
-                      <ShoppingCart className="w-4 h-4" />
-                      الطلبات
-                      <ChevronDown className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48 text-right">
-                    <DropdownMenuItem className={isDropdownItemActive(`${preLink}/orders`) ? "bg-main text-white" : ""}>
-                      <Link to={`${preLink}/orders`} className="w-full">
-                        جميع الطلبات
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className={isDropdownItemActive(`${preLink}/orders/pending`) ? "bg-main text-white" : ""}
-                    >
-                      <Link to={`${preLink}/orders/pending`} className="w-full">
-                        الطلبات المعلقة
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className={isDropdownItemActive(`${preLink}/orders/completed`) ? "bg-main text-white" : ""}
-                    >
-                      <Link to={`${preLink}/orders/completed`} className="w-full">
-                        الطلبات المكتملة
-                      </Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <Button variant="ghost" className={getDropdownButtonStyles(`${preLink}/orders`)}>
+                  <Link to={`${preLink}/orders`} className="w-full">
+                    جميع الطلبات
+                  </Link>
+                </Button>
               )}
 
               {/* Products Dropdown */}
@@ -169,13 +145,40 @@ const DashboardNavbar = () => {
                       إضافة منتج
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className={isDropdownItemActive(`${preLink}/categories`) ? "bg-main text-white" : ""}
-                  >
-                    <Link to={`${preLink}/categories`} className="w-full">
-                      الفئات
-                    </Link>
-                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <>
+                      <DropdownMenuItem
+                        className={isDropdownItemActive(`${preLink}/categories`) ? "bg-main text-white" : ""}
+                      >
+                        <Link to={`${preLink}/categories`} className="w-full">
+                          الفئات
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className={isDropdownItemActive(`${preLink}/attributes`) ? "bg-main text-white" : ""}
+                      >
+                        <Link to={`${preLink}/attributes`} className="w-full">
+                          الخصائص
+                        </Link>
+                      </DropdownMenuItem>
+                      {!isAdmin && (
+                        <DropdownMenuItem
+                          className={isDropdownItemActive(`${preLink}/coupons`) ? "bg-main text-white" : ""}
+                        >
+                          <Link to={`${preLink}/coupons`} className="w-full">
+                            الكوبونات
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuItem
+                        className={isDropdownItemActive(`${preLink}/sections`) ? "bg-main text-white" : ""}
+                      >
+                        <Link to={`${preLink}/sections`} className="w-full">
+                          القسم
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
               {!isAdmin && (
@@ -212,11 +215,15 @@ const DashboardNavbar = () => {
                       </Link>
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem className={isDropdownItemActive(`${preLink}/stories`) ? "bg-main  text-white" : ""}>
-                    <Link to={`${preLink}/stories`} className="w-full">
-                      القصص
-                    </Link>
-                  </DropdownMenuItem>
+                  {!isAdmin && (
+                    <DropdownMenuItem
+                      className={isDropdownItemActive(`${preLink}/stories`) ? "bg-main  text-white" : ""}
+                    >
+                      <Link to={`${preLink}/stories`} className="w-full">
+                        القصص
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   {isAdmin && (
                     <DropdownMenuItem
                       className={isDropdownItemActive(`${preLink}/settings`) ? "bg-main text-white" : ""}
@@ -234,19 +241,26 @@ const DashboardNavbar = () => {
           {/* Left Side - Search, Notifications, Profile */}
           <div className="flex items-center gap-4">
             {/* Search */}
-            <div className="flex rounded-[10px] bg-[#F6EED8] items-center gap-1 px-4 py-1">
-              <img src="/image 22.svg" alt="" />
-              <span className="text-[#444] font-[18px]">0 نقطة </span>
-            </div>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M8 13.5H16M8 8.5H12M6.099 19C4.79967 18.872 3.824 18.4813 3.172 17.828C2 16.657 2 14.771 2 11V10.5C2 6.729 2 4.843 3.172 3.672C4.344 2.501 6.229 2.5 10 2.5H14C17.771 2.5 19.657 2.5 20.828 3.672C21.999 4.844 22 6.729 22 10.5V11C22 14.771 22 16.657 20.828 17.828C19.656 18.999 17.771 19 14 19C13.44 19.012 12.993 19.055 12.555 19.155C11.356 19.431 10.246 20.045 9.15 20.579C7.587 21.341 6.806 21.722 6.316 21.365C5.378 20.667 6.295 18.502 6.5 17.5"
-                stroke="#38587A"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
+            {!isAdmin && (
+              <div className="flex rounded-[10px] bg-[#F6EED8] items-center gap-1 px-4 py-1">
+                <img src="/image 22.svg" alt="" />
+                <span className="text-[#444] font-[18px]">0 نقطة </span>
+              </div>
+            )}
+            {!isAdmin && (
+              <Link to={`${preLink}/chat`}>
+                {" "}
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M8 13.5H16M8 8.5H12M6.099 19C4.79967 18.872 3.824 18.4813 3.172 17.828C2 16.657 2 14.771 2 11V10.5C2 6.729 2 4.843 3.172 3.672C4.344 2.501 6.229 2.5 10 2.5H14C17.771 2.5 19.657 2.5 20.828 3.672C21.999 4.844 22 6.729 22 10.5V11C22 14.771 22 16.657 20.828 17.828C19.656 18.999 17.771 19 14 19C13.44 19.012 12.993 19.055 12.555 19.155C11.356 19.431 10.246 20.045 9.15 20.579C7.587 21.341 6.806 21.722 6.316 21.365C5.378 20.667 6.295 18.502 6.5 17.5"
+                    stroke="#38587A"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </Link>
+            )}
             {/* Notifications */}
             <Popover>
               <PopoverTrigger asChild>
@@ -297,7 +311,35 @@ const DashboardNavbar = () => {
               </PopoverContent>
             </Popover>
             {/* User Profile */}
-            <StoreSelector />
+            {!isAdmin && <StoreSelector />}
+            {isAdmin && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-2 bg-white rounded-lg px-4 py-2">
+                    <div className="w-8 h-8 rounded-lg bg-main/10 flex items-center justify-center">
+                      <Users className="w-4 h-4 text-[#2D496A]" />
+                    </div>
+                    <div className="flex flex-col items-start">
+                      <span className="text-sm font-medium text-[#2D496A]">المدير</span>
+                      <span className="text-xs text-gray-500">Admin</span>
+                    </div>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-[200px] text-right p-2" align="end">
+                  <DropdownMenuItem>
+                    <button
+                      onClick={() => {
+                        logout();
+                      }}
+                      className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+                    >
+                      <LogOut size={16} />
+                      <span>تسجيل الخروج</span>
+                    </button>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
       </MaxWidthDashboard>

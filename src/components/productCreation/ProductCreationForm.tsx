@@ -50,7 +50,7 @@ const productFormSchema = z.object({
   category_id: z.string().min(1, "يجب اختيار فئة واحدة على الأقل"),
   client_id: z.string().optional(),
   status: z
-    .enum(["not_active", "active"], {
+    .enum(["not-active", "active"], {
       errorMap: () => ({ message: "يرجى اختيار حالة صحيحة للمنتج" }),
     })
     .optional(), // Make status optional
@@ -63,7 +63,7 @@ const productFormSchema = z.object({
   images: z.array(z.string()).min(1, "يجب إضافة صورة واحدة على الأقل"),
 
   // Second form fields with clearer messages
-  storeVisibility: z.string().min(1, "يرجى اختيار المتجر الذي سيتم عرض المنتج فيه"),
+  store_id: z.string().min(1, "يرجى اختيار المتجر الذي سيتم عرض المنتج فيه"),
   tags: z.array(z.object({ value: z.string() })).optional(),
   specifications: z
     .array(
@@ -199,14 +199,14 @@ const ProductCreationForm = ({
       section_id: sectionIdFromParams || "1",
       category_id: "",
       client_id: isAdmin ? "" : user?.user?.id?.toString() || "",
-      status: user?.user?.user_type === "admin" ? "active" : "not_active", // Set default status based on user type
+      status: user?.user?.user_type === "admin" ? "active" : "not-active", // Set default status based on user type
       condition: "new",
       shortDescription: "",
       description: "",
       cover: "",
       images: [],
       // Second form default values
-      storeVisibility: "",
+      store_id: "",
       tags: [],
       specifications: [],
 
@@ -216,7 +216,7 @@ const ProductCreationForm = ({
       variants: [],
 
       upSells: [],
-      cross_sells_price: undefined,
+      cross_sells_price: "",
       crossSells: [],
     },
     mode: "onChange",
@@ -248,9 +248,9 @@ const ProductCreationForm = ({
         tags: product.tags?.map((tag: string) => ({ value: tag })) || [],
         cover: product.cover || "",
         images: product.gallary || [],
-        storeVisibility: product.store_id?.toString() || "",
+        store_id: product.store_id?.toString() || "",
         client_id: product.client_id?.toString() || "",
-        status: product.status === "active" ? "active" : "not_active",
+        status: product.status === "active" ? "active" : "not-active",
         hasVariations: product.type === "variation",
         cross_sells_price: product.cross_sells_price?.toString() || "",
         variantAttributes:
@@ -542,7 +542,7 @@ const ProductCreationForm = ({
       id: 2,
       title: "تفاصيل المنتج",
       component: <ProductDetails />,
-      fields: ["storeVisibility", "tags", "specifications"],
+      fields: ["store_id", "tags", "specifications"],
     },
     {
       id: 3,

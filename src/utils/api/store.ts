@@ -36,9 +36,9 @@ export const getStoreReviews = async (storeId: string): Promise<ReviewsResponse>
   return response.json();
 };
 
-const getAuthHeaders = (storeId?: string) => {
+const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
-  const currentStoreId = storeId || getCurrentStoreId();
+  const currentStoreId = localStorage.getItem("storeId");
 
   return {
     "Content-Type": "application/json",

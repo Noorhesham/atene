@@ -56,7 +56,7 @@ const MessagePage = () => {
       // Fetch the specific conversation and auto-select it
       const loadConversation = async () => {
         try {
-          const response = await conversationAPI.getConversations();
+          const response = await conversationAPI.getConversations(localStorage.getItem("storeId") || "");
           if (response.status) {
             const conversation = response.conversations.find((conv) => conv.id === state.conversationId);
             if (conversation) {

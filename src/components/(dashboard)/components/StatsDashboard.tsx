@@ -24,13 +24,14 @@ interface StatsDashboardProps {
 
 const StatsDashboard = ({ data }: StatsDashboardProps) => {
   // Calculate percentages
+  console.log(data);
   const totalOrders = data?.totalOrders || 0;
   const completedPercentage = totalOrders > 0 ? Math.round((data?.totalCompletedOrders / totalOrders) * 100) : 0;
   const canceledPercentage = totalOrders > 0 ? Math.round((data?.totalCanceledOrders / totalOrders) * 100) : 0;
 
   // Format chart data
   const lineChartData =
-    data?.storesGrowthChart.map((item) => ({
+    data?.productsGrowthChart.map((item) => ({
       name: new Date(item.date).toLocaleDateString("ar-EG-u-nu-latn", { day: "2-digit", month: "2-digit" }),
       value: item.count,
     })) || [];

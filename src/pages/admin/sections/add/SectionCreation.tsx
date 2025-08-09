@@ -14,6 +14,7 @@ import type { Section } from "@/types/product";
 // Section schema
 const sectionSchema = z.object({
   name: z.string().min(1, "اسم القسم مطلوب"),
+  status: z.enum(["active", "not-active"]),
 });
 
 type SectionFormData = z.infer<typeof sectionSchema>;
@@ -35,6 +36,7 @@ const SectionCreation: React.FC<SectionCreationProps> = ({ section }) => {
     resolver: zodResolver(sectionSchema),
     defaultValues: {
       name: "",
+      status: "not-active",
     },
   });
 
@@ -43,6 +45,7 @@ const SectionCreation: React.FC<SectionCreationProps> = ({ section }) => {
     if (isEditMode && section) {
       form.reset({
         name: section.name,
+        status: section.status,
       });
     }
   }, [isEditMode, section, form]);
@@ -52,20 +55,17 @@ const SectionCreation: React.FC<SectionCreationProps> = ({ section }) => {
     try {
       if (isEditMode && section) {
         await updateSection(section.id, data);
-        toast.success("تم تحديث القسم بنجاح");
       } else {
         await createSection(data);
-        toast.success("تم إنشاء القسم بنجاح");
       }
       navigate("/admin/sections");
     } catch (error: any) {
       const errorMessage = error?.response?.data?.message || "حدث خطأ أثناء حفظ القسم";
-      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
-
+  console.log(form.formState.errors);
   return (
     <div className="p-6 w-full" dir="rtl">
       {/* Header */}
@@ -90,6 +90,17 @@ const SectionCreation: React.FC<SectionCreationProps> = ({ section }) => {
               label="اسم القسم"
               placeholder="مثال: الإلكترونيات، الملابس، المجوهرات"
               description="اسم القسم كما سيظهر للمستخدمين"
+            />
+            <FormInput
+              select
+              options={[
+                { value: "active", label: "نشط" },
+                { value: "not-active", label: "غير نشط" },
+              ]}
+              name="status"
+              label="حالة القسم"
+              placeholder="مثال: نشط، غير نشط"
+              description="حالة القسم كما سيظهر للمستخدمين"
             />
 
             {/* Submit Button */}

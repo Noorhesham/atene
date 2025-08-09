@@ -123,7 +123,9 @@ const AddDiscountModal = ({
   products: RelatedProduct[];
 }) => {
   const originalPrice = products.reduce((sum, p) => sum + p.price, 0);
-  const { control } = useFormContext();
+  const { control, watch, setValue } = useFormContext();
+  const currentPrice = watch("cross_sells_price") || "";
+  const [discountPrice, setDiscountPrice] = useState(currentPrice.toString());
 
   return (
     <div className="p-6" dir="rtl">
@@ -134,7 +136,16 @@ const AddDiscountModal = ({
         <p className="text-3xl font-bold text-gray-800">₪ {originalPrice.toFixed(2)}</p>
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <FormInput control={control} name="up_sells_price" label="السعر المخفض" type="number" placeholder="800.00" />
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">السعر المخفض</label>
+          <input
+            type="number"
+            value={discountPrice}
+            onChange={(e) => setDiscountPrice(e.target.value)}
+            placeholder="800.00"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-main focus:border-transparent"
+          />
+        </div>
       </div>
       <p className="text-xs text-gray-400 mt-2 text-right">يجب ان يكون اقل من السعر الاصلي</p>
       <div className="flex justify-between items-center mt-8">
@@ -146,11 +157,15 @@ const AddDiscountModal = ({
           <Button
             type="button"
             onClick={() => {
-              const discountPrice = control._formValues.up_sells_price;
-              onConfirm({ price: Number(discountPrice) });
-              closeModal();
+              if (discountPrice && Number(discountPrice) > 0) {
+                // Save to form immediately
+                setValue("cross_sells_price", Number(discountPrice));
+                onConfirm({ price: Number(discountPrice) });
+                closeModal();
+              }
             }}
             className="bg-main text-white hover:bg-main/90"
+            disabled={!discountPrice || Number(discountPrice) <= 0}
           >
             تأكيد
           </Button>

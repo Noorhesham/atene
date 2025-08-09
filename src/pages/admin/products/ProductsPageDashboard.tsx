@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Search, ChevronLeft, Plus, MoreHorizontal, Package, Star, Trash2 } from "lucide-react";
+import { Search, ChevronLeft, Package, Star, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import { useAuth } from "@/context/AuthContext";
 import SectionsPopover from "@/components/SectionsPopover";
 import { useLocation } from "react-router-dom";
 import Loader from "@/components/Loader";
+import { API_BASE_URL } from "@/constants/api";
 
 const FILTER_CATEGORIES = [
   { name: "الكل", value: null },
@@ -120,7 +121,7 @@ export default function ProductsPageDashboard() {
     setSearchQuery,
     totalRecords,
     remove: deleteProduct,
-    update: updateProduct,
+    refetch,
   } = useAdminEntityQuery("products", {
     initialPerPage: 10,
     queryParams: {
@@ -133,7 +134,7 @@ export default function ProductsPageDashboard() {
   // Fetch categories for filter
   const { data: categories = [], isLoading: isLoadingCategories } = useAdminEntityQuery("categories");
   const { data: stores = [], isLoading: isLoadingStores } = useAdminEntityQuery("stores");
-  const { user, isLoading: isLoadingUser } = useAuth();
+  const { user } = useAuth();
   console.log(stores);
   const [selectedProduct, setSelectedProduct] = useState<ApiProduct | null>(null);
   const [searchInput, setSearchInput] = useState("");
@@ -164,6 +165,44 @@ export default function ProductsPageDashboard() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  // Function to update product status
+  const updateProductStatus = async (product: ApiProduct) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_BASE_URL}/admin/products/${product.id}/update-status`, {
+        method: "POST",
+        body: JSON.stringify({
+          status: product.status === "active" ? "not-active" : "active",
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to update product status");
+      }
+
+      toast.success("تم تغيير حالة المنتج بنجاح");
+
+      // Update the selected product state to reflect the new status
+      setSelectedProduct((prev) =>
+        prev
+          ? ({
+              ...prev,
+              status: prev.status === "active" ? "inactive" : "active",
+            } as ApiProduct)
+          : null
+      );
+
+      refetch(); // Revalidate the products data
+    } catch (error) {
+      console.error("Failed to update product status:", error);
+      toast.error("فشل تغيير حالة المنتج");
+    }
   };
 
   const renderProductItem = (product: ApiProduct) => {
@@ -276,17 +315,12 @@ export default function ProductsPageDashboard() {
           {selectedProduct ? (
             <>
               <Actions
-                title="إجراءات المنتج"
                 isActive={selectedProduct.status === "active"}
+                title="إجراءات المنتج"
                 onApprove={
                   user?.user.user_type === "admin"
                     ? async () => {
-                        try {
-                          await updateProduct(selectedProduct.id, { status: "active" });
-                          toast.success("تم تفعيل المنتج بنجاح");
-                        } catch (error) {
-                          console.error("Failed to update product status:", error);
-                        }
+                        await updateProductStatus(selectedProduct);
                       }
                     : undefined
                 }

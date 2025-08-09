@@ -27,11 +27,11 @@ import UserCreation from "./pages/admin/users/add/UserCreation";
 import StoreManagementPage from "./pages/admin/store/StoreManagment";
 import StoreCratePage from "./pages/admin/store/add/StoreCratePage";
 import CategoriesPage from "./pages/admin/categories/CategoriesPage";
+import CategoryTreePage from "./pages/admin/categories/CategoryTreePage";
 import ProductsPageDashboard from "./pages/admin/products/ProductsPageDashboard";
 import CategoryCreatePage from "./pages/admin/categories/add/CategoryCreatPage";
 import AttributesPage from "./pages/admin/attributes/AttributesPage";
 import AttributeCreatPage from "./pages/admin/attributes/add/AttributeCreatPage";
-import CategoryTreeView from "./pages/admin/categories/add/CategoryTreeView";
 import StoriesPage from "./pages/admin/stories/StoriesPage";
 import FollowersPage from "./pages/admin/followers/FollowersPage";
 import SectionsPage from "./pages/admin/sections/SectionsPage";
@@ -39,6 +39,7 @@ import SectionCreatPage from "./pages/admin/sections/add/SectionCreatPage";
 import ReportsPage from "./pages/admin/reports/ReportsPage";
 import SettingsPage from "./pages/SettingsPage/SettingsPage";
 import AdminAnalysis from "./pages/admin/analysis/AdminAnalysis";
+import CategoryTreeView from "./pages/admin/categories/add/CategoryTreeView";
 
 // Admin Layout Component
 const AdminLayout = () => {
@@ -158,7 +159,7 @@ function App() {
           <Route path="orders" element={<OrdersPage />} />
           <Route path="categories">
             <Route index element={<CategoriesPage />} />
-            <Route path="trees" element={<CategoryTreeView />} />
+            <Route path="tree" element={<CategoryTreeView />} />
             <Route path="add" element={<CategoryCreatePage />} />
             <Route path="edit/:id" element={<CategoryCreatePage />} />
           </Route>

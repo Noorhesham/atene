@@ -54,11 +54,10 @@ const CategoryTreeView: React.FC<CategoryTreeViewProps> = ({ isUpdating }) => {
     try {
       await Promise.all(updates.map((update) => updateParent([{ id: update.id, parent_id: update.parent_id }])));
       await refetch();
-      toast.success("تم حفظ التغييرات بنجاح");
+
       setHasChanges(false);
     } catch (error) {
       console.error("Error updating parent relationships:", error);
-      toast.error("حدث خطأ أثناء حفظ التغييرات");
     }
   };
 

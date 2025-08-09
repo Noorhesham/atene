@@ -5,41 +5,21 @@ import StatsDashboard from "./StatsDashboard";
 import { WatchStats, FollowersStats } from "./Dash1";
 import { Button } from "@/components/ui/button";
 import { useMemo } from "react";
-import { useAnalyticsQuery } from "@/hooks/useAnalytics";
+import { useAnalyticsQuery } from "@/hooks/useAnalyticsMerchant";
+import { CustomerOriginAnalytics } from "@/pages/admin/analysis/AdminAnalysis";
 
 const DashboardHome = () => {
   // Fetch all necessary analytics data
   const { data: contentData, isLoading: isLoadingContent } = useAnalyticsQuery("content", "current_month");
-  const { data: customersData, isLoading: isLoadingCustomers } = useAnalyticsQuery("customers", "current_month");
   const { data: overviewData, isLoading: isLoadingOverview } = useAnalyticsQuery("analytics");
   const { data: latestsData, isLoading: isLoadingLatests } = useAnalyticsQuery("latests");
+  const { data: followersData, isLoading: isLoadingFollowers } = useAnalyticsQuery("followers");
 
   // Memoize processed data to prevent re-renders
   const latestsOrders = useMemo(() => latestsData?.latestsOrders || [], [latestsData]);
-  const topCustomers = useMemo(() => {
-    if (!latestsData?.latestsOrders) return [];
-    // Creating a "Top Customers" list from recent orders as a placeholder
-    const customerMap = new Map();
-    latestsData.latestsOrders.forEach((order) => {
-      if (order.client) {
-        if (!customerMap.has(order.client.id)) {
-          customerMap.set(order.client.id, {
-            id: order.client.id,
-            name: `${order.client.first_name || ""} ${order.client.last_name || ""}`.trim() || order.client.email,
-            orders: 0,
-            amount: 0,
-          });
-        }
-        const customer = customerMap.get(order.client.id);
-        customer.orders += 1;
-        customer.amount += order.total;
-      }
-    });
-    return Array.from(customerMap.values()).map((c) => ({ ...c, amount: c.amount.toFixed(2) }));
-  }, [latestsData]);
 
   // Handle loading state for the entire page
-  if (isLoadingContent || isLoadingCustomers || isLoadingOverview || isLoadingLatests) {
+  if (isLoadingContent || isLoadingOverview || isLoadingLatests || isLoadingFollowers) {
     return (
       <div className="min-h-screen w-full bg-gray-50 flex items-center justify-center">
         <p>Loading Dashboard...</p>
@@ -54,7 +34,7 @@ const DashboardHome = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="flex flex-col gap-6">
             <StatsDashboard data={contentData} />
-            <CustomerDistributionChart data={customersData?.customers} />
+            <CustomerOriginAnalytics />
           </div>
 
           <div className="grid grid-cols-1 gap-6">
@@ -65,7 +45,7 @@ const DashboardHome = () => {
               <Button className="bg-gradient-to-l w-full from-[#FFCA67] to-[#FFA600]">شراء النقاط</Button>
             </div>
             <WatchStats data={overviewData} chartData={contentData?.storesGrowthChart} />
-            <FollowersStats data={customersData?.customers} />
+            <FollowersStats data={followersData?.followers} />
           </div>
         </div>
 
@@ -100,7 +80,7 @@ const DashboardHome = () => {
           <div className="bg-white p-6 rounded-lg shadow-sm ">
             <h2 className="text-xl font-semibold mb-4">أبرز العملاء</h2>
             <div className="space-y-3">
-              {topCustomers.slice(0, 5).map((customer) => (
+              {/* {topCustomers.slice(0, 5).map((customer) => (
                 <div key={customer.id} className="flex items-center justify-between py-2 border-b border-gray-100">
                   <div>
                     <p className="font-medium text-gray-900">{customer.name}</p>
@@ -110,7 +90,7 @@ const DashboardHome = () => {
                     <p className="font-semibold text-gray-900">{customer.amount} ريال</p>
                   </div>
                 </div>
-              ))}
+              ))} */}
             </div>
           </div>
         </div>

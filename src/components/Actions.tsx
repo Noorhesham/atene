@@ -12,36 +12,42 @@ const getEntityActionLabel = (
   entityType: keyof EntityTypeMap | string,
   action: "approve" | "edit" | "delete"
 ): string => {
-  const entityLabels: Record<string, { approve: string; edit: string; delete: string }> = {
+  const entityLabels: Record<string, { approve: string; edit: string; delete: string; deactive: string }> = {
     stores: {
       approve: "موافقة المتجر",
       edit: "تعديل بيانات المتجر",
       delete: "حذف المتجر",
+      deactive: "تعطيل المتجر",
     },
     roles: {
       approve: "تفعيل الدور",
       edit: "تعديل الدور",
       delete: "حذف الدور",
+      deactive: "تعطيل الدور",
     },
     users: {
       approve: "تفعيل المستخدم",
       edit: "تعديل بيانات المستخدم",
       delete: "حذف المستخدم",
+      deactive: "تعطيل المستخدم",
     },
     products: {
       approve: "تفعيل المنتج",
       edit: "تعديل بيانات المنتج",
       delete: "حذف المنتج",
+      deactive: "تعطيل المنتج",
     },
     categories: {
       approve: "تفعيل الفئة",
       edit: "تعديل الفئة",
       delete: "حذف الفئة",
+      deactive: "تعطيل الفئة",
     },
     attributes: {
       approve: "تفعيل الخاصية",
       edit: "تعديل الخاصية",
       delete: "حذف الخاصية",
+      deactive: "تعطيل الخاصية",
     },
   };
 
@@ -223,12 +229,20 @@ const Actions = ({
           <h2 className="text-lg font-semibold text-gray-900 mb-4">{title}</h2>
 
           <div className="flex gap-3">
-            {!isActive && onApprove && (
+            {onApprove && (
               <ActionButton
                 icon={<Check size={16} className="ml-2" />}
-                label={getEntityActionLabel(entityType || "stores", "approve")}
+                label={
+                  isActive
+                    ? getEntityActionLabel(entityType || "stores", "deactive")
+                    : getEntityActionLabel(entityType || "stores", "approve")
+                }
                 onClick={onApprove}
-                className="bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 rounded-lg px-4 py-2 text-sm font-medium"
+                className={
+                  isActive
+                    ? "bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 rounded-lg px-4 py-2 text-sm font-medium"
+                    : "bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 rounded-lg px-4 py-2 text-sm font-medium"
+                }
                 disabled={isUpdating}
                 loading={isUpdating}
               />

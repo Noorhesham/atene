@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Search, ChevronLeft, Mail, MapPin, User, DollarSign, MessageSquare, Plus, ArrowUpDown } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
@@ -121,9 +121,9 @@ const StoreDetails = ({ store, onStoreDeleted }: { store: ApiStore; onStoreDelet
   const token = localStorage.getItem("token");
   const updateStoreStatus = async (store: ApiStore) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/stores/update-status`, {
+      const res = await fetch(`${API_BASE_URL}/admin/stores/${store.id}/update-status`, {
         method: "POST",
-        body: JSON.stringify({ ...store }),
+        body: JSON.stringify({ status: store.status === "active" ? "not-active" : "active" }),
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -133,8 +133,8 @@ const StoreDetails = ({ store, onStoreDeleted }: { store: ApiStore; onStoreDelet
       if (!res.ok) {
         throw new Error("Failed to update store status");
       }
-      toast.success("تم تفعيل المتجر بنجاح");
-      storeQuery.refetch();
+      toast.success("تم تحديث حالة المتجر");
+      await storeQuery.refetch();
     } catch (error) {
       console.error("Failed to update store status:", error);
       toast.error("فشل تفعيل المتجر");
@@ -290,6 +290,16 @@ export default function StoreManagementPage() {
   const [selectedStoreId, setSelectedStoreId] = useState<number | null>(null);
   const { user } = useAuth();
   const { data: stores = [] } = useAdminEntityQuery("stores");
+
+  // Revalidate the currently selected store instance after any list refetch
+  // Ensures details panel reflects the latest status immediately after updates
+  useEffect(() => {
+    if (!selectedStore) return;
+    const updated = stores.find((s) => s.id === selectedStore.id);
+    if (updated && updated !== selectedStore) {
+      setSelectedStore(updated);
+    }
+  }, [stores, selectedStore]);
 
   // Update filter categories with counts
   const filterCategories = [...FILTER_CATEGORIES].map((cat) => ({

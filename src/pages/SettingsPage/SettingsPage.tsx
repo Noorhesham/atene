@@ -27,7 +27,7 @@ interface Settings {
 }
 
 const settingsSchema = z.object({
-  name: z.string().min(2, "اسم المتجر مطلوب"),
+  name: z.string().min(2, "اسم الموقع مطلوب"),
   logo: z.any().optional(),
   email: z.string().email("بريد إلكتروني غير صالح").optional(),
   phone: z.string().optional(),
@@ -101,13 +101,13 @@ export default function SettingsPage() {
             <CardHeader>بيانات اساسية</CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                <FormInput name="storeName" label="اسم المتجر" placeholder="T-Shirt" />
+                <FormInput name="storeName" label="اسم الموقع" placeholder="T-Shirt" />
                 <FormInput name="email" label="البريد الإلكتروني" placeholder="email@example.com" optional />
                 <PhoneNumberInput name="phone" label="رقم الهاتف" icon={<PhoneIcon />} />
                 <FormInput name="whatsapp" label="رقم الواتساب" placeholder="0123456789" optional />
 
-                <FormInput name="logo" label="شعار المتجر" photo placeholder="شعار المتجر" optional />
-                <FormInput name="cover" label="غلاف المتجر" photo placeholder="غلاف المتجر" optional />
+                <FormInput name="logo" label="شعار الموقع" photo placeholder="شعار الموقع" optional />
+                <FormInput name="cover" label="غلاف الموقع" photo placeholder="غلاف الموقع" optional />
               </div>
             </CardContent>
           </Card>
