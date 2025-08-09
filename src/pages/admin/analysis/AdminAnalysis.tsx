@@ -702,7 +702,7 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, outerRadius, payload }: PieLa
 
 export const CustomerOriginAnalytics = () => {
   return (
-    <div className="bg-white rounded-xl w-full shadow-sm p-6 w-full " dir="rtl">
+    <div className="bg-white h-full rounded-xl w-full shadow-sm p-6 w-full " dir="rtl">
       <h2 className="text-lg font-bold text-gray-800 mb-6 text-right">من أين أتى العملاء</h2>
       <div className="flex items-center justify-between">
         <div className="w-1/3 h-48">

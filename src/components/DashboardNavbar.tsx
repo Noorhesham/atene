@@ -122,7 +122,16 @@ const DashboardNavbar = () => {
                   </Link>
                 </Button>
               )}
-
+              {!isAdmin && (
+                <Button
+                  variant="ghost"
+                  className={isDropdownItemActive(`${preLink}/coupons`) ? "bg-main text-white" : ""}
+                >
+                  <Link to={`${preLink}/coupons`} className="w-full">
+                    الكوبونات
+                  </Link>
+                </Button>
+              )}
               {/* Products Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -144,7 +153,7 @@ const DashboardNavbar = () => {
                     <Link to={`${preLink}/products/add`} className="w-full">
                       إضافة منتج
                     </Link>
-                  </DropdownMenuItem>
+                  </DropdownMenuItem>{" "}
                   {isAdmin && (
                     <>
                       <DropdownMenuItem
@@ -161,15 +170,7 @@ const DashboardNavbar = () => {
                           الخصائص
                         </Link>
                       </DropdownMenuItem>
-                      {!isAdmin && (
-                        <DropdownMenuItem
-                          className={isDropdownItemActive(`${preLink}/coupons`) ? "bg-main text-white" : ""}
-                        >
-                          <Link to={`${preLink}/coupons`} className="w-full">
-                            الكوبونات
-                          </Link>
-                        </DropdownMenuItem>
-                      )}
+
                       <DropdownMenuItem
                         className={isDropdownItemActive(`${preLink}/sections`) ? "bg-main text-white" : ""}
                       >

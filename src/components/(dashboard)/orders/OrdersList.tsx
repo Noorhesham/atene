@@ -1,5 +1,9 @@
 import { Edit, Trash, User as UserIcon, Mail, Phone } from "lucide-react";
 import { ApiOrder } from "@/types";
+import { useState } from "react";
+import ModalCustom from "@/components/ModalCustom";
+import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
+import toast from "react-hot-toast";
 
 export const OrdersList = ({
   orders,
@@ -51,7 +55,25 @@ export const OrdersList = ({
     </div>
   </div>
 );
+
 export const OrderDetails = ({ order, onEdit }: { order: ApiOrder; onEdit: (order: ApiOrder) => void }) => {
+  const [orderToDelete, setOrderToDelete] = useState<ApiOrder | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { remove: deleteOrder, refetch } = useAdminEntityQuery("orders");
+
+  const handleDelete = async (orderToDelete: ApiOrder) => {
+    setIsDeleting(true);
+    try {
+      await deleteOrder(orderToDelete.id);
+      refetch();
+      setOrderToDelete(null);
+    } catch (error) {
+      console.error("Failed to delete order:", error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const InfoRow = ({ label, value, icon }: { label: string; value: string | number; icon: React.ReactNode }) => (
     <div className="flex items-center gap-2 text-sm">
       <span className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-lg">{icon}</span>
@@ -61,6 +83,7 @@ export const OrderDetails = ({ order, onEdit }: { order: ApiOrder; onEdit: (orde
       </div>
     </div>
   );
+
   console.log(order);
   return (
     <div className="bg-white rounded-lg border border-gray-200 h-full p-4 overflow-y-auto">
@@ -73,9 +96,51 @@ export const OrderDetails = ({ order, onEdit }: { order: ApiOrder; onEdit: (orde
           >
             <Edit className="w-4 h-4" /> تعديل الطلب
           </button>
-          <button className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-700 rounded-md text-sm font-semibold hover:bg-red-100">
-            <Trash className="w-4 h-4" /> حذف الطلب
-          </button>
+          <ModalCustom
+            isOpen={!!orderToDelete}
+            onOpenChange={(isOpen: boolean) => !isOpen && setOrderToDelete(null)}
+            btn={
+              <button
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-700 rounded-md text-sm font-semibold hover:bg-red-100"
+                onClick={() => setOrderToDelete(order)}
+              >
+                <Trash className="w-4 h-4" /> حذف الطلب
+              </button>
+            }
+            title="تأكيد حذف الطلب"
+            content={
+              <div className="flex flex-col items-center justify-center py-8 px-4">
+                <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-6">
+                  <Trash size={32} className="text-red-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">هل أنت متأكد من حذف هذا الطلب؟</h3>
+                {orderToDelete && (
+                  <p className="text-gray-600 text-center mb-2">
+                    سيتم حذف الطلب: <span className="font-medium">#{orderToDelete.reference_id}</span>
+                  </p>
+                )}
+                <p className="text-red-600 text-sm text-center mb-8">
+                  لا يمكن التراجع عن هذا الإجراء وسيتم حذف الطلب نهائياً
+                </p>
+                <div className="flex gap-3 w-full max-w-sm">
+                  <button
+                    className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-red-700 disabled:bg-red-300"
+                    onClick={() => orderToDelete && handleDelete(orderToDelete)}
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? "جاري الحذف..." : "تأكيد الحذف"}
+                  </button>
+                  <button
+                    className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-semibold hover:bg-gray-300"
+                    onClick={() => setOrderToDelete(null)}
+                    disabled={isDeleting}
+                  >
+                    إلغاء
+                  </button>
+                </div>
+              </div>
+            }
+          />
         </div>
       </div>
 

@@ -210,12 +210,11 @@ export default function ProductsPageDashboard() {
 
     const getStatusInfo = (status: string) => {
       switch (status) {
-        case "published":
+        case "active":
           return { text: "منشور", class: "text-green-600" };
-        case "draft":
-          return { text: "مسودة", class: "text-yellow-600" };
-        case "private":
-          return { text: "خاص", class: "text-gray-600" };
+
+        case "not-active":
+          return { text: "مغلق", class: "text-gray-600" };
         default:
           return { text: status, class: "text-gray-600" };
       }
@@ -242,7 +241,7 @@ export default function ProductsPageDashboard() {
             )}
           </div>
           <div className="flex items-center gap-2 mt-1">
-            <span className={`text-xs font-semibold ${statusInfo.class}`}>● {statusInfo.text}</span>
+            <span className={`text-xs text-right font-semibold ${statusInfo.class}`}>● {statusInfo.text}</span>
             <span className="text-xs text-gray-500">المخزون: {product.stock_quantity}</span>
             {product.featured && <Star size={12} className="text-yellow-500 fill-current" />}
           </div>
