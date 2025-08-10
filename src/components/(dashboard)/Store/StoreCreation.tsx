@@ -286,7 +286,7 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
   });
 
   return (
-    <section className="w-full ">
+    <section className="w-full bg-gray-50 ">
       <FormProvider {...form}>
         <form onSubmit={handleSubmit}>
           <div className="mx-auto w-full p-4 sm:p-6 lg:p-8 min-h-screen" dir="rtl">

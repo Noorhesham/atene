@@ -10,7 +10,7 @@ const StorePreview = () => {
   const storeCover = watch("cover");
   console.log(storeCover);
   return (
-    <Card className="p-6 bg-gray-50 rounded-lg">
+    <Card className="p-6 bg-white rounded-lg">
       <h3 className="text-lg font-bold mb-4 text-center text-main">معاينة صفحة المتجر</h3>
       {/* Browser-like frame */}
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-3 mx-auto  w-full">
