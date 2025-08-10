@@ -11,7 +11,7 @@ const StoreProgressSteps = ({
   currentStep: number;
   onStepClick: (step: number) => void;
 }) => {
-  const arabicNumerals = ["١", "٢", "٣", "٤"];
+  const arabicNumerals = ["١", "٢", "٣", "٤", "٥"];
   return (
     <MaxWidthWrapper noPadding className="relative w-full">
       <div className="relative flex justify-between items-start">
@@ -37,7 +37,8 @@ const StoreProgressSteps = ({
           return (
             <div key={step.id} className="flex flex-col items-center text-center z-10 bg-gray-50 px-2">
               <div className={circleClasses} onClick={() => onStepClick(step.id)}>
-                {isCompleted ?                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                {isCompleted ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <path
                       d="M5 14.5C5 14.5 6.5 14.5 8.5 18C8.5 18 14.059 8.833 19 7"
                       stroke="white"
@@ -45,7 +46,10 @@ const StoreProgressSteps = ({
                       stroke-linecap="round"
                       stroke-linejoin="round"
                     />
-                  </svg> : arabicNumerals[index]}
+                  </svg>
+                ) : (
+                  arabicNumerals[index]
+                )}
               </div>
               <p className="mt-2 text-sm font-semibold text-gray-600">{step.title}</p>
             </div>
