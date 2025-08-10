@@ -304,7 +304,7 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
                 onStepClick={(clickStep) => setCurrentStep(clickStep)}
               />
             </div>
-
+            {/* 
             <div className="flex items-center justify-between mt-8">
               <h1 className="text-2xl font-semibold text-gray-900">
                 {isEditMode ? "تعديل المتجر" : "إنشاء متجر جديد"}
@@ -318,7 +318,7 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
                   ? "تحديث المتجر"
                   : "حفظ المتجر"}
               </Button>
-            </div>
+            </div> */}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start mt-8">
               {/* Form Accordion Column */}
