@@ -17,6 +17,7 @@ import Loader from "@/components/Loader";
 import { API_BASE_URL } from "@/constants/api";
 import { PaginatedList } from "@/components/admin/PaginatedList";
 import Order from "@/components/Order";
+import StatusIndicator from "@/components/StatusIndicator";
 
 const FILTER_CATEGORIES = [
   { name: "الكل", value: null },
@@ -52,12 +53,11 @@ const FilterPanel = ({
         {statusCategories.map((cat, index) => (
           <li key={index}>
             <button
+              style={{
+                backgroundColor: activeStatusFilter === cat.value ? "rgba(91, 136, 186, 0.20)" : "transparent",
+              }}
               onClick={() => onStatusFilterChange(cat.value)}
-              className={`w-full text-right px-4 text-main py-2.5 rounded-md text-sm font-medium flex justify-between items-center ${
-                activeStatusFilter === cat.value
-                  ? "bg-blue-50 text-[rgba(91, 136, 186, 0.20)]"
-                  : "text-gray-600 hover:bg-gray-100"
-              }`}
+              className={`w-full text-right px-4 py-4 rounded-md text-sm font-medium flex justify-between items-center`}
             >
               <span>{cat.name}</span>
               {activeStatusFilter === cat.value && <ChevronLeft size={16} />}
@@ -73,12 +73,11 @@ const FilterPanel = ({
       <ul>
         <li>
           <button
+            style={{
+              backgroundColor: activeCategoryFilter === null ? "rgba(91, 136, 186, 0.20)" : "transparent",
+            }}
             onClick={() => onCategoryFilterChange(null)}
-            className={`w-full text-right px-4 text-main py-2.5 rounded-md text-sm font-medium flex justify-between items-center ${
-              activeCategoryFilter === null
-                ? "bg-blue-50 text-[rgba(91, 136, 186, 0.20)]"
-                : "text-gray-600 hover:bg-gray-100"
-            }`}
+            className={`w-full text-right px-4 text-main py-2.5 rounded-md text-sm font-medium flex justify-between items-center`}
           >
             <span>جميع الفئات</span>
             {activeCategoryFilter === null && <ChevronLeft size={16} />}
@@ -217,12 +216,12 @@ export default function ProductsPageDashboard() {
     const currentPrice = product.sale_price || product.price;
     console.log(product);
     return (
-      <div className="flex items-center gap-3 p-3 border-b">
+      <div className="flex items-center gap-3 p-3 border-b border-input">
         {/* Middle: Product Info */}
         <input
           checked={selectedProduct?.id === product.id}
           type="checkbox"
-          className="w-5 h-5 rounded border-2 border-gray-300 text-main focus:ring-2 focus:ring-main focus:ring-offset-2 focus:ring-offset-white cursor-pointer transition-all duration-200 ease-in-out hover:border-main checked:bg-main checked:border-main checked:hover:bg-main/90"
+          className="w-5 h-5 rounded border-1 border-input text-main focus:ring-2 focus:ring-main focus:ring-offset-2 focus:ring-offset-white cursor-pointer transition-all duration-200 ease-in-out hover:border-main checked:bg-main checked:border-main checked:hover:bg-main/90"
           aria-label={`اختر المنتج ${product.name}`}
           title={`اختر المنتج ${product.name}`}
         />
@@ -255,10 +254,11 @@ export default function ProductsPageDashboard() {
           </div>
         </div>{" "}
         {/* Left Side: Price */}
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 flex flex-col">
           <p className="text-base font-semibold flex flex-row-reverse gap-1 text-[#393939] whitespace-nowrap">
             <span>₪ {"  "}</span> {currentPrice}
           </p>
+          <StatusIndicator status={product.status} />
         </div>
       </div>
     );

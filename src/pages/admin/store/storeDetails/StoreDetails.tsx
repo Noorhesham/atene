@@ -9,7 +9,6 @@ import { Phone, Whatsapp, YoutubeIcon, FacebookIcon, InstagramIcon, TikTokIcon, 
 import { Card } from "@/components/ui/card";
 import Actions from "@/components/Actions";
 import { MapPinIcon } from "lucide-react";
-import { formatDate } from "date-fns";
 
 interface InfoItemProps {
   icon: React.ReactNode;
@@ -171,6 +170,18 @@ const StoreDetails = ({ store, onStoreDeleted }: { store: ApiStore; onStoreDelet
                   alt={store.name}
                   className="w-[75px] h-[75px]  object-cover border-4 border-white shadow-md"
                 />
+              </div>
+            </div>
+            {/* Price and Status Section */}
+            <div className="flex items-center justify-between mt-4 mb-6">
+              <div className="flex flex-col items-start">
+                <p className="text-2xl font-bold text-gray-800">₪ 927.00</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <p className="text-sm text-gray-500">{store.status === "active" ? "مفعل" : "معطل"}</p>
+                  <div
+                    className={`w-2 h-2 rounded-full ${store.status === "active" ? "bg-green-500" : "bg-red-500"}`}
+                  ></div>
+                </div>
               </div>
             </div>
             <h3 className="text-lg text-right font-bold mb-8 mt-9 text-black">البيانات الاساسيه للمتجر</h3>
@@ -338,7 +349,7 @@ const StoreDetails = ({ store, onStoreDeleted }: { store: ApiStore; onStoreDelet
                   <div className="mx-4 flex text-right">
                     <div className="  mx-3">
                       <p className="font-semibold text-base  text-black">{manager.title || "موظف"}</p>
-                      <p className="text-sm text-main underline">{manager.user.phone || "غير متوفر"}</p>
+                      <p className="text-sm text-main underline">{manager.email || "غير متوفر"}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <a
@@ -397,10 +408,8 @@ const StoreDetails = ({ store, onStoreDeleted }: { store: ApiStore; onStoreDelet
                       <p className="text-sm text-black  ">{manager.email || "غير متوفر"}</p>
                     </div>
                     <div className="flex flex-col gap-1">
-                      <p className="text-sm text-[#717171]"> تاريخ الانضمام </p>
-                      <p className="text-sm text-black  ">
-                        {formatDate(manager.user?.created_at, "dd/MM/yyyy") || "غير محدد"}
-                      </p>
+                      <p className="text-sm text-[#717171]"> الحالة </p>
+                      <p className="text-sm text-black  ">{manager.status || "غير محدد"}</p>
                     </div>
                   </div>
                 </div>

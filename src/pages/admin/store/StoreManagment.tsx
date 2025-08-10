@@ -8,7 +8,7 @@ import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import Loader from "@/components/Loader";
-
+import StatusIndicator from "@/components/StatusIndicator";
 import StoreDetails from "./storeDetails/StoreDetails";
 import Order from "@/components/Order";
 
@@ -71,12 +71,6 @@ const StoreListItem = ({
   isSelected: boolean;
   onSelect: (store: ApiStore) => void;
 }) => {
-  const StatusIndicator = ({ status }: { status: string }) => (
-    <span className={`text-xs font-semibold ${status === "active" ? "text-[#1FC16B]" : "text-yellow-600"}`}>
-      ● {status === "active" ? "مفعل" : "معطل"}
-    </span>
-  );
-
   return (
     <div
       className="flex items-center overflow-hidden gap-3 p-3 border-b border-input  cursor-pointer hover:bg-gray-50 transition-colors duration-200"
