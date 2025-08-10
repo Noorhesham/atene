@@ -37,20 +37,20 @@ const FilterPanel = ({
   activeFilter: string | null;
   onFilterChange: (filter: string | null) => void;
 }) => (
-  <div className="w-full">
-    <div className="px-4">
-      <h3 className="font-bold text-gray-800 mb-4">تصفية</h3>
+  <div className="w-full shadow-sm rounded-lg">
+    <div className="pb-20">
       <ul className="space-y-1">
         {categories?.map((cat, index) => (
           <li key={index}>
             <button
+              style={{
+                backgroundColor: activeFilter === cat.value ? "rgba(91, 136, 186, 0.20)" : "transparent",
+              }}
               onClick={() => onFilterChange(cat.value)}
-              className={`w-full text-right px-4 py-2.5 rounded-md text-sm font-medium flex justify-between items-center ${
-                activeFilter === cat.value ? "bg-blue-50 text-blue-700" : "text-gray-600 hover:bg-gray-100"
-              }`}
+              className={`w-full text-right px-4 py-4 rounded-md text-sm font-medium flex justify-between items-center`}
             >
               <div className="flex items-center gap-2">
-                <span>{cat.name}</span>
+                <span className=" text-main">{cat.name}</span>
                 <span className="text-xs text-gray-500">({cat.count || 0})</span>
               </div>
               {activeFilter === cat.value && <ChevronLeft size={16} />}
@@ -79,7 +79,7 @@ const StoreListItem = ({
 
   return (
     <div
-      className="flex items-center gap-3 p-3 border-b cursor-pointer hover:bg-gray-50 transition-colors duration-200"
+      className="flex items-center overflow-hidden gap-3 p-3 border-b border-input  cursor-pointer hover:bg-gray-50 transition-colors duration-200"
       onClick={() => onSelect(store)}
     >
       <input
@@ -100,7 +100,7 @@ const StoreListItem = ({
       />
       <div className="flex-1 flex justify-between items-start">
         <div className="flex flex-col gap-1">
-          <p className="font-semibold text-gray-800">{store.name}</p>
+          <p className="font-semibold text-black text-[12.174px]">{store.name}</p>
           {isSelected && <span className="text-xs text-[#AAA] font-[500]">المتجر الاساسي</span>}
         </div>
         <StatusIndicator status={store.status} />
@@ -182,14 +182,8 @@ export default function StoreManagementPage() {
 
       <div className="grid grid-cols-12 gap-6 items-start">
         {/* Right Panel: Filters */}
-        <div className="col-span-12 lg:col-span-2">
-          <Card className="p-0">
-            <FilterPanel
-              categories={filterCategories}
-              activeFilter={statusFilter}
-              onFilterChange={handleFilterChange}
-            />
-          </Card>
+        <div className="col-span-12 bg-white lg:col-span-2">
+          <FilterPanel categories={filterCategories} activeFilter={statusFilter} onFilterChange={handleFilterChange} />
         </div>
 
         {/* Middle Panel: Store List */}
@@ -202,7 +196,7 @@ export default function StoreManagementPage() {
             </div>
             <Order orderDir={orderDir} setOrderDir={handleOrderChange} />
           </div>
-          <Card className="p-0">
+          <Card className="p-0 shadow-sm rounded-lg">
             <PaginatedList<ApiStore>
               entityName="stores"
               selectedItem={selectedStore}

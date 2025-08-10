@@ -73,7 +73,7 @@ const People: React.FC<PeopleProps> = ({ onSelectConversation, selectedConversat
   // Filter conversations based on search term
   const filteredConversations = conversations.filter((conversation) => {
     const otherParticipant = conversation.participants.find((p) => p.participant_data.id !== user?.user?.id);
-    return otherParticipant?.participant_data.name.toLowerCase().includes(searchTerm.toLowerCase());
+    return otherParticipant?.participant_data?.name?.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
   // Get the other participant in a direct conversation

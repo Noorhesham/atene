@@ -9,7 +9,7 @@ import { Phone, Whatsapp, YoutubeIcon, FacebookIcon, InstagramIcon, TikTokIcon, 
 import { Card } from "@/components/ui/card";
 import Actions from "@/components/Actions";
 import { MapPinIcon } from "lucide-react";
-import { formatDate } from "@/utils/cn";
+import { formatDate } from "date-fns";
 
 interface InfoItemProps {
   icon: React.ReactNode;
@@ -28,6 +28,55 @@ const StoreDetails = ({ store, onStoreDeleted }: { store: ApiStore; onStoreDelet
   const [collapsed, setCollapsed] = useState(true);
 
   const token = localStorage.getItem("token");
+
+  // Helper function to translate days to Arabic
+  const translateDay = (day: string) => {
+    const dayMap: { [key: string]: string } = {
+      monday: "الاثنين",
+      tuesday: "الثلاثاء",
+      wednesday: "الأربعاء",
+      thursday: "الخميس",
+      friday: "الجمعة",
+      saturday: "السبت",
+      sunday: "الأحد",
+    };
+    return dayMap[day.toLowerCase()] || day;
+  };
+
+  // Helper function to format time in Arabic format
+  const formatTimeArabic = (time: string) => {
+    if (!time) return "غير محدد";
+
+    try {
+      // Parse the time string (assuming it's in HH:MM format)
+      const [hours, minutes] = time.split(":").map(Number);
+
+      if (isNaN(hours) || isNaN(minutes)) return time;
+
+      let period = "";
+      let displayHours = hours;
+
+      if (hours >= 12) {
+        period = "مساءً";
+        if (hours > 12) {
+          displayHours = hours - 12;
+        }
+      } else {
+        period = "صباحاً";
+        if (hours === 0) {
+          displayHours = 12;
+        }
+      }
+
+      // Format with leading zeros and Arabic text
+      const formattedHours = displayHours.toString().padStart(2, "0");
+      const formattedMinutes = minutes.toString().padStart(2, "0");
+
+      return `${formattedHours}:${formattedMinutes} ${period}`;
+    } catch {
+      return time; // Return original if parsing fails
+    }
+  };
 
   const updateStoreStatus = async (store: ApiStore) => {
     try {
@@ -168,7 +217,7 @@ const StoreDetails = ({ store, onStoreDeleted }: { store: ApiStore; onStoreDelet
                   }
                   title="الوصف"
                 >
-                  <p className="whitespace-pre-wrap">{store.description || "لا يوجد وصف متاح"}</p>
+                  <p className="whitespace-pre-wrap text-[#8E8E8E]">{store.description || "لا يوجد وصف متاح"}</p>
                 </InfoItem>
 
                 <InfoItem
@@ -284,14 +333,13 @@ const StoreDetails = ({ store, onStoreDeleted }: { store: ApiStore; onStoreDelet
                 >
                   {" "}
                   <div className="relative w-10 h-10 rounded-full overflow-hidden">
-                    <img
-                      src={manager.user.avatar_url}
-                      alt={manager.user.first_name}
-                      className="object-cover w-full h-full"
-                    />
+                    <img src="/placeholder.png" alt="Manager Avatar" className="object-cover w-full h-full" />
                   </div>
-                  <div className="mx-4 flex-col flex text-right">
-                    <p className="font-semibold text-black">{manager.user.first_name + " " + manager.user.last_name}</p>
+                  <div className="mx-4 flex text-right">
+                    <div className="  mx-3">
+                      <p className="font-semibold text-base  text-black">{manager.title || "موظف"}</p>
+                      <p className="text-sm text-main underline">{manager.user.phone || "غير متوفر"}</p>
+                    </div>
                     <div className="flex items-center gap-2">
                       <a
                         href={`mailto:${manager.email}`}
@@ -341,16 +389,18 @@ const StoreDetails = ({ store, onStoreDeleted }: { store: ApiStore; onStoreDelet
                     <div className="flex flex-col gap-1">
                       <p className="text-sm text-[#717171]">الدور الوظيفي </p>
                       <p className="text-sm text-black  ">
-                        {manager.title === "general_manager" ? "مدير عام" : manager.title}
+                        {manager.title === "general_manager" ? "مدير عام" : manager.title || "غير محدد"}
                       </p>
                     </div>
                     <div className="flex flex-col gap-1">
                       <p className="text-sm text-[#717171]">البريد الالكتروني </p>
-                      <p className="text-sm text-black  ">{manager.user.email}</p>
+                      <p className="text-sm text-black  ">{manager.email || "غير متوفر"}</p>
                     </div>
                     <div className="flex flex-col gap-1">
-                      <p className="text-sm text-[#717171]"> اخر تاريخ دخول </p>
-                      <p className="text-sm text-black  ">{formatDate(manager.user?.last_login_at)}</p>
+                      <p className="text-sm text-[#717171]"> تاريخ الانضمام </p>
+                      <p className="text-sm text-black  ">
+                        {formatDate(manager.user?.created_at, "dd/MM/yyyy") || "غير محدد"}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -364,20 +414,20 @@ const StoreDetails = ({ store, onStoreDeleted }: { store: ApiStore; onStoreDelet
 
           <div className="space-y-4">
             {/* Headers */}
-            <div className="grid grid-cols-3 gap-4 text-sm text-gray-400">
+            <div className="grid grid-cols-3 max-w-lg text-right gap-4 text-sm text-gray-400">
               <p className="font-bold text-right">اليوم</p>
-              <p className="text-center">يفتح في</p>
-              <p className="text-left">يغلق في</p>
+              <p className="">يفتح في</p>
+              <p className="">يغلق في</p>
             </div>
 
             {/* Working Times List (showing first 2 from the image) */}
-            <div className="space-y-3">
+            <div className="space-y-3  max-w-lg">
               {store.workingtimes && store.workingtimes.length > 0 ? (
                 store.workingtimes.slice(0, collapsed ? 2 : store.workingtimes.length).map((wh) => (
                   <div key={wh.id} className="grid grid-cols-3 gap-4 text-sm items-center">
-                    <p className="font-bold text-gray-800 text-right">{wh.day || "غير محدد"}</p>
-                    <p className="text-gray-600 text-center">{wh.from || "غير محدد"}</p>
-                    <p className="text-gray-600 text-left">{wh.to || "غير محدد"}</p>
+                    <p className="font-bold text-gray-800 text-right">{translateDay(wh.day || "غير محدد")}</p>
+                    <p className="text-gray-600 text-right">{formatTimeArabic(wh.from || "غير محدد")}</p>
+                    <p className="text-gray-600 text-right">{formatTimeArabic(wh.to || "غير محدد")}</p>
                   </div>
                 ))
               ) : (

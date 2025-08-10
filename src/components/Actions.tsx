@@ -231,7 +231,31 @@ const Actions = ({
           <div className="grid grid-cols-1 w-full md:grid-cols-3  gap-3 ">
             {onApprove && (
               <ActionButton
-                // icon={<Check size={16} className="ml-2" />}
+                icon={
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <g clip-path="url(#clip0_1808_92467)">
+                      <path
+                        d="M16.5 9C16.5 4.85775 13.1422 1.5 9 1.5C4.85775 1.5 1.5 4.85775 1.5 9C1.5 13.1422 4.85775 16.5 9 16.5C13.1422 16.5 16.5 13.1422 16.5 9Z"
+                        stroke="white"
+                        stroke-width="1.125"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <path
+                        d="M6 9.5625C6 9.5625 7.2 10.2465 7.8 11.25C7.8 11.25 9.6 7.3125 12 6"
+                        stroke="white"
+                        stroke-width="1.125"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_1808_92467">
+                        <rect width="18" height="18" fill="white" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                }
                 label={
                   isActive
                     ? getEntityActionLabel(entityType || "stores", "deactive")
@@ -243,7 +267,7 @@ const Actions = ({
                 //     ? "bg-red-50 w-full text-red-700 border border-red-200 hover:bg-red-100 rounded-lg px-4 py-2 text-sm font-medium"
                 //     : "bg-green-50 w-full text-green-700 border border-green-200 hover:bg-green-100 rounded-lg px-4 py-2 text-sm font-medium"
                 // }
-                className=" bg-[#F8F8F8] hover:bg-[#E8F0F8] border border-input font-semibold text-black px-4 py-2 rounded-lg"
+                className=" bg-[#5B87B9] text-white hover:bg-main/90 border border-input font-semibold px-4 py-2 rounded-lg"
                 disabled={isUpdating}
                 loading={isUpdating}
               />

@@ -76,17 +76,15 @@ export function PaginatedList<T extends EntityType>({
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex  flex-col h-full">
       <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-[#E7EAEE] scrollbar-track-transparent hover:scrollbar-thumb-[#D0D5DD]">
         {items.map((item) => (
           <div
             key={item.id}
             style={{
-              backgroundColor: selectedItem?.id === item.id ? "rgba(170, 170, 170, 0.10)" : "transparent",
+              backgroundColor: selectedItem?.id === item.id ? "rgba(91, 136, 186, 0.20)" : "transparent",
             }}
-            className={`cursor-pointer ${
-              selectedItem?.id === item.id ? "bg-[rgba(170, 170, 170, 0.10)]" : "hover:bg-[rgba(170, 170, 170, 0.10)]"
-            }`}
+            className={`cursor-pointer  first:rounded-t-lg `}
             onClick={() => onSelectItem(item as T)}
           >
             {renderItem(item as T)}
