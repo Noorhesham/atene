@@ -8,7 +8,7 @@ interface DashboardLayoutProps {
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   return (
-    <section className="flex  w-full flex-col gap-5">
+    <section className="flex bg-gray-50  w-full flex-col gap-5">
       <DashboardNavbar />
       {/* <Breadcrumb className="bg-[#F0F7FF]">
         <BreadcrumbList className="flex justify-end">

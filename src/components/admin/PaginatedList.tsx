@@ -1,11 +1,11 @@
 import React from "react";
 import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
-import { ApiUser, ApiStore } from "@/hooks/useUsers";
+import { ApiUser, ApiStore, ApiProduct } from "@/types";
 import { Pagination } from "@/components/ui/pagination";
 import { Loader2 } from "lucide-react";
 
 interface EntityListProps<T extends { id: number }> {
-  entityName: "users" | "stores" | "roles" | "permissions";
+  entityName: "users" | "stores" | "roles" | "permissions" | "products";
   selectedItem: T | null;
   onSelectItem: (item: T) => void;
   renderItem: (item: T) => React.ReactNode;
@@ -14,7 +14,7 @@ interface EntityListProps<T extends { id: number }> {
   queryParams?: Record<string, string>;
 }
 
-type EntityType = ApiUser | ApiStore;
+type EntityType = ApiUser | ApiStore | ApiProduct;
 
 export function PaginatedList<T extends EntityType>({
   entityName,
@@ -81,7 +81,12 @@ export function PaginatedList<T extends EntityType>({
         {items.map((item) => (
           <div
             key={item.id}
-            className={`cursor-pointer ${selectedItem?.id === item.id ? "bg-blue-50" : "hover:bg-gray-50"}`}
+            style={{
+              backgroundColor: selectedItem?.id === item.id ? "rgba(170, 170, 170, 0.10)" : "transparent",
+            }}
+            className={`cursor-pointer ${
+              selectedItem?.id === item.id ? "bg-[rgba(170, 170, 170, 0.10)]" : "hover:bg-[rgba(170, 170, 170, 0.10)]"
+            }`}
             onClick={() => onSelectItem(item as T)}
           >
             {renderItem(item as T)}

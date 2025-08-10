@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { Package, Search, Trash2, PlusCircle, Info, Shirt } from "lucide-react";
+import { Package, Search, Trash2, PlusCircle, Info } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { useState, useEffect } from "react";
 import { useFieldArray } from "react-hook-form";
@@ -7,6 +7,7 @@ import ModalCustom from "@/components/ModalCustom";
 import { Button } from "@/components/ui/button";
 import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
 import { ApiProduct } from "@/types";
+import { EmptyProps } from "@/components/icons";
 
 const SelectRelatedProductsModal = ({
   onConfirm,
@@ -162,35 +163,46 @@ const RelatedProducts = () => {
   if (isLoading) return <div>Loading...</div>;
   console.log(products);
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-3">
       <div className="flex justify-between items-center">
-        <p className="text-gray-700">قم باختيار منتجات لترشيحها في قائمة المنتج</p>
-        <ModalCustom
-          isOpen={isModalOpen}
-          onOpenChange={setIsModalOpen}
-          btn={
-            <Button type="button" variant="outline" className="border-dashed bg-white">
-              <PlusCircle size={16} className="ml-2" /> اختيار منتجات
-            </Button>
-          }
-          content={
-            <SelectRelatedProductsModal
-              products={products}
-              onConfirm={handleConfirmSelection}
-              closeModal={() => setIsModalOpen(false)}
-            />
-          }
-        />
+        <p className="text-[#393939] text-lg">قم باختيار منتجات لترشيحها في قائمة المنتج</p>
       </div>
 
       {selectedProducts.length === 0 ? (
-        <div className="text-center p-8 border-t">
-          <div className="flex justify-center items-center gap-4 mb-4">
-            <div className="p-4 bg-gray-100 rounded-full text-gray-400">
-              <Shirt size={32} />
-            </div>
-          </div>
-          <p className="text-gray-500">لم يتم اختيار اي منتجات بعد!</p>
+        <div className="text-center flex flex-col items-center justify-center ">
+          {" "}
+          <ModalCustom
+            isOpen={isModalOpen}
+            onOpenChange={setIsModalOpen}
+            btn={
+              <button
+                style={{
+                  backgroundColor: "rgba(91, 135, 185, 0.10)",
+                }}
+                className="flex ml-auto border border-main py-2 px-4 rounded-lg items-center gap-2 text-main"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 4V20M4 12H20"
+                    stroke="#2D496A"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                اختار منتجات{" "}
+              </button>
+            }
+            content={
+              <SelectRelatedProductsModal
+                products={products}
+                onConfirm={handleConfirmSelection}
+                closeModal={() => setIsModalOpen(false)}
+              />
+            }
+          />
+          <EmptyProps />
+          <p className="text-[#555] font-semibold text-xl">لم يتم اضافة اي سمات بعد!</p>
         </div>
       ) : (
         <div className="border-t pt-4 space-y-3">

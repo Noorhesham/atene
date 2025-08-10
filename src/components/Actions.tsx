@@ -224,25 +224,26 @@ const Actions = ({
    */
   return (
     <div className="">
-      <Card className={`border grid grid-cols-1 md:grid-cols-3 w-full  gap-4 border-gray-200 shadow-sm ${className}`}>
-        <CardContent className="p-6 ">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">{title}</h2>
+      <Card className={`border   w-full  gap-4 border-gray-200 shadow-sm ${className}`}>
+        <CardContent className=" flex flex-col">
+          <h2 className="text-lg font-semibold text-main mb-4">{title}</h2>
 
-          <div className="flex gap-3">
+          <div className="grid grid-cols-1 w-full md:grid-cols-3  gap-3 ">
             {onApprove && (
               <ActionButton
-                icon={<Check size={16} className="ml-2" />}
+                // icon={<Check size={16} className="ml-2" />}
                 label={
                   isActive
                     ? getEntityActionLabel(entityType || "stores", "deactive")
                     : getEntityActionLabel(entityType || "stores", "approve")
                 }
                 onClick={onApprove}
-                className={
-                  isActive
-                    ? "bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 rounded-lg px-4 py-2 text-sm font-medium"
-                    : "bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 rounded-lg px-4 py-2 text-sm font-medium"
-                }
+                // className={
+                //   isActive
+                //     ? "bg-red-50 w-full text-red-700 border border-red-200 hover:bg-red-100 rounded-lg px-4 py-2 text-sm font-medium"
+                //     : "bg-green-50 w-full text-green-700 border border-green-200 hover:bg-green-100 rounded-lg px-4 py-2 text-sm font-medium"
+                // }
+                className=" bg-[#F8F8F8] hover:bg-[#E8F0F8] border border-input font-semibold text-black px-4 py-2 rounded-lg"
                 disabled={isUpdating}
                 loading={isUpdating}
               />
@@ -252,7 +253,7 @@ const Actions = ({
               <ActionButton
                 icon={<Edit size={16} className="ml-2" />}
                 label={getEntityActionLabel(entityType || "stores", "edit")}
-                className="bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 rounded-lg px-4 py-2 text-sm font-medium"
+                className="bg-blue-50 w-full  transition-all duration-300 hover:text-white text-main border border-main hover:bg-main rounded-lg px-4 py-2 text-sm font-medium"
                 to={formattedEditLink}
               />
             )}
@@ -262,7 +263,7 @@ const Actions = ({
                 icon={<Trash2 size={16} className="ml-2" />}
                 label={getEntityActionLabel(entityType, "delete")}
                 onClick={handleDeleteClick}
-                className="bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 rounded-lg px-4 py-2 text-sm font-medium"
+                className="bg-red-50 w-full text-red-700 border border-red-200 hover:bg-red-100 rounded-lg px-4 py-2 text-sm font-medium"
               />
             )}
 

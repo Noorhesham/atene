@@ -159,7 +159,25 @@ const AccordionStep = ({
         {title}
         {hasErrors && <span className="text-red-500 ml-2">⚠️</span>}
       </h3>
-      {isOpen ? <MinusCircle className="w-6 h-6 text-gray-500" /> : <PlusCircle className="w-6 h-6 text-gray-500" />}
+      {isOpen ? (
+        <div className=" p-2 rounded-full border border-main flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M20 12H4" stroke="#406896" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+      ) : (
+        <div className=" p-2 rounded-full border border-main flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M12 4V20M4 12H20"
+              stroke="#406896"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+      )}
     </button>
     {isOpen && <div className="p-6 border-t border-gray-200">{children}</div>}
   </div>
@@ -168,9 +186,11 @@ const AccordionStep = ({
 const ProductCreationForm = ({
   product,
   disableCreate,
+  title,
 }: {
   product: ApiProduct | null | undefined;
   disableCreate: boolean;
+  title: string;
 }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -582,9 +602,9 @@ const ProductCreationForm = ({
         <FormProvider {...form}>
           <form onSubmit={handleSubmit}>
             {" "}
-            <div className="flex items-center justify-between">
+            {/* <div className="flex items-center justify-between">
               <h1 className="text-2xl font-semibold text-gray-900">
-                {isEditMode ? "تعديل المنتج" : "إنشاء منتج جديد"}
+                {title ? title : isEditMode ? "تعديل المنتج" : "إنشاء منتج جديد"}
               </h1>
               {!disableCreate && (
                 <Button
@@ -598,7 +618,7 @@ const ProductCreationForm = ({
                   {isSubmitting ? "جاري الحفظ..." : isEditMode ? "تحديث المنتج" : "حفظ المنتج"}
                 </Button>
               )}
-            </div>
+            </div> */}
             <div
               className={`grid grid-cols-1 ${
                 disableCreate ? "lg:grid-cols-1" : "lg:grid-cols-3"
@@ -642,7 +662,7 @@ const ProductCreationForm = ({
       {!disableCreate && (
         <div className="sticky bottom-0 w-full bg-white border-t border-[#E7EAEE] py-4 px-6 shadow-[0px_-4px_12px_0px_rgba(0,0,0,0.04)]">
           <div className="flex items-center justify-between max-w-[1440px] mx-auto">
-            <div className="flex items-center gap-3">
+            {/* <div className="flex items-center gap-3">
               <Button
                 type="button"
                 variant="outline"
@@ -661,7 +681,7 @@ const ProductCreationForm = ({
                   التالي <ChevronLeft className="w-5 h-5" />
                 </Button>
               )}
-            </div>
+            </div> */}
             <div className="flex items-center gap-3">
               <Button
                 type="button"
@@ -672,15 +692,26 @@ const ProductCreationForm = ({
               </Button>
               <Button
                 onClick={() => {
-                  handleSubmit();
+                  currentStep === steps.length ? handleSubmit() : handleStepClick(currentStep + 1);
                 }}
                 type="submit"
-                className="bg-[#2E5DB0] hover:bg-[#264B8B] text-white h-11 px-4 py-2.5 text-sm font-medium"
+                className="bg-main hover:bg-[#264B8B] text-white h-11 px-4 py-2.5 text-sm font-medium"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "جاري الحفظ..." : isEditMode ? "تحديث المنتج" : "إنشاء المنتج"}
               </Button>
             </div>
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(user?.user?.user_type === "merchant" ? "/dashboard/products" : "/admin/products");
+              }}
+              type="button"
+              variant="outline"
+              className="w-fit  py-4 font-semibold px-8 bg-[#F9FAFB] text-black bg-white"
+            >
+              الغاء
+            </Button>
           </div>
         </div>
       )}

@@ -286,7 +286,7 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
   });
 
   return (
-    <section className="w-full bg-white">
+    <section className="w-full ">
       <FormProvider {...form}>
         <form onSubmit={handleSubmit}>
           <div className="mx-auto w-full p-4 sm:p-6 lg:p-8 min-h-screen" dir="rtl">
@@ -347,7 +347,7 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
 
           <div className="sticky bottom-0 w-full bg-white border-t border-gray-200 py-4 px-8 shadow-[0px_-4px_12px_0px_rgba(0,0,0,0.04)]">
             <div className="flex items-center justify-between max-w-[1440px] mx-auto">
-              <div className="flex items-center gap-3">
+              {/* <div className="flex items-center gap-3">
                 <Button
                   type="button"
                   variant="outline"
@@ -362,12 +362,16 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
                     التالي
                   </Button>
                 )}
-              </div>
-              <div className="flex items-center gap-3">
-                <Button type="button" variant="outline" className="bg-gray-100 text-gray-800">
-                  حفظ كمسودة
-                </Button>
-                <Button type="submit" className="bg-main text-white hover:bg-main/90" disabled={isSubmitting}>
+              </div> */}
+              <div className="flex w-full justify-between items-center gap-3">
+                <Button
+                  type="submit"
+                  className="bg-main text-white hover:bg-main/90"
+                  disabled={isSubmitting}
+                  onClick={() => {
+                    currentStep === steps.length ? handleSubmit() : nextStep();
+                  }}
+                >
                   {isSubmitting
                     ? isEditMode
                       ? "جاري التحديث..."
@@ -375,6 +379,17 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
                     : isEditMode
                     ? "تحديث المتجر"
                     : "إنشاء المتجر"}
+                </Button>{" "}
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(user?.user?.user_type === "merchant" ? "/dashboard/stores" : "/admin/stores");
+                  }}
+                  type="button"
+                  variant="outline"
+                  className="w-fit  py-4 font-semibold px-8 bg-[#F9FAFB] text-black bg-white"
+                >
+                  الغاء
                 </Button>
               </div>
             </div>

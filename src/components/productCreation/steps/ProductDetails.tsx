@@ -8,6 +8,7 @@ import { useFieldArray } from "react-hook-form";
 import FormInput from "@/components/inputs/FormInput";
 import SpecificationsInput from "@/components/inputs/SpecificationsInput";
 import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
+import { QuestionMark } from "@/components/icons";
 
 type FormValues = {
   tags: { value: string }[];
@@ -66,7 +67,7 @@ const ProductDetails = () => {
         <div className="flex w-full items-center justify-between mt-4 gap-4 mb-2">
           <FormLabel>الكلمات المفتاحية</FormLabel>
           <p className="flex text-main items-center gap-2 text-sm">
-            <Info size={16} /> ماهي الكلمات المفتاحية
+            <QuestionMark /> ماهي الكلمات المفتاحية
           </p>
         </div>
         <div className="flex items-center gap-2">

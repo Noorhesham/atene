@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
 import { ApiProduct } from "@/types";
+import { EmptyProps } from "@/components/icons";
 
 type RelatedProduct = {
   id: number;
@@ -211,35 +212,57 @@ const UpSell = () => {
   };
   if (isLoading) return <div>Loading...</div>;
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex justify-between items-center">
-        <p className="text-gray-700">قم باختيار منتجات مكملة لترشيحها</p>
-        <ModalCustom
-          isOpen={isSelectModalOpen}
-          onOpenChange={setIsSelectModalOpen}
-          btn={
-            <Button type="button" variant="outline" className="border-dashed bg-white">
-              <PlusCircle size={16} className="ml-2" /> اختيار منتجات
-            </Button>
-          }
-          content={
-            <SelectUpsellProductsModal
-              currentSelection={upsellProductIds}
-              onConfirm={handleConfirmSelection}
-              closeModal={() => setIsSelectModalOpen(false)}
-            />
-          }
-        />
+    <div className="space-y-6 p-3">
+      <div className="flex flex-col items-start gap-4">
+        <p className="text-[#393939] text-lg">قم باختيار منتجات مكملة لترشيحها</p>
+        <div className=" w-full flex justify-between items-center">
+          <ModalCustom
+            isOpen={isSelectModalOpen}
+            onOpenChange={setIsSelectModalOpen}
+            btn={
+              <button
+                style={{
+                  backgroundColor: "rgba(91, 135, 185, 0.10)",
+                }}
+                className="flex ml-auto border border-main py-2 px-4 rounded-lg items-center gap-2 text-main"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 4V20M4 12H20"
+                    stroke="#2D496A"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                اختار منتجات{" "}
+              </button>
+            }
+            content={
+              <SelectUpsellProductsModal
+                currentSelection={upsellProductIds}
+                onConfirm={handleConfirmSelection}
+                closeModal={() => setIsSelectModalOpen(false)}
+              />
+            }
+          />
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRemoveAll();
+            }}
+            className=" underline text-main"
+          >
+            حذف الكل
+          </button>
+        </div>
       </div>
 
       {selectedProducts.length === 0 ? (
-        <div className="text-center p-8 border-t">
-          <div className="flex justify-center items-center gap-4 mb-4">
-            <div className="p-4 bg-gray-100 rounded-full text-gray-400">
-              <Shirt size={32} />
-            </div>
-          </div>
-          <p className="text-gray-500">لم يتم اختيار اي منتجات بعد!</p>
+        <div className="text-center flex flex-col items-center justify-center ">
+          {" "}
+          <EmptyProps />
+          <p className="text-[#555] font-semibold text-xl">لم يتم اضافة اي سمات بعد!</p>
         </div>
       ) : (
         <div className="border-t pt-4 space-y-3">
@@ -287,7 +310,7 @@ const UpSell = () => {
             isOpen={isDiscountModalOpen}
             onOpenChange={setIsDiscountModalOpen}
             btn={
-              <Button type="button" variant="outline" className="w-full border-dashed bg-white">
+              <Button type="button" variant="outline" className="w-full  py-4 font-semibold text-main bg-white">
                 <Tag size={16} className="ml-2" /> تخفيض على المنتجات المختارة
               </Button>
             }

@@ -12,6 +12,8 @@ import { useAuth } from "@/context/AuthContext";
 import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
 import Loader from "@/components/Loader";
 import { ApiAttribute, ApiAttributeOption } from "@/types";
+import { EmptyProps } from "@/components/icons";
+import { QuestionMark } from "@/components/icons";
 
 interface VariantErrors {
   variants?: {
@@ -322,8 +324,13 @@ const VariantsForm = () => {
   return (
     <div className="space-y-6 p-6">
       <div className="flex flex-col items-start gap-4">
-        <FormLabel className=" text-[18px] text-[#393939]">هل يوجد اختلافات للمنتج</FormLabel>
-
+        <div className="flex  justify-between w-full items-start">
+          <FormLabel className=" text-[18px] text-[#393939]">هل يوجد اختلافات للمنتج</FormLabel>
+          <p className="flex items-center mr-auto text-main gap-2">
+            <QuestionMark />
+            ماهي اختلافات المنتج
+          </p>
+        </div>
         <div className="flex items-center gap-4 ml-auto">
           <label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -353,16 +360,30 @@ const VariantsForm = () => {
       </div>
 
       {!hasVariations && (
-        <div className="text-center p-8 border-t">
-          <div className="flex justify-center items-center gap-4 mb-4">
-            <div className="p-4 bg-gray-100 rounded-full text-gray-400">
-              <Package size={32} />
-            </div>
-            <div className="p-4 bg-gray-100 rounded-full text-gray-400">
-              <Settings size={32} />
-            </div>
-          </div>
-          <p className="text-gray-500">لم يتم اضافة اي سمات بعد!</p>
+        <div className="text-center flex flex-col items-center justify-center ">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setValue("hasVariations", true);
+            }}
+            style={{
+              backgroundColor: "rgba(91, 135, 185, 0.10)",
+            }}
+            className="flex ml-auto border border-main py-2 px-4 rounded-lg items-center gap-2 text-main"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 4V20M4 12H20"
+                stroke="#2D496A"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            إضافة سمة جديدة
+          </button>
+          <EmptyProps />
+          <p className="text-[#555] font-semibold text-xl">لم يتم اضافة اي سمات بعد!</p>
         </div>
       )}
 

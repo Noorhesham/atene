@@ -241,6 +241,8 @@ const DashboardNavbar = () => {
 
           {/* Left Side - Search, Notifications, Profile */}
           <div className="flex items-center gap-4">
+            {" "}
+            <img src="/hugeicons_search-01.svg" alt="" />
             {/* Search */}
             {!isAdmin && (
               <div className="flex rounded-[10px] bg-[#F6EED8] items-center gap-1 px-4 py-1">
@@ -248,7 +250,7 @@ const DashboardNavbar = () => {
                 <span className="text-[#444] font-[18px]">0 نقطة </span>
               </div>
             )}
-            {!isAdmin && (
+            {
               <Link to={`${preLink}/chat`}>
                 {" "}
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -261,7 +263,7 @@ const DashboardNavbar = () => {
                   />
                 </svg>
               </Link>
-            )}
+            }
             {/* Notifications */}
             <Popover>
               <PopoverTrigger asChild>
@@ -316,14 +318,27 @@ const DashboardNavbar = () => {
             {isAdmin && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center gap-2 bg-white rounded-lg px-4 py-2">
-                    <div className="w-8 h-8 rounded-lg bg-main/10 flex items-center justify-center">
-                      <Users className="w-4 h-4 text-[#2D496A]" />
-                    </div>
-                    <div className="flex flex-col items-start">
-                      <span className="text-sm font-medium text-[#2D496A]">المدير</span>
-                      <span className="text-xs text-gray-500">Admin</span>
-                    </div>
+                  {/* This is the new trigger matching your first image */}
+                  <Button
+                    variant="ghost"
+                    className="flex items-center justify-between  p-2 rounded-lg bg-[#DDE4ED] hover:bg-[#d1d8e2] h-auto"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex gap-3 ">
+                        <img
+                          src={user?.user.avatar}
+                          alt={user?.user.name}
+                          className="w-12 h-12 rounded-full object-cover border-2 border-white"
+                        />
+                        <div className="flex flex-col items-start">
+                          <span className="text-sm font-semibold text-[#2D496A]">{user?.user.fullname}</span>{" "}
+                          <span className="text-sm text-[#2D496A] border border-[#2D496A] rounded-full px-4 py-0.5 mt-1">
+                            متجر
+                          </span>
+                        </div>
+                      </div>
+                    </div>{" "}
+                    <ChevronDown className="w-5 h-5 text-[#2D496A]" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-[200px] text-right p-2" align="end">

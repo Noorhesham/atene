@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Search, ChevronLeft, Package, Star, Trash2 } from "lucide-react";
+import { Search, ChevronLeft, Package, Trash2, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
 import { ApiProduct, ApiCategory, BaseEntity } from "@/types";
-import EntityList from "@/components/EntityList";
 import { ProductCreationForm } from "@/components/productCreation";
 import Actions from "@/components/Actions";
 import ModalCustom from "@/components/ModalCustom";
@@ -16,6 +15,8 @@ import SectionsPopover from "@/components/SectionsPopover";
 import { useLocation } from "react-router-dom";
 import Loader from "@/components/Loader";
 import { API_BASE_URL } from "@/constants/api";
+import { PaginatedList } from "@/components/admin/PaginatedList";
+import Order from "@/components/Order";
 
 const FILTER_CATEGORIES = [
   { name: "الكل", value: null },
@@ -45,15 +46,17 @@ const FilterPanel = ({
 }) => (
   <div className="w-full space-y-6">
     {/* Status Filter */}
-    <div>
+    <div className=" pt-5">
       <h3 className="font-bold text-gray-800 mb-4 px-2">تصفية حسب الحالة</h3>
       <ul>
         {statusCategories.map((cat, index) => (
           <li key={index}>
             <button
               onClick={() => onStatusFilterChange(cat.value)}
-              className={`w-full text-right px-4 py-2.5 rounded-md text-sm font-medium flex justify-between items-center ${
-                activeStatusFilter === cat.value ? "bg-blue-50 text-blue-700" : "text-gray-600 hover:bg-gray-100"
+              className={`w-full text-right px-4 text-main py-2.5 rounded-md text-sm font-medium flex justify-between items-center ${
+                activeStatusFilter === cat.value
+                  ? "bg-blue-50 text-[rgba(91, 136, 186, 0.20)]"
+                  : "text-gray-600 hover:bg-gray-100"
               }`}
             >
               <span>{cat.name}</span>
@@ -71,8 +74,10 @@ const FilterPanel = ({
         <li>
           <button
             onClick={() => onCategoryFilterChange(null)}
-            className={`w-full text-right px-4 py-2.5 rounded-md text-sm font-medium flex justify-between items-center ${
-              activeCategoryFilter === null ? "bg-blue-50 text-blue-700" : "text-gray-600 hover:bg-gray-100"
+            className={`w-full text-right px-4 text-main py-2.5 rounded-md text-sm font-medium flex justify-between items-center ${
+              activeCategoryFilter === null
+                ? "bg-blue-50 text-[rgba(91, 136, 186, 0.20)]"
+                : "text-gray-600 hover:bg-gray-100"
             }`}
           >
             <span>جميع الفئات</span>
@@ -85,7 +90,7 @@ const FilterPanel = ({
               onClick={() => onCategoryFilterChange(category.id.toString())}
               className={`w-full text-right px-4 py-2.5 rounded-md text-sm font-medium flex justify-between items-center ${
                 activeCategoryFilter === category.id.toString()
-                  ? "bg-blue-50 text-blue-700"
+                  ? "bg-blue-50 text-[rgba(91, 136, 186, 0.20)]"
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >
@@ -105,6 +110,11 @@ export default function ProductsPageDashboard() {
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [productToDelete, setProductToDelete] = useState<ApiProduct | null>(null);
+  const [orderDir, setOrderDir] = useState<"asc" | "desc">("asc");
+
+  const handleOrderChange = (dir: "asc" | "desc") => {
+    setOrderDir(dir);
+  };
 
   // Get section from URL params
   const urlParams = new URLSearchParams(location.search);
@@ -113,12 +123,6 @@ export default function ProductsPageDashboard() {
   // Fetch products with filters
   const {
     data: products,
-    isLoading,
-    error,
-    currentPage,
-    totalPages,
-    setCurrentPage,
-    setSearchQuery,
     totalRecords,
     remove: deleteProduct,
     refetch,
@@ -128,6 +132,7 @@ export default function ProductsPageDashboard() {
       ...(statusFilter && { status: statusFilter }),
       ...(categoryFilter && { category_id: categoryFilter }),
       ...(sectionFilter && { section: sectionFilter }),
+      order_dir: orderDir, // Add orderDir to affect the API endpoint
     },
   });
 
@@ -149,11 +154,16 @@ export default function ProductsPageDashboard() {
   // Handle search input change with debouncing
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      setSearchQuery(searchInput);
+      // The search will be handled by PaginatedList component
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [searchInput, setSearchQuery]);
+  }, [searchInput]);
+
+  // Refetch data when orderDir changes to affect the API endpoint
+  useEffect(() => {
+    refetch();
+  }, [orderDir, refetch]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput(e.target.value);
@@ -161,10 +171,6 @@ export default function ProductsPageDashboard() {
     if (e.target.value.trim() !== "") {
       setSelectedProduct(null);
     }
-  };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
   };
 
   // Function to update product status
@@ -208,43 +214,51 @@ export default function ProductsPageDashboard() {
   const renderProductItem = (product: ApiProduct) => {
     // Filtering is now handled on the backend via queryParams
 
-    const getStatusInfo = (status: string) => {
-      switch (status) {
-        case "active":
-          return { text: "منشور", class: "text-green-600" };
-
-        case "not-active":
-          return { text: "مغلق", class: "text-gray-600" };
-        default:
-          return { text: status, class: "text-gray-600" };
-      }
-    };
-
-    const statusInfo = getStatusInfo(product.status);
     const currentPrice = product.sale_price || product.price;
-
+    console.log(product);
     return (
       <div className="flex items-center gap-3 p-3 border-b">
-        <div className="w-12 h-12 rounded-md bg-gray-200 flex items-center justify-center flex-shrink-0">
-          {product.gallary_url && product.gallary_url.length > 0 ? (
-            <img src={product.gallary_url?.[0]} alt={product.name} className="w-12 h-12 rounded-md object-cover" />
-          ) : (
-            <Package size={20} className="text-gray-400" />
-          )}
-        </div>
-        <div className="flex-1">
-          <p className="font-semibold text-gray-800 text-sm line-clamp-1">{product.name}</p>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs font-semibold text-main">{currentPrice.toLocaleString()} ر.س</span>
-            {product.sale_price && (
-              <span className="text-xs text-gray-500 line-through">{product.price.toLocaleString()} ر.س</span>
+        {/* Middle: Product Info */}
+        <input
+          checked={selectedProduct?.id === product.id}
+          type="checkbox"
+          className="w-5 h-5 rounded border-2 border-gray-300 text-main focus:ring-2 focus:ring-main focus:ring-offset-2 focus:ring-offset-white cursor-pointer transition-all duration-200 ease-in-out hover:border-main checked:bg-main checked:border-main checked:hover:bg-main/90"
+          aria-label={`اختر المنتج ${product.name}`}
+          title={`اختر المنتج ${product.name}`}
+        />
+        <div className="flex-1 flex items-center gap-4">
+          {/* Image */}
+          <div className="w-14 h-14 rounded-md bg-gray-200 flex-shrink-0 overflow-hidden">
+            {product.gallary_url && product.gallary_url.length > 0 ? (
+              <img src={product.gallary_url[0]} alt={product.name} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <Package size={24} className="text-gray-400" />
+              </div>
             )}
           </div>
-          <div className="flex items-center gap-2 mt-1">
-            <span className={`text-xs text-right font-semibold ${statusInfo.class}`}>● {statusInfo.text}</span>
-            <span className="text-xs text-gray-500">المخزون: {product.stock_quantity}</span>
-            {product.featured && <Star size={12} className="text-yellow-500 fill-current" />}
+          {/* Text Details */}
+          <div className="flex flex-col items-start justify-center gap-1">
+            <p className="font-semibold text-gray-900 text-sm text-right line-clamp-1">
+              {product.name.length > 20 ? product.name.slice(0, 20) + "..." : product.name}
+            </p>
+            <div className="flex items-center gap-3 text-xs text-gray-500">
+              <div className="flex items-center gap-1">
+                <Tag size={14} />
+                <span>{product.category.name}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Package size={14} />
+                <span>{product.tags_count}</span>
+              </div>
+            </div>
           </div>
+        </div>{" "}
+        {/* Left Side: Price */}
+        <div className="flex-shrink-0">
+          <p className="text-base font-semibold flex flex-row-reverse gap-1 text-[#393939] whitespace-nowrap">
+            <span>₪ {"  "}</span> {currentPrice}
+          </p>
         </div>
       </div>
     );
@@ -293,18 +307,28 @@ export default function ProductsPageDashboard() {
         {/* Middle Panel: Products List */}
         <div className="col-span-12 lg:col-span-3">
           <Card className="p-0 h-[calc(100vh-250px)]">
-            <EntityList
-              entities={products}
-              selectedEntity={selectedProduct}
-              onSelectEntity={setSelectedProduct}
-              isLoading={isLoading}
-              error={error}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-              renderEntity={renderProductItem}
-              entityType="منتجات"
-              totalRecords={totalRecords}
+            {" "}
+            <div className=" bg-white shadow-sm py-2 rounded-lg px-4 flex justify-between ">
+              {" "}
+              <div className="flex text-black font-bold items-center gap-2">
+                <p className="text-sm ">الكل</p>
+                <span className="text-sm ">({totalRecords})</span>
+              </div>
+              <Order orderDir={orderDir} setOrderDir={handleOrderChange} />
+            </div>
+            <PaginatedList<ApiProduct>
+              entityName="products"
+              selectedItem={selectedProduct}
+              onSelectItem={setSelectedProduct}
+              renderItem={renderProductItem}
+              searchQuery={searchInput}
+              pageSize={10}
+              queryParams={{
+                ...(statusFilter && { status: statusFilter }),
+                ...(categoryFilter && { category_id: categoryFilter }),
+                ...(sectionFilter && { section: sectionFilter }),
+                order_dir: orderDir,
+              }}
             />
           </Card>
         </div>
@@ -333,7 +357,7 @@ export default function ProductsPageDashboard() {
                 }}
                 isUpdating={isDeleting}
               />
-              <ProductCreationForm product={selectedProduct} disableCreate={true} />
+              <ProductCreationForm title=" " product={selectedProduct} disableCreate={true} />
 
               {/* Delete Confirmation Modal */}
               <ModalCustom

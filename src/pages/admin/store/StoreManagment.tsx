@@ -1,18 +1,16 @@
-import React, { useEffect, useState } from "react";
-import { Search, ChevronLeft, Mail, MapPin, User, DollarSign, MessageSquare, Plus, ArrowUpDown } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useEffect, useState } from "react";
+import { Search, ChevronLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PaginatedList } from "@/components/admin/PaginatedList";
-import { ApiStore, BaseEntity } from "@/types";
+import { ApiStore } from "@/types";
 import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
-import { FacebookIcon, InstagramIcon, TikTokIcon, YoutubeIcon } from "@/constants/Icons";
 import { Link } from "react-router-dom";
-import Actions from "@/components/Actions";
 import { useAuth } from "@/context/AuthContext";
 import Loader from "@/components/Loader";
-import { API_BASE_URL } from "@/constants/api";
-import { toast } from "react-hot-toast";
+
+import StoreDetails from "./storeDetails/StoreDetails";
+import Order from "@/components/Order";
 
 interface FilterCategory {
   name: string;
@@ -74,210 +72,39 @@ const StoreListItem = ({
   onSelect: (store: ApiStore) => void;
 }) => {
   const StatusIndicator = ({ status }: { status: string }) => (
-    <span className={`text-xs font-semibold ${status === "active" ? "text-green-600" : "text-yellow-600"}`}>
-      ● {status === "active" ? "نشط" : "بانتظار الموافقة"}
+    <span className={`text-xs font-semibold ${status === "active" ? "text-[#1FC16B]" : "text-yellow-600"}`}>
+      ● {status === "active" ? "مفعل" : "معطل"}
     </span>
   );
 
   return (
-    <label htmlFor={store.id.toString()} className="flex items-center gap-3 p-3 border-b cursor-pointer">
+    <div
+      className="flex items-center gap-3 p-3 border-b cursor-pointer hover:bg-gray-50 transition-colors duration-200"
+      onClick={() => onSelect(store)}
+    >
       <input
-        type="radio"
-        value={store.id}
-        onChange={() => onSelect(store)}
-        className="form-radio h-5 w-5 text-main accent-main border-gray-300 focus:ring-main"
-        title="تحديد المتجر"
-        aria-label="تحديد المتجر"
         checked={isSelected}
-        id={store.id.toString()}
+        onChange={(e) => {
+          e.stopPropagation(); // Prevent card click when clicking checkbox
+          onSelect(store);
+        }}
+        type="checkbox"
+        className="w-5 h-5 rounded border-2 border-gray-300 text-main focus:ring-2 focus:ring-main focus:ring-offset-2 focus:ring-offset-white cursor-pointer transition-all duration-200 ease-in-out hover:border-main checked:bg-main checked:border-main checked:hover:bg-main/90"
+        aria-label={`اختر المتجر ${store.name}`}
+        title={`اختر المتجر ${store.name}`}
       />
       <img
         src={store.logo_url || "/placeholder-store.png"}
         alt={store.name}
         className="w-10 h-10 rounded-md object-cover"
       />
-      <div className="flex-1">
-        <p className="font-semibold text-gray-800">{store.name}</p>
+      <div className="flex-1 flex justify-between items-start">
+        <div className="flex flex-col gap-1">
+          <p className="font-semibold text-gray-800">{store.name}</p>
+          {isSelected && <span className="text-xs text-[#AAA] font-[500]">المتجر الاساسي</span>}
+        </div>
         <StatusIndicator status={store.status} />
       </div>
-    </label>
-  );
-};
-
-interface InfoItemProps {
-  icon: React.ReactNode;
-  title: string;
-  children: React.ReactNode;
-}
-
-interface SocialLinkProps {
-  icon: React.ReactNode;
-  label: string;
-  value: string | null;
-}
-
-const StoreDetails = ({ store, onStoreDeleted }: { store: ApiStore; onStoreDeleted: () => void }) => {
-  const storeQuery = useAdminEntityQuery("stores");
-  const token = localStorage.getItem("token");
-  const updateStoreStatus = async (store: ApiStore) => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/admin/stores/${store.id}/update-status`, {
-        method: "POST",
-        body: JSON.stringify({ status: store.status === "active" ? "not-active" : "active" }),
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          store_id: store.id.toString(),
-        },
-      });
-      if (!res.ok) {
-        throw new Error("Failed to update store status");
-      }
-      toast.success("تم تحديث حالة المتجر");
-      await storeQuery.refetch();
-    } catch (error) {
-      console.error("Failed to update store status:", error);
-      toast.error("فشل تفعيل المتجر");
-    }
-  };
-  const { data: currencies } = useAdminEntityQuery("currencies");
-  console.log(store);
-  const { user } = useAuth();
-  const InfoItem = ({ icon, title, children }: InfoItemProps) => (
-    <div className="flex items-start text-right justify-end gap-3">
-      <div className="flex-1">
-        <p className="text-xs text-gray-500">{title}</p>
-        <p className="text-sm font-medium text-gray-800">{children}</p>
-      </div>
-      <div className="w-10 h-10 text-black p-2 rounded-xl border-input border flex items-center justify-center">
-        {icon}
-      </div>
-    </div>
-  );
-
-  const SocialLink = ({ icon, label, value }: SocialLinkProps) => (
-    <div className="flex items-center gap-3">
-      <div className="w-10 h-10  p-2 rounded-xl border-input border flex items-center justify-center mt-1">{icon}</div>
-      <div>
-        <p className="text-xs text-gray-500">{label}</p>
-        <p className="text-sm font-medium text-blue-600 hover:underline cursor-pointer">{value || "غير متوفر"}</p>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="w-full space-y-4">
-      {/* Actions Bar */}
-      <Actions
-        title="إجراءات المتجر"
-        isActive={store.status === "active"}
-        onApprove={
-          user?.user.user_type === "admin"
-            ? async () => {
-                try {
-                  await updateStoreStatus(store);
-                } catch (error) {
-                  console.error("Failed to update store status:", error);
-                }
-              }
-            : undefined
-        }
-        editLink={`/admin/stores/add/${store.id}`}
-        entity={store as unknown as BaseEntity}
-        entityType="stores"
-        deleteMessage={`هل أنت متأكد من حذف المتجر "${store.name}"؟`}
-        onDeleteSuccess={onStoreDeleted}
-        isUpdating={storeQuery.isUpdating}
-      />
-
-      {/* Store Header */}
-      <Card className="p-0 overflow-hidden">
-        <div className="relative h-48 bg-gray-200">
-          <img
-            src={store.cover_url?.[0] || "/placeholder-cover.png"}
-            alt={`${store.name} cover`}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute -bottom-12 right-6">
-            <img
-              src={store.logo_url || "/placeholder-store.png"}
-              alt={store.name}
-              className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md"
-            />
-          </div>
-        </div>
-        <div className="pt-16 px-6 pb-6">
-          <h3 className="text-lg text-center font-bold mb-8 text-black">البيانات الاساسيه للمتجر</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8" dir="rtl">
-            {/* Right Column */}
-            <div className="space-y-8">
-              <InfoItem icon={<User size={20} />} title="اسم المتجر">
-                {store.name}
-              </InfoItem>
-              <InfoItem icon={<MapPin size={20} />} title="العنوان">
-                {store.address || "غير متوفر"}
-              </InfoItem>
-              <InfoItem icon={<MessageSquare size={20} />} title="الوصف">
-                <p className="whitespace-pre-wrap">{store.description || "لا يوجد وصف متاح"}</p>
-              </InfoItem>
-
-              <InfoItem icon={<DollarSign size={20} />} title="عملة المتجر">
-                {currencies?.find((c) => c.id === store.currency_id)?.name || "غير متوفر"}
-                {currencies?.find((c) => c.id === store.currency_id)?.symbol && (
-                  <span className="text-gray-500 text-xs mr-1">
-                    ({currencies.find((c) => c.id === store.currency_id)?.symbol})
-                  </span>
-                )}
-              </InfoItem>
-            </div>
-            {/* Left Column */}
-            <div className="space-y-8">
-              <InfoItem icon={<Mail size={20} />} title="البريد الالكتروني للمتجر">
-                {store.email}
-              </InfoItem>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      {/* Social Links Card */}
-      <Card className="p-6">
-        <h3 className="text-base font-bold mb-4 text-black">بيانات الاتصال والسوشيال</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
-          <SocialLink
-            icon={<MessageSquare size={20} className="text-green-500" />}
-            label="واتساب"
-            value={store.whats_app}
-          />
-          <SocialLink icon={<Mail size={20} className="text-gray-500" />} label="ايميل" value={store.email} />
-          <SocialLink icon={<FacebookIcon />} label="فيسبوك" value={store.facebook} />
-          <SocialLink icon={<InstagramIcon />} label="انستغرام" value={store.instagram} />
-          <SocialLink icon={<YoutubeIcon />} label="يوتيوب" value={store.youtube} />
-          <SocialLink icon={<TikTokIcon />} label="تيك توك" value={store.tiktok} />
-        </div>
-      </Card>
-
-      {/* Working Hours Card */}
-      <Card className="p-6">
-        <h3 className="text-base font-bold mb-4 text-black">أوقات عمل المتجر</h3>
-        <div className="space-y-3">
-          {store.workingtimes?.map((wh) => (
-            <div key={wh.id} className="flex justify-between items-center text-sm">
-              <p className="font-semibold text-gray-800">{wh.day}</p>
-              <p className="text-gray-600">
-                {wh.from} - {wh.to}
-              </p>
-              <span
-                className={`px-2 py-0.5 rounded-full text-xs ${
-                  !wh.closed_always ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                }`}
-              >
-                {!wh.closed_always ? "متاح" : "مغلق"}
-              </span>
-            </div>
-          ))}
-        </div>
-      </Card>
     </div>
   );
 };
@@ -290,7 +117,6 @@ export default function StoreManagementPage() {
   const [selectedStoreId, setSelectedStoreId] = useState<number | null>(null);
   const { user } = useAuth();
   const { data: stores = [] } = useAdminEntityQuery("stores");
-
   // Revalidate the currently selected store instance after any list refetch
   // Ensures details panel reflects the latest status immediately after updates
   useEffect(() => {
@@ -368,42 +194,13 @@ export default function StoreManagementPage() {
 
         {/* Middle Panel: Store List */}
         <div className="col-span-12 lg:col-span-3">
-          <div className="mb-4 flex justify-between ">
+          <div className="mb-4 bg-white shadow-sm py-2 rounded-lg px-4 flex justify-between ">
             {" "}
             <div className="flex text-black font-bold items-center gap-2">
               <p className="text-sm ">الكل</p>
               <span className="text-sm ">({stores.length})</span>
             </div>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="gap-2 text-gray-600 border-gray-200">
-                  <ArrowUpDown size={16} />
-                  ترتيب
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-48 p-0" align="end">
-                <div className="flex flex-col">
-                  <button
-                    onClick={() => handleOrderChange("asc")}
-                    className={`w-full text-right px-4 py-2.5 text-sm font-medium flex justify-between items-center hover:bg-gray-50 ${
-                      orderDir === "asc" ? "text-main" : "text-gray-600"
-                    }`}
-                  >
-                    <span>تصاعدي</span>
-                    {orderDir === "asc" && <ChevronLeft size={16} />}
-                  </button>
-                  <button
-                    onClick={() => handleOrderChange("desc")}
-                    className={`w-full text-right px-4 py-2.5 text-sm font-medium flex justify-between items-center hover:bg-gray-50 ${
-                      orderDir === "desc" ? "text-main" : "text-gray-600"
-                    }`}
-                  >
-                    <span>تنازلي</span>
-                    {orderDir === "desc" && <ChevronLeft size={16} />}
-                  </button>
-                </div>
-              </PopoverContent>
-            </Popover>
+            <Order orderDir={orderDir} setOrderDir={handleOrderChange} />
           </div>
           <Card className="p-0">
             <PaginatedList<ApiStore>

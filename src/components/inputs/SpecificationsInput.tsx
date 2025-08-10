@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useFormContext, useFieldArray } from "react-hook-form";
 import ModalCustom from "@/components/ModalCustom";
 import toast from "react-hot-toast";
+import { QuestionMark } from "@/components/icons";
 
 type Specification = {
   icon: string;
@@ -169,7 +170,7 @@ const SpecificationsInput: React.FC<SpecificationsInputProps> = ({
           {label} {required && <span className="text-red-500">*</span>}
         </FormLabel>
         <p className="flex text-main items-center gap-2 text-sm">
-          <Info size={16} /> {helpText}
+          <QuestionMark /> {helpText}
         </p>
       </div>
       <ModalCustom

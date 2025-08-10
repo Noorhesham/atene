@@ -1,9 +1,11 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@100..900&display=swap");
 /* InterFace Font Family */
 @import "tailwindcss";
 @import "tw-animate-css";
+
 @theme inline {
   --color-main: #395a7d;
-  --font-oxygen: "InterFace", sans-serif;
+
   --color-gray: #666666;
   --color-primary: #6191c7;
   --color-light: #8d8d8d;
@@ -79,90 +81,6 @@
   --sidebar-ring: oklch(0.623 0.214 259.815);
 }
 
-@font-face {
-  font-family: "InterFace";
-  src: url("/TrialStaticFonts/InterFace_Trial_Rg.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "InterFace";
-  src: url("/TrialStaticFonts/InterFace_Trial_Lt.ttf") format("truetype");
-  font-weight: 300;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "InterFace";
-  src: url("/TrialStaticFonts/InterFace_Trial_LtIt.ttf") format("truetype");
-  font-weight: 300;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: "InterFace";
-  src: url("/TrialStaticFonts/InterFace_Trial_Bd.ttf") format("truetype");
-  font-weight: 700;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "InterFace";
-  src: url("/TrialStaticFonts/InterFace_Trial_BdIt.ttf") format("truetype");
-  font-weight: 700;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: "InterFace";
-  src: url("/TrialStaticFonts/InterFace_Trial_XBd.ttf") format("truetype");
-  font-weight: 800;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "InterFace";
-  src: url("/TrialStaticFonts/InterFace_Trial_XBdIt.ttf") format("truetype");
-  font-weight: 800;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: "InterFace";
-  src: url("/TrialStaticFonts/InterFace_Trial_Blk.ttf") format("truetype");
-  font-weight: 900;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "InterFace";
-  src: url("/TrialStaticFonts/InterFace_Trial_BlkIt.ttf") format("truetype");
-  font-weight: 900;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: "InterFace";
-  src: url("/TrialStaticFonts/InterFace_Trial_Th.ttf") format("truetype");
-  font-weight: 100;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "InterFace";
-  src: url("/TrialStaticFonts/InterFace_Trial_ThIt.ttf") format("truetype");
-  font-weight: 100;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: "InterFace";
-  src: url("/TrialStaticFonts/InterFace_Trial_It.ttf") format("truetype");
-  font-weight: 400;
-  font-style: italic;
-}
-
 @custom-variant dark (&:is(.dark *));
 
 /* RTL Support */
@@ -171,6 +89,7 @@
 }
 body {
   background-color: white !important;
+  font-family: "Noto Sans Arabic", sans-serif !important;
 }
 
 /* @layer base {
