@@ -2,9 +2,33 @@ import { useFormContext } from "react-hook-form";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Loader2 } from "lucide-react";
+import { PlusCircle, Loader2, CheckCircle, Circle, Trash2 } from "lucide-react";
 import { API_ENDPOINTS, FetchFunction } from "@/constants/api";
-
+const ImagePreview = ({ image, onRemove, onSetPrimary, isPrimary }) => (
+  <div className="relative group w-[200px] border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+    <img
+      src={image.preview}
+      alt="Uploaded preview"
+      width={200}
+      height={109}
+      className="w-full h-[109px] object-cover"
+    />
+    <div className="p-2 bg-white flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <button onClick={onSetPrimary} className="text-gray-600">
+          {isPrimary ? <CheckCircle className="w-5 h-5 text-blue-600" /> : <Circle className="w-5 h-5 text-gray-400" />}
+        </button>
+        <span className="text-sm font-medium text-gray-700">الصورة الاساسية</span>
+      </div>
+      <button
+        onClick={onRemove}
+        className="w-8 h-8 flex items-center justify-center bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
+      >
+        <Trash2 size={16} />
+      </button>
+    </div>
+  </div>
+);
 interface ImageUploaderProps {
   name: string;
   previewName?: string; // Optional name for preview URL field
@@ -147,28 +171,13 @@ const ImageUploader = ({
           {currentImages.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {currentImages.map((image, index) => (
-                <div key={image.file_name || index} className="relative group border rounded-lg overflow-hidden">
-                  <img src={image.preview} alt={`Upload ${index + 1}`} className="w-full h-32 object-cover" />
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    {!image.isPrimary && (
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="secondary"
-                        className="bg-white hover:bg-gray-100 text-xs"
-                        onClick={() => handleSetPrimary(index)}
-                      >
-                        رئيسي
-                      </Button>
-                    )}
-                    <Button type="button" size="sm" variant="destructive" onClick={() => handleRemove(index)}>
-                      حذف
-                    </Button>
-                  </div>
-                  {image.isPrimary && (
-                    <div className="absolute top-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">رئيسي</div>
-                  )}
-                </div>
+                <ImagePreview
+                  key={image.file_name || index}
+                  image={image}
+                  isPrimary={image.isPrimary}
+                  onRemove={() => handleRemove(index)}
+                  onSetPrimary={() => handleSetPrimary(index)}
+                />
               ))}
             </div>
           )}
@@ -215,7 +224,7 @@ const ImageUploader = ({
           ) : (
             <div
               {...getRootProps()}
-              className={`flex flex-col h-48 items-center justify-center w-56 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors ${
+              className={`flex flex-col h-48 items-center justify-center w-56 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-[#F8F8F8] hover:bg-gray-100 transition-colors ${
                 isDragActive ? "border-blue-500 bg-blue-50" : ""
               }`}
             >
@@ -224,8 +233,16 @@ const ImageUploader = ({
                 <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
               ) : (
                 <>
-                  <PlusCircle className="w-8 h-8 text-gray-400 mb-2" />
-                  <p className="text-sm text-center text-gray-500">اضغط لإضافة صورة أو اسحب وأفلت</p>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="44" height="43" viewBox="0 0 44 43" fill="none">
+                    <path
+                      d="M22.0002 14.3335V28.6668M29.1668 21.5002H14.8335M39.9168 21.5002C39.9168 11.6048 31.8955 3.5835 22.0002 3.5835C12.1048 3.5835 4.0835 11.6048 4.0835 21.5002C4.0835 31.3955 12.1048 39.4168 22.0002 39.4168C31.8955 39.4168 39.9168 31.3955 39.9168 21.5002Z"
+                      stroke="#8E8E8E"
+                      stroke-width="2.6875"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                  <p className="text-sm text-center text-gray-500"> اضف او اسحب صورة او فيديو </p>
                   <p className="text-xs text-gray-400 mt-1">PNG, JPG, JPEG</p>
                 </>
               )}

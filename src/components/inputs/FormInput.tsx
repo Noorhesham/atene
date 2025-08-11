@@ -292,7 +292,7 @@ const FormInput = ({
                         {field.value ? (
                           multiple ? (
                             // Multiple images display
-                            <div className="p-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary">
+                            <div className="p-2  border-gray-300 rounded-lg hover:border-primary">
                               {Array.isArray(field.value) && (field.value as any[]).length > 0 ? (
                                 <>
                                   <div className={`grid grid-cols-${grid} gap-2`}>
@@ -369,10 +369,27 @@ const FormInput = ({
                                   </div>
                                 </>
                               ) : (
-                                <div className="flex flex-col items-center justify-center h-32">
-                                  <ImageIcon className="mx-auto h-8 w-8 text-gray-400" />
-                                  <p className="mt-2 text-sm text-gray-500">اختر صور متعددة</p>
-                                  <p className="text-xs text-gray-400">حد أقصى {maxFiles} صور</p>
+                                <div
+                                  className="flex flex-col items-center justify-center w-full 
+                                h-40 bg-[#F8F8F8]  rounded-lg hover:border-primary"
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="44"
+                                    height="43"
+                                    viewBox="0 0 44 43"
+                                    fill="none"
+                                  >
+                                    <path
+                                      d="M22.0002 14.3335V28.6668M29.1668 21.5002H14.8335M39.9168 21.5002C39.9168 11.6048 31.8955 3.5835 22.0002 3.5835C12.1048 3.5835 4.0835 11.6048 4.0835 21.5002C4.0835 31.3955 12.1048 39.4168 22.0002 39.4168C31.8955 39.4168 39.9168 31.3955 39.9168 21.5002Z"
+                                      stroke="#8E8E8E"
+                                      stroke-width="2.6875"
+                                      stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                    />
+                                  </svg>
+                                  <p className="text-xs text-center text-gray-400"> اضف او اسحب صورة او فيديو </p>
+                                  <p className="text-xs text-gray-400 mt-1">PNG, JPG, JPEG</p>
                                   {mainCoverField && (
                                     <p className="text-xs text-main mt-1">الصورة الأولى ستكون الغلاف الرئيسي</p>
                                   )}
@@ -392,16 +409,34 @@ const FormInput = ({
                                   : ""
                               }
                               alt="Selected media"
-                              className="w-32 h-32 object-cover rounded-lg border-2 border-dashed border-gray-300 hover:border-primary"
+                              className="w-56 h-32 object-cover rounded-lg  border object-top
+                               border-gray-300 hover:border-primary"
                             />
                           )
                         ) : (
-                          <div className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center hover:border-primary">
-                            <div className="text-center">
-                              <ImageIcon className="mx-auto h-8 w-8 text-gray-400" />
-                              <p className="mt-2 text-sm text-gray-500">
-                                {multiple ? `اختر صور متعددة (حد أقصى ${maxFiles})` : "اختر صورة"}
-                              </p>
+                          <div
+                            className="w-56 h-40
+                           bg-[#F8F8F8]  rounded-lg flex items-center justify-center hover:border-primary"
+                          >
+                            <div className="text-center flex flex-col items-center justify-center">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="44"
+                                height="43"
+                                viewBox="0 0 44 43"
+                                fill="none"
+                              >
+                                <path
+                                  d="M22.0002 14.3335V28.6668M29.1668 21.5002H14.8335M39.9168 21.5002C39.9168 11.6048 31.8955 3.5835 22.0002 3.5835C12.1048 3.5835 4.0835 11.6048 4.0835 21.5002C4.0835 31.3955 12.1048 39.4168 22.0002 39.4168C31.8955 39.4168 39.9168 31.3955 39.9168 21.5002Z"
+                                  stroke="#8E8E8E"
+                                  stroke-width="2.6875"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                />
+                              </svg>
+                              <p className="text-xs text-center text-gray-400"> اضف او اسحب صورة او فيديو </p>
+                              <p className="text-xs text-gray-400 mt-1">PNG, JPG, JPEG</p>
+                              {multiple && <p className="mt-2 text-sm text-gray-500">حد أقصى {maxFiles} صور</p>}
                             </div>
                           </div>
                         )}
@@ -426,7 +461,7 @@ const FormInput = ({
                 </div>
               ) : phone ? (
                 <div className="flex items-center gap-2 w-full ml-auto">
-                  <PhoneNumberInput  name={name} label={label} icon={icon} />
+                  <PhoneNumberInput name={name} label={label} icon={icon} />
                 </div>
               ) : rate ? (
                 <div className="flex items-center gap-2 ml-auto">
