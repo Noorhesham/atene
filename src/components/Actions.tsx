@@ -13,6 +13,12 @@ const getEntityActionLabel = (
   action: "approve" | "edit" | "delete"
 ): string => {
   const entityLabels: Record<string, { approve: string; edit: string; delete: string; deactive: string }> = {
+    orders: {
+      approve: "موافقة الطلب",
+      edit: "تعديل بيانات الطلب",
+      delete: "حذف الطلب",
+      deactive: "تعطيل الطلب",
+    },
     stores: {
       approve: "موافقة المتجر",
       edit: "تعديل بيانات المتجر",
@@ -80,6 +86,7 @@ interface ActionsProps {
   isActive?: boolean;
   onApprove?: () => void;
   editLink?: string;
+  editClick?: () => void;
   isUpdating?: boolean;
   className?: string;
   customActions?: React.ReactNode;
@@ -189,6 +196,7 @@ const Actions = ({
   isActive = false,
   onApprove,
   editLink,
+  editClick,
   isUpdating = false,
   className = "",
   customActions,
@@ -273,14 +281,21 @@ const Actions = ({
               />
             )}
 
-            {formattedEditLink && (
+            {formattedEditLink ? (
               <ActionButton
                 icon={<Edit size={16} className="ml-2" />}
                 label={getEntityActionLabel(entityType || "stores", "edit")}
                 className="bg-blue-50 w-full  transition-all duration-300 hover:text-white text-main border border-main hover:bg-main rounded-lg px-4 py-2 text-sm font-medium"
                 to={formattedEditLink}
               />
-            )}
+            ) : editClick ? (
+              <ActionButton
+                className="bg-blue-50 w-full  transition-all duration-300 hover:text-white text-main border border-main hover:bg-main rounded-lg px-4 py-2 text-sm font-medium"
+                icon={<Edit size={16} className="ml-2" />}
+                label={getEntityActionLabel(entityType || "stores", "edit")}
+                onClick={editClick}
+              />
+            ) : null}
 
             {entity && entityType && (
               <ActionButton

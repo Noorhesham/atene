@@ -3,16 +3,19 @@ import { ApiOrder, ApiProduct } from "@/types";
 import Loader from "@/components/Loader";
 import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
 import { VariantSelectionModal } from "./VariantSelectionModal";
-import { Search, X, Plus, Minus } from "lucide-react";
+import { Search, X, Plus, Minus, ChevronLeft } from "lucide-react";
 import { Loader2 } from "lucide-react";
 
 const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack: () => void }) => {
   const { data: products, isLoading: productsLoading } = useAdminEntityQuery("products");
+  const { data: categories = [] } = useAdminEntityQuery("categories");
   const { update, isUpdating } = useAdminEntityQuery("orders");
   type CartItem = ApiOrder["items"][number] & { variation_id?: number };
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [productForVariants, setProductForVariants] = useState<ApiProduct | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<Set<number>>(new Set());
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Selected product ids used only for UI highlighting
 
@@ -23,6 +26,25 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
     const existingProductIds = new Set((orderToEdit?.items || []).map((item) => item.product_id));
     setSelectedProducts(existingProductIds);
   }, [orderToEdit?.id]);
+
+  // Filter products based on category and search
+  const filteredProducts = useMemo(() => {
+    let filtered = products || [];
+
+    // Filter by category
+    if (selectedCategory) {
+      filtered = filtered.filter((product: ApiProduct) => product.category_id === selectedCategory);
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      filtered = filtered.filter((product: ApiProduct) =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase().trim())
+      );
+    }
+
+    return filtered;
+  }, [products, selectedCategory, searchQuery]);
 
   // Simple hash previously used for variant id; no longer needed after using real variation_id
 
@@ -182,18 +204,56 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
           onConfirm={handleAddVariantToCart}
         />
       )}
-      {/* Left: Product Categories (Placeholder) */}
-      <div className="col-span-12 lg:col-span-3 bg-white rounded-lg border p-4">
-        <h3 className="font-bold mb-4">جميع المنتجات</h3>
-        {/* Category list can be implemented here */}
+      {/* Left: Product Categories Filter */}
+      <div className="col-span-12 lg:col-span-3  bg-white rounded-md overflow-hidden">
+        <div className=" overflow-hidden">
+          {/* All Categories Option */}
+          <button
+            style={{
+              backgroundColor: selectedCategory === null ? "rgba(91, 136, 186, 0.20)" : "transparent",
+            }}
+            onClick={() => setSelectedCategory(null)}
+            className={`w-full text-right px-4 py-4 text-sm font-medium flex justify-between items-center`}
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-main text-base">جميع المنتجات</span>
+              <span className="text-xs text-gray-500">({products?.length || 0})</span>
+            </div>
+            {selectedCategory === null && <ChevronLeft size={16} />}
+          </button>
+
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              style={{
+                backgroundColor: selectedCategory === category.id ? "rgba(91, 136, 186, 0.20)" : "transparent",
+              }}
+              onClick={() => setSelectedCategory(category.id)}
+              className={`w-full text-right px-4 py-4 text-sm font-medium flex justify-between items-center`}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-main text-base">{category.name}</span>
+                <span className="text-xs text-gray-500">
+                  ({products?.filter((p: ApiProduct) => p.category_id === category.id).length || 0})
+                </span>
+              </div>
+              {selectedCategory === category.id && <ChevronLeft size={16} />}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Middle: Product List */}
-      <div className="col-span-12 lg:col-span-5 bg-white rounded-lg border h-full flex flex-col">
-        <div className="p-4 border-b">
+      <div className="col-span-12 lg:col-span-5 bg-white rounded-lg border border-input h-full flex flex-col">
+        <div className=" border-b border-input">
           <div className="relative">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input placeholder="ابحث عن منتج" className="w-full pr-10 pl-4 py-2 border rounded-lg bg-gray-50" />
+            <input
+              placeholder="ابحث عن منتج"
+              className="w-full pr-10 pl-4 py-2 rounded-lg bg-gray-50"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
         </div>
         {productsLoading ? (
@@ -203,13 +263,13 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
         ) : (
           <div className="flex-grow overflow-y-auto p-4">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {products.map((product: ApiProduct) => {
+              {filteredProducts.map((product: ApiProduct) => {
                 const isSelected = selectedProducts.has(product.id);
                 return (
                   <div
                     key={product.id}
                     onClick={() => handleAddToCart(product)}
-                    className={`border rounded-lg p-2 cursor-pointer hover:shadow-md transition-all ${
+                    className={`border border-input rounded-lg p-2 cursor-pointer hover:shadow-md transition-all ${
                       isSelected ? "ring-2 ring-main bg-main/5" : ""
                     }`}
                   >
@@ -225,8 +285,8 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
                         </div>
                       )}
                     </div>
-                    <p className="font-semibold text-gray-800 truncate text-sm">{product.name}</p>
-                    <p className="font-bold text-main">{product.price.toFixed(2)} ₪</p>
+                    <p className="font-[400] text-[#717171] truncate text-[12.174px]">{product.name}</p>
+                    <p className="font-normal text-black">{product.price.toFixed(2)} ₪</p>
                   </div>
                 );
               })}
@@ -236,9 +296,11 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
       </div>
 
       {/* Right: Shopping Cart */}
-      <div className="col-span-12 lg:col-span-4 bg-white rounded-lg border h-full flex flex-col p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-main">سلة الطلب ({cartItems.length} قطع)</h3>
+      <div className="col-span-12 lg:col-span-4  h-full flex flex-col p-4">
+        <div className="flex bg-white rounded-lg p-4 px-6 border border-input justify-between items-center mb-4">
+          <h3 className="font-bold text-main">
+            سلة الطلب <span className="text-sm font-normal text-[#717171]">({cartItems.length} قطع)</span>
+          </h3>
           <button
             onClick={() => {
               setCartItems([]);
@@ -249,57 +311,76 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
             <X className="w-4 h-4" /> تفريغ السلة
           </button>
         </div>
-        {cartItems.length === 0 ? (
-          <div className="flex-grow flex flex-col items-center justify-center text-gray-400">لم يتم اختيار منتج</div>
-        ) : (
-          <div className="flex-grow overflow-y-auto space-y-3">
-            {cartItems.map((item) => {
-              // Find the original product data to get cover_url
-              const originalProduct = products?.find((p) => p.id === item.product_id);
-              return (
-                <div key={item.id} className="flex items-center gap-3">
-                  <img
-                    src={originalProduct?.cover_url || ""}
-                    alt={item.product?.name}
-                    className="w-16 h-16 rounded-md object-cover bg-gray-100"
-                  />
-                  <div className="flex-grow">
-                    <p className="font-semibold text-main text-sm">{item.product?.name}</p>
-                    <p className="font-bold text-main">{item.price.toFixed(2)} ₪</p>
+        <div className="flex-grow overflow-y-auto bg-white items-center flex flex-col rounded-lg p-4 px-6 border border-input">
+          {cartItems.length === 0 ? (
+            <div className="flex-grow flex flex-col items-center my-auto h-fit justify-center text-gray-400">
+              <img src="/car2t.svg" alt="" />
+              <p className="text-[#555] text-[22px] font-[700]">لم يتم اختيار منتج</p>
+              <p className="text-[#AAA] text-[16px] font-[400]">يمكنك إضافة أول منتج للسلة بالضغط عليه من القائمة</p>
+            </div>
+          ) : (
+            <div className="flex-grow w-full overflow-y-auto space-y-3">
+              {cartItems.map((item) => {
+                // Find the original product data to get cover_url
+                const originalProduct = products?.find((p) => p.id === item.product_id);
+                return (
+                  <div key={item.id} className="flex items-center gap-3">
+                    <img
+                      src={originalProduct?.cover_url || ""}
+                      alt={item.product?.name}
+                      className="w-16 h-16 rounded-md object-cover bg-gray-100"
+                    />
+                    <div className="flex-grow">
+                      <p className="font-semibold text-main text-sm">{item.product?.name}</p>
+                      <p className="font-bold text-main">{item.price.toFixed(2)} ₪</p>
+                    </div>
+                    <div className="flex items-center border border-input rounded-md">
+                      <button
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        className="h-8 w-8 flex items-center justify-center hover:bg-gray-100"
+                        title="زيادة الكمية"
+                      >
+                        <Plus size={14} />
+                      </button>
+                      <span className="px-3 font-semibold text-sm">{item.quantity}</span>
+                      <button
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        className="h-8 w-8 flex items-center justify-center hover:bg-gray-100"
+                        title="تقليل الكمية"
+                      >
+                        <Minus size={14} />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center border rounded-md">
-                    <button
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      className="h-8 w-8 flex items-center justify-center hover:bg-gray-100"
-                      title="زيادة الكمية"
-                    >
-                      <Plus size={14} />
-                    </button>
-                    <span className="px-3 font-semibold text-sm">{item.quantity}</span>
-                    <button
-                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      className="h-8 w-8 flex items-center justify-center hover:bg-gray-100"
-                      title="تقليل الكمية"
-                    >
-                      <Minus size={14} />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-        <div className="border-t pt-4 mt-4 space-y-3">
-          <div className="flex justify-between font-semibold text-lg">
-            <span>الاجمالي:</span>
-            <span>{cartTotal.toFixed(2)} ₪</span>
+                );
+              })}
+            </div>
+          )}
+        </div>
+        <div className="border-t border-input pt-4 mt-4 space-y-3">
+          <div className="flex  items-center gap-1 font-semibold text-base">
+            <span className=" text-[#1C1C1C]">الاجمالي:</span>
+            <span className="  text-[#393939]">{cartTotal.toFixed(2)} ₪</span>
           </div>
           <button
             onClick={handleSaveChanges}
             disabled={isUpdating}
-            className="w-full bg-main text-white hover:bg-main/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+            className="w-full bg-[#406896] text-center flex
+             text-white hover:bg-main/90 py-3 rounded-lg font-semibold flex items-center gap-2"
           >
-            {isUpdating ? <Loader /> : "حفظ التغييرات"}
+            <span className="flex mx-auto items-center gap-2">
+              {" "}
+              استكمال الطلب
+              <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 25 25" fill="none">
+                <path
+                  d="M12.5 8.5L8.5 12.5M8.5 12.5L12.5 16.5M8.5 12.5H16.5M22.5 12.5C22.5 18.0228 18.0228 22.5 12.5 22.5C6.97715 22.5 2.5 18.0228 2.5 12.5C2.5 6.97715 6.97715 2.5 12.5 2.5C18.0228 2.5 22.5 6.97715 22.5 12.5Z"
+                  stroke="white"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
           </button>
           <button
             onClick={onBack}

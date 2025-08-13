@@ -59,12 +59,12 @@ const CouponsPage = () => {
       {
         accessorKey: "start_date",
         header: "تاريخ بداية الكوبون",
-        cell: ({ row }) => new Date(row.original.start_date).toLocaleDateString("ar-SA"),
+        cell: ({ row }) => new Date(row.original.start_date).toLocaleDateString("en-US"),
       },
       {
         accessorKey: "end_date",
         header: "تاريخ انتهاء الكوبون",
-        cell: ({ row }) => new Date(row.original.end_date).toLocaleDateString("ar-SA"),
+        cell: ({ row }) => new Date(row.original.end_date).toLocaleDateString("en-US"),
       },
       {
         id: "actions",
@@ -77,7 +77,9 @@ const CouponsPage = () => {
 
           return (
             <div className="flex items-center gap-2">
+              <CouponActions coupon={coupon} editLink={`/admin/coupons/edit/${coupon.id}`} />
               <Switch
+                className=" mr-5"
                 checked={isActive}
                 onCheckedChange={async (checked) => {
                   try {
@@ -97,7 +99,6 @@ const CouponsPage = () => {
                   }
                 }}
               />
-              <CouponActions coupon={coupon} editLink={`/admin/coupons/edit/${coupon.id}`} />
             </div>
           );
         },
@@ -113,8 +114,8 @@ const CouponsPage = () => {
   });
 
   return (
-    <div className="w-full min-h-screen p-4 sm:p-6 lg:p-8 bg-gray-50" dir="rtl">
-      <header className="flex flex-col sm:flex-row justify-between w-full  items-start  gap-4 mb-6">
+    <div className="w-full min-h-screen p-4 sm:p-6 base:p-8 bg-gray-50" dir="rtl">
+      <header className="flex bg-white p-4 rounded-md flex-col sm:flex-row justify-between w-full  items-start  gap-4 mb-6">
         <div className="flex items-center   gap-2">
           {" "}
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -126,7 +127,7 @@ const CouponsPage = () => {
               stroke-linejoin="round"
             />
           </svg>
-          <div className="flex items-start flex-col gap-2">
+          <div className="flex  items-start flex-col gap-2">
             {" "}
             <div>
               <p className="text-[12.174px] text-black mt-1">كوبونات التخفيض</p>
@@ -185,14 +186,14 @@ const CouponsPage = () => {
         </div>
       </header>
 
-      <div className=" rounded-lg border border-gray-200 p-4">
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader className="bg-gray-100">
+      <div className=" ">
+        <div className=" rounded-md overflow-hidden">
+          <Table className=" px-7">
+            <TableHeader className="bg-[#F0F0F0] px-8">
               {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id} className=" hover:bg-gray-50">
+                <tr key={headerGroup.id} className="first:mr-5 ">
                   {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id} className="text-right text-gray-600 font-medium">
+                    <TableHead key={header.id} className="text-right text-black font-medium text-base">
                       {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                     </TableHead>
                   ))}
@@ -204,7 +205,7 @@ const CouponsPage = () => {
                 table.getRowModel().rows.map((row) => (
                   <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="py-3">
+                      <TableCell key={cell.id} className="py-3 text-base text-black font-medium">
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
                     ))}
@@ -212,7 +213,7 @@ const CouponsPage = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className="h-24 text-center">
+                  <TableCell colSpan={columns.length} className="h-24 text-center text-base text-black font-medium">
                     لا توجد نتائج.
                   </TableCell>
                 </TableRow>

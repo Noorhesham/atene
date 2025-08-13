@@ -225,6 +225,15 @@ const DashboardNavbar = () => {
                       </Link>
                     </DropdownMenuItem>
                   )}
+                  {!isAdmin && (
+                    <DropdownMenuItem
+                      className={isDropdownItemActive(`${preLink}/followers`) ? "bg-main  text-white" : ""}
+                    >
+                      <Link to={`${preLink}/followers`} className="w-full">
+                        المتابعين
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   {isAdmin && (
                     <DropdownMenuItem
                       className={isDropdownItemActive(`${preLink}/settings`) ? "bg-main text-white" : ""}
