@@ -6,6 +6,7 @@ import Actions from "@/components/Actions";
 import toast from "react-hot-toast";
 import { API_BASE_URL } from "@/constants/api";
 import { InfoItem } from "@/components/InfoItem";
+import { Link } from "react-router-dom";
 
 export const OrdersList = ({
   orders,
@@ -201,7 +202,10 @@ export const OrderDetails = ({ order, onEdit }: { order: ApiOrder; onEdit: (orde
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button className="text-main font-semibold flex items-center gap-2 border border-main rounded-lg px-2 py-1 text-xs">
+          <Link
+            to={`/dashboard/chat`}
+            className="text-main font-semibold flex items-center gap-2 border border-main rounded-lg px-2 py-1 text-xs"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path
                 d="M11.996 12H12.004M15.991 12H16M8 12H8.009M22 11.567C22 16.85 17.522 21.133 12 21.133C11.3487 21.1337 10.7037 21.0743 10.065 20.955C9.606 20.868 9.377 20.825 9.217 20.85C9.057 20.874 8.829 20.995 8.375 21.236C7.08134 21.925 5.5928 22.1565 4.151 21.893C4.70175 21.2122 5.07521 20.4054 5.238 19.545C5.338 19.015 5.09 18.5 4.718 18.123C3.034 16.411 2 14.105 2 11.567C2 6.284 6.478 2 12 2C17.522 2 22 6.284 22 11.567Z"
@@ -212,7 +216,7 @@ export const OrderDetails = ({ order, onEdit }: { order: ApiOrder; onEdit: (orde
               />
             </svg>
             تحدث معه
-          </button>
+          </Link>
           <button className="text-[#D00416] font-semibold flex items-center gap-2 border border-[#D00416] rounded-lg px-2 py-1 text-xs">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path

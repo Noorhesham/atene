@@ -4,11 +4,12 @@ import { Card } from "@/components/ui/card";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { STORAGE_URL } from "@/constants/api";
+import { useNavigate } from "react-router-dom";
 
-const ProductPreview = () => {
+const ProductPreview = ({ productId, isdefaultproduct }: { productId: string; isdefaultproduct: boolean }) => {
   const { watch } = useFormContext();
   const [activeTab, setActiveTab] = useState("card");
-
+  const navigate = useNavigate();
   const productName = watch("productName");
   const price = watch("price");
   const imagesData = watch("images");
@@ -24,11 +25,11 @@ const ProductPreview = () => {
       <div className="flex justify-center mb-10">
         <div className="p-1 rounded-lg flex items-center gap-1 bg-[#EBF0F5]">
           <Button
-            onClick={(e) => {
-              e.stopPropagation();
-              setActiveTab("page");
+            onClick={() => {
+              navigate(`/products/${productId}`);
             }}
-            variant={activeTab === "page" ? "primary" : "ghost"}
+            disabled={!isdefaultproduct}
+            variant={activeTab === "page" ? "default" : "ghost"}
             className={`px-6 py-2 text-sm font-semibold rounded-md transition-all duration-300 ${
               activeTab === "page" ? "bg-[#5A7A9D] text-white shadow-sm" : "bg-transparent text-[#5A7A9D]"
             }`}
@@ -40,7 +41,7 @@ const ProductPreview = () => {
               e.stopPropagation();
               setActiveTab("card");
             }}
-            variant={activeTab === "card" ? "primary" : "ghost"}
+            variant={activeTab === "card" ? "default" : "ghost"}
             className={`px-6 py-2 text-sm font-semibold rounded-md transition-all duration-300 ${
               activeTab === "card" ? "bg-[#5A7A9D] text-white shadow-sm" : "bg-transparent text-[#5A7A9D]"
             }`}

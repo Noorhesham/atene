@@ -112,12 +112,8 @@ const StoreWorkingHours = () => {
 
   return (
     <div className="w-full space-y-6">
-      <div className="flex items-center gap-2">
-        <h3 className="text-xl font-semibold text-gray-900">أوقات العمل و الطلبات</h3>
-      </div>
-
       {/* Store Status Section */}
-      <Card>
+      <div>
         <CardHeader>
           <CardTitle className="text-lg font-medium">حالة المتجر</CardTitle>
         </CardHeader>
@@ -151,7 +147,7 @@ const StoreWorkingHours = () => {
             </div>
           ))}
         </CardContent>
-      </Card>
+      </div>
 
       {/* Working Hours Table - Show when store is open (with or without working times) */}
       {(openStatus === "open_with_working_times" || openStatus === "open_without_working_times") && (

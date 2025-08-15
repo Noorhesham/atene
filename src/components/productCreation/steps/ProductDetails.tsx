@@ -22,14 +22,8 @@ type FormValues = {
   neighborhood: string;
 };
 
-// --- MOCK DATA ---
 const typeOptions = [{ value: "rings", label: "خواتم" }];
-const mainCategoryOptions = [{ value: "women-fashion", label: "أزياء - موضة نسائية" }];
-const subCategoryOptions = [{ value: "accessories", label: "اكسسوارات - مجوهرات" }];
-const cityOptions = [{ value: "cairo", label: "القاهرة" }];
-const neighborhoodOptions = [{ value: "maadi", label: "المعادي" }];
 
-// --- STEP 2: PRODUCT DETAILS COMPONENT ---
 const ProductDetails = () => {
   const { control } = useFormContext<FormValues>();
   const [keywordInput, setKeywordInput] = useState("");
@@ -61,7 +55,6 @@ const ProductDetails = () => {
         options={storeOptions}
         placeholder="المتجر الرئيسي"
       />
-
       {/* Keywords section */}
       <div>
         <div className="flex w-full items-center justify-between mt-4 gap-4 mb-2">
@@ -70,7 +63,7 @@ const ProductDetails = () => {
             <QuestionMark /> ماهي الكلمات المفتاحية
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex relative items-center gap-2">
           <Input
             placeholder="اضف الوسم ثم اضغط على إضافة"
             value={keywordInput}
@@ -82,7 +75,11 @@ const ProductDetails = () => {
               }
             }}
           />
-          <Button type="button" onClick={handleAddKeyword} className="bg-main text-white hover:bg-main/90 shrink-0">
+          <Button
+            type="button"
+            onClick={handleAddKeyword}
+            className="bg-[#5B87B9] absolute left-0 text-white hover:bg-main/90 shrink-0"
+          >
             إضافة
           </Button>
         </div>
@@ -90,24 +87,90 @@ const ProductDetails = () => {
           {keywordFields.map((field, index) => (
             <div
               key={field.id}
-              className="bg-gray-200 text-gray-800 text-sm font-medium pl-2 pr-3 py-1 rounded-full flex items-center gap-2"
+              className="border-main bg-[#5b87b921] border text-main text-sm font-medium pl-2 pr-3 py-1 rounded-full flex items-center gap-2"
             >
               {(field as { value: string }).value}
-              <button
-                type="button"
-                onClick={() => removeKeyword(index)}
-                className="text-gray-500 hover:text-gray-800"
-                title="حذف"
-              >
+              <button type="button" onClick={() => removeKeyword(index)} className="text-main " title="حذف">
                 <X size={16} />
               </button>
             </div>
           ))}
         </div>
       </div>
-
       {/* Product Attributes section */}
-      <SpecificationsInput name="specifications" label="صفات المنتج" helpText="ماهي صفات المنتج" />
+      <SpecificationsInput name="specifications" label="صفات المنتج" helpText="ماهي صفات المنتج" />{" "}
+      <div className="space-y-1 ">
+        <FormLabel className="text-[18px]">مميزات المتجر</FormLabel>
+        <div className="grid px-4 bg-gray-100 grid-cols-1 lg:grid-cols-2 gap-4">
+          <div>
+            <FormInput flex select name="type" className=" " label="النوع" options={typeOptions} placeholder="خواتم" />
+          </div>
+          <FormField
+            control={control}
+            name="hasDelivery"
+            render={({ field }) => (
+              <div className="flex items-center justify-between rounded-lg">
+                <span className="font-medium text-gray-700">هل لديك خدمة توصيل؟</span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    onClick={() => field.onChange(false)}
+                    className={`rounded-full px-6 ${!field.value ? "bg-main text-white" : "bg-white text-gray-700"}`}
+                  >
+                    لا
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => field.onChange(true)}
+                    className={`rounded-full px-6 ${field.value ? "bg-main text-white" : "bg-white text-gray-700"}`}
+                  >
+                    نعم
+                  </Button>
+                </div>
+              </div>
+            )}
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 px-4">
+        <FormInput
+          select
+          flex
+          name="mainCategory"
+          label="القسم الرئيسي"
+          options={[{ value: "1", label: "أزياء - موضة نسائية" }]}
+          placeholder="أزياء - موضة نسائية"
+        />{" "}
+        <FormInput
+          select
+          flex
+          name="subCategory"
+          label="القسم الفرعي"
+          options={[{ value: "1", label: "اكسسوارات - مجوهرات" }]}
+          placeholder="اكسسوارات - مجوهرات"
+          className="col-span-2"
+        />
+      </div>
+      {/* Categories Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4  px-4 rounded-lg">
+        <FormInput
+          flex
+          select
+          name="city"
+          label="المدينة"
+          options={[{ value: "1", label: "القاهرة" }]}
+          placeholder="القاهرة"
+        />
+
+        <FormInput
+          select
+          flex
+          name="neighborhood"
+          label="الحي / المنطقة"
+          options={[{ value: "1", label: "المعادي" }]}
+          placeholder="المعادي"
+        />
+      </div>
     </div>
   );
 };

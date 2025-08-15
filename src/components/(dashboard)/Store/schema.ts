@@ -25,11 +25,11 @@ const specificationSchema = z.object({
 export const storeSchema = z.object({
   // Basic Info
   owner_id: z.string().optional(),
-  name: z.string().min(1, "اسم المتجر مطلوب"),
+  name: z.string().min(1, "اسم المتجر مطلوب").max(50, "اسم المتجر يجب أن يكون 50 حرف على الأقل"),
   logo: z.string().optional().nullable(),
   cover: z.array(z.string()).min(1, "يجب إضافة صورة غلاف واحدة على الأقل"),
   mainCover: z.string().optional(),
-  description: z.string().min(10, "وصف المتجر يجب أن يكون 10 أحرف على الأقل"),
+  description: z.string().min(10, "وصف المتجر يجب أن يكون 10 أحرف على الأقل").max(300, "وصف المتجر يجب أن يكون 300 حرف على الأقل"),
   address: z.string().min(1, "العنوان مطلوب"),
   lng: z.string().optional(),
   lat: z.string().optional(),
@@ -43,10 +43,7 @@ export const storeSchema = z.object({
   facebook: z.string().optional().nullable(),
   instagram: z.string().optional().nullable(),
   tiktok: z.string().optional().nullable(),
-  twitter: z.string().optional().nullable(),
   youtube: z.string().optional().nullable(),
-  linkedin: z.string().optional().nullable(),
-  pinterest: z.string().optional().nullable(),
 
   // Store settings
   open_status: z.enum(["open_without_working_times", "open_with_working_times", "temporary_closed", "closed"]),

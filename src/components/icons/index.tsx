@@ -142,6 +142,23 @@ export const Sort = () => (
     <path d="M3 7H21M6 12H18M10 17H14" stroke="#4A5568" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
+export const TickGreen = () => {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M22 12C22 6.477 17.523 2 12 2C6.477 2 2 6.477 2 12C2 17.523 6.477 22 12 22C17.523 22 22 17.523 22 12Z"
+        fill="#1FC16B"
+      />
+      <path
+        d="M8 12.75C8 12.75 9.6 13.662 10.4 15C10.4 15 12.8 9.75 16 8"
+        stroke="white"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  );
+};
 export const QuestionMark = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="25" viewBox="0 0 24 25" fill="none">
     <path

@@ -88,7 +88,6 @@ const DashboardNavbar = () => {
                   الرئيسية
                 </Link>
               </Button>
-
               {/* Stores Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -113,22 +112,20 @@ const DashboardNavbar = () => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-
               {/* Orders Dropdown */}
               {!isAdmin && (
                 <Button variant="ghost" className={getDropdownButtonStyles(`${preLink}/orders`)}>
-                  <Link to={`${preLink}/orders`} className="w-full">
+                  <Link to={`${preLink}/orders`} className="w-full flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M3.00587 8V13.04C3.00587 16.793 3.00587 18.669 4.17787 19.834C5.34987 20.999 7.23487 21 11.0059 21H13.0059C16.7769 21 18.6629 21 19.8339 19.834C21.0049 18.668 21.0059 16.793 21.0059 13.041V8M10.0059 11H14.0059M20.2039 3H3.80787C3.05787 3 2.68187 3 2.42187 3.177C2.29351 3.2647 2.18737 3.38111 2.11187 3.517C1.95887 3.789 1.99587 4.157 2.07087 4.895C2.19587 6.126 2.25787 6.742 2.58387 7.182C2.74687 7.401 2.95287 7.585 3.18987 7.723C3.66587 8 4.29187 8 5.54587 8H18.4679C19.7209 8 20.3469 8 20.8229 7.723C21.0599 7.585 21.2659 7.401 21.4289 7.182C21.7549 6.742 21.8169 6.126 21.9419 4.895C22.0169 4.158 22.0539 3.789 21.9019 3.516C21.826 3.38037 21.7195 3.26429 21.5909 3.177C21.3299 3 20.9539 3 20.2039 3Z"
+                        stroke="#38587A"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
                     جميع الطلبات
-                  </Link>
-                </Button>
-              )}
-              {!isAdmin && (
-                <Button
-                  variant="ghost"
-                  className={isDropdownItemActive(`${preLink}/coupons`) ? "bg-main text-white" : ""}
-                >
-                  <Link to={`${preLink}/coupons`} className="w-full">
-                    الكوبونات
                   </Link>
                 </Button>
               )}
@@ -181,7 +178,17 @@ const DashboardNavbar = () => {
                     </>
                   )}
                 </DropdownMenuContent>
-              </DropdownMenu>
+              </DropdownMenu>{" "}
+              {!isAdmin && (
+                <Button
+                  variant="ghost"
+                  className={isDropdownItemActive(`${preLink}/coupons`) ? "bg-main text-white" : ""}
+                >
+                  <Link to={`${preLink}/coupons`} className="w-full">
+                    الكوبونات
+                  </Link>
+                </Button>
+              )}
               {!isAdmin && (
                 <Link to={`${preLink}/chat`}>
                   <Button variant="ghost" className={getDropdownButtonStyles(`${preLink}/chat`)}>
@@ -190,7 +197,6 @@ const DashboardNavbar = () => {
                   </Button>
                 </Link>
               )}
-
               {isAdmin && (
                 <Link to={`${preLink}/reports`}>
                   <Button variant="ghost" className={getDropdownButtonStyles(`${preLink}/reports`)}>

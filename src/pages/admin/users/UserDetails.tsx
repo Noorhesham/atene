@@ -103,7 +103,7 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
   return (
     <div className="p-6">
       <Card className="p-6">
-        <h3 className="text-xl font-semibold text-[#3A63A8] text-right">بيانات الموظف</h3>
+        <h3 className="text-lg font-semibold text-main text-right">بيانات الموظف</h3>
         <FormProvider {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="flex gap-4">
@@ -158,7 +158,7 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
               className="bg-white border-[#E7EAEE] text-[#101828]"
             />
             <div className="mt-6 pt-6 border-t border-[#E7EAEE] flex gap-4 items-center">
-              <Button type="submit" className="bg-[#F0F7FF] text-[#2E5DB0] hover:bg-[#F0F7FF]/90" disabled={isLoading}>
+              <Button type="submit" className="bg-[#F0F7FF] text-main hover:bg-[#F0F7FF]/90" disabled={isLoading}>
                 حفظ التعديلات وارسال كود التأكيد
               </Button>
               <Button
@@ -175,17 +175,17 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
         </FormProvider>
       </Card>
 
-      <Card className="p-6 bg-white shadow-md">
-        <h3 className="text-xl font-semibold text-[#3A63A8] mb-8 text-right">معلومات الموظف</h3>
+      <Card className="p-6 my-5 bg-white shadow-md">
+        <h3 className="text-xl font-semibold text-main mb-2 text-right">معلومات الموظف</h3>
         <div className="flex items-center justify-start gap-6 text-right">
           {user.avatar ? (
             <img
               src={user.avatar}
               alt={`${user.first_name} ${user.last_name}`}
-              className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+              className="w-14 h-14 rounded-full object-cover border-2 border-gray-200"
             />
           ) : (
-            <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center border-2 border-gray-200">
+            <div className="w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center border-2 border-gray-200">
               <span className="text-gray-400 font-medium text-lg">
                 {user.first_name?.[0]}
                 {user.last_name?.[0]}
@@ -193,20 +193,20 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
             </div>
           )}
           <div className="flex flex-col items-start">
-            <p className="text-lg font-bold text-gray-800">
+            <p className="text-base font-semibold text-black">
               {user.first_name} {user.last_name}
             </p>
             <div className="flex items-center gap-4 mt-2">
               <a href={`tel:${user.phone}`} className="text-base text-[#3A63A8] font-medium hover:underline">
                 {user.phone}
               </a>
-              <Phone size={22} className="text-gray-500" />
-              <MessageCircle size={22} className="text-gray-500" />
-              <Mail size={22} className="text-gray-500" />
+              <Phone size={22} className="text-main" />
+              <MessageCircle size={22} className="text-main" />
+              <Mail size={22} className="text-main" />
             </div>
           </div>
         </div>
-        <div className="mt-8 pt-6 border-t border-gray-200 grid grid-cols-3 gap-4 text-center">
+        <div className="mt-8 pt-6 max-w-2xl border-t border-gray-200 grid grid-cols-3 gap-4 text-center">
           <div>
             <p className="text-sm text-gray-500 mb-1">الأدوار الوظيفية</p>
             <p className="font-semibold text-gray-800">

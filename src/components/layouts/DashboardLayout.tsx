@@ -1,6 +1,5 @@
 import React from "react";
 import DashboardNavbar from "../DashboardNavbar";
-import MaxWidthDashboard from "../(dashboard)/components/MaxWidthDashboard";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -8,7 +7,7 @@ interface DashboardLayoutProps {
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   return (
-    <section className="flex bg-gray-50  w-full flex-col gap-5">
+    <section className="flex bg-[#F5F5F5]  w-full flex-col ">
       <DashboardNavbar />
       {/* <Breadcrumb className="bg-[#F0F7FF]">
         <BreadcrumbList className="flex justify-end">
@@ -28,10 +27,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           </MaxWidthWrapper>
         </BreadcrumbList>
       </Breadcrumb> */}
-      <MaxWidthDashboard className="flex  mx-auto  !w-full min-h-screen gap-6">
-        {/* <Sidebar /> */}
-        {children}
-      </MaxWidthDashboard>
+
+      {/* <Sidebar /> */}
+      {children}
     </section>
   );
 };

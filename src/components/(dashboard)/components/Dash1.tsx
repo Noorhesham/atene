@@ -94,63 +94,70 @@ interface FollowersStatsProps {
   data?: MerchantContentAnalytics;
 }
 
-const FollowersStats = ({ data }: FollowersStatsProps) => {
-  // Create followers data based on the merchant content analytics
-  const followersData = {
-    totalProducts: data?.totalProducts || 0,
-    favoriteProducts: data?.favoriteProducts || 0,
-    inCompareProducts: data?.inCompareProducts || 0,
-    converSation: data?.converSation || 0,
-    totalOrders: data?.totalOrders || 0,
-    totalCompletedOrders: data?.totalCompletedOrders || 0,
-    totalCanceledOrders: data?.totalCanceledOrders || 0,
-  };
-
-  const totalFollowers = Object.values(followersData).reduce((sum, count) => sum + count, 0);
-
-  const chartData = Object.entries(followersData).map(([key, value]) => ({
-    category: key,
-    value: value,
+const FollowersStats = () => {
+  // Dummy data to match the visual representation in the image
+  const chartData = [
+    { name: "سبت", value: 28 },
+    { name: "احد", value: 28 },
+    { name: "اثنين", value: 28 },
+    { name: "ثلاثاء", value: 28 },
+    { name: "اربعاء", value: 38 },
+    { name: "خميس", value: 28 },
+    { name: "جمعة", value: 34 },
+  ].map((item) => ({
+    ...item,
+    // Splitting the value into parts to create the stacked effect
+    part1: item.value * 0.4,
+    part2: item.value * 0.3,
+    part3: item.value * 0.2,
+    part4: item.value * 0.1,
   }));
 
+  // Dummy total for display
+  const totalFollowers = 40;
+
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-6 w-full  mx-auto font-sans">
-      <div className="flex justify-between items-center mb-8">
-        {" "}
+    <div className="bg-white rounded-xl shadow-sm p-6 w-full font-sans" dir="rtl">
+      <div className="flex justify-between items-center mb-6">
         <div className="text-right">
           <p className="text-sm text-gray-400">احصائيات</p>
-          <h2 className="text-lg font-bold text-gray-800">إحصائيات المتجر ( {totalFollowers} )</h2>
+          <h2 className="text-lg font-bold text-gray-800">المتابعين لك ( {totalFollowers} )</h2>
         </div>
         <div className="flex items-center gap-2 border border-gray-200 rounded-lg p-2">
-          {" "}
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
             <line x1="16" y1="2" x2="16" y2="6"></line>
             <line x1="8" y1="2" x2="8" y2="6"></line>
             <line x1="3" y1="10" x2="21" y2="10"></line>
           </svg>
-          <span className="text-sm text-gray-700">هذا الشهر</span>
+          <span className="text-sm text-gray-700 font-semibold">الكل</span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="6 9 12 15 18 9"></polyline>
           </svg>
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={250}>
-        <BarChart data={chartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }} barCategoryGap="30%">
-          <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#E5E7EB" />
-          <XAxis
-            dataKey="category"
-            tickLine={false}
-            axisLine={false}
-            tick={{ fill: "#9CA3AF", fontSize: 12 }}
-            dy={10}
-          />
-          <YAxis axisLine={false} tickLine={false} tick={{ fill: "#9CA3AF", fontSize: 14 }} />
-          <Tooltip cursor={{ fill: "rgba(224, 231, 255, 0.5)" }} />
-          <Bar dataKey="value" fill="#4338CA" radius={[8, 8, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
+      <div className="h-64">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={chartData} margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
+            <CartesianGrid vertical={false} stroke="#f3f4f6" />
+            <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: "#9CA3AF", fontSize: 14 }} dy={10} />
+            <YAxis
+              domain={[0, 40]}
+              ticks={[10, 20, 30, 40]}
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "#9CA3AF", fontSize: 14 }}
+              width={30}
+            />
+            <Tooltip cursor={{ fill: "rgba(243, 244, 246, 0.5)" }} contentStyle={{ display: "none" }} />
+            <Bar dataKey="part1" stackId="a" fill="#EBF0FF" barSize={30} radius={[4, 4, 0, 0]} />
+            <Bar dataKey="part2" stackId="a" fill="#D6E0FF" barSize={30} />
+            <Bar dataKey="part3" stackId="a" fill="#ADC0FF" barSize={30} />
+            <Bar dataKey="part4" stackId="a" fill="#5B87B9" barSize={30} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 };

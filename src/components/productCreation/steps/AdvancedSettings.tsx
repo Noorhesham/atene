@@ -177,7 +177,7 @@ const RelatedProducts = () => {
             btn={
               <button
                 style={{
-                  backgroundColor: "rgba(91, 135, 185, 0.10)",
+                  backgroundColor: "#E8EDF4",
                 }}
                 className="flex ml-auto border border-main py-2 px-4 rounded-lg items-center gap-2 text-main"
               >

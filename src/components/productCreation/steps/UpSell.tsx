@@ -136,7 +136,7 @@ const AddDiscountModal = ({
         <p className="text-sm text-gray-500">السعر الاصلي</p>
         <p className="text-3xl font-bold text-gray-800">₪ {originalPrice.toFixed(2)}</p>
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">السعر المخفض</label>
           <input
@@ -222,7 +222,7 @@ const UpSell = () => {
             btn={
               <button
                 style={{
-                  backgroundColor: "rgba(91, 135, 185, 0.10)",
+                  backgroundColor: "#E8EDF4",
                 }}
                 className="flex ml-auto border border-main py-2 px-4 rounded-lg items-center gap-2 text-main"
               >

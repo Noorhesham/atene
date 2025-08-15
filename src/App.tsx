@@ -27,7 +27,6 @@ import UserCreation from "./pages/admin/users/add/UserCreation";
 import StoreManagementPage from "./pages/admin/store/StoreManagment";
 import StoreCratePage from "./pages/admin/store/add/StoreCratePage";
 import CategoriesPage from "./pages/admin/categories/CategoriesPage";
-import CategoryTreePage from "./pages/admin/categories/CategoryTreePage";
 import ProductsPageDashboard from "./pages/admin/products/ProductsPageDashboard";
 import CategoryCreatePage from "./pages/admin/categories/add/CategoryCreatPage";
 import AttributesPage from "./pages/admin/attributes/AttributesPage";
@@ -39,8 +38,20 @@ import SectionCreatPage from "./pages/admin/sections/add/SectionCreatPage";
 import ReportsPage from "./pages/admin/reports/ReportsPage";
 import SettingsPage from "./pages/SettingsPage/SettingsPage";
 import AdminAnalysis from "./pages/admin/analysis/AdminAnalysis";
+import StoresAnalytics from "./pages/admin/analysis/StoresAnalytics";
 import CategoryTreeView from "./pages/admin/categories/add/CategoryTreeView";
+import ProductsAnalytics from "./pages/admin/analysis/ProductAnalytics";
+import EditOrderView from "./components/(dashboard)/orders/EditOrderView";
+import MaxWidthDashboard from "./components/(dashboard)/components/MaxWidthDashboard";
+/**
 
+
+ * coupon
+ * order second step
+ * followers
+
+
+ */
 // Admin Layout Component
 const AdminLayout = () => {
   const { user, isLoading } = useAuth() as { user: User | null; isLoading: boolean };
@@ -135,6 +146,7 @@ function App() {
           <Route path="coupons" element={<CouponsManagement />} />
           <Route index element={<DashboardHome />} />
           <Route path="orders" element={<OrdersPage />} />
+          <Route path="orders/add" element={<EditOrderView orderToEdit={null} onBack={() => {}} />} />
           <Route path="products">
             <Route index element={<ProductsPageDashboard />} />
             <Route path="add" element={<ProductCreationExample />} />
@@ -153,6 +165,8 @@ function App() {
         <Route path="/admin" element={<AdminProtectedLayout />}>
           {" "}
           <Route index element={<AdminAnalysis />} />
+          <Route path="analytics/stores" element={<StoresAnalytics />} />
+          <Route path="analytics/products" element={<ProductsAnalytics />} />
           <Route path="reports" element={<ReportsPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route index element={<DashboardHome />} />
@@ -167,9 +181,9 @@ function App() {
           {/* Admin Protected Routes */}
           <Route path="users" element={<AdminLayout />}>
             <Route index element={<UsersPage />} />
-            <Route path="roles" element={<RolesAndPermissionsPage />} />
             <Route path="add" element={<UserCreation />} />
           </Route>
+          <Route path="roles" element={<RolesAndPermissionsPage />} />
           <Route path="stores">
             <Route index element={<StoreManagementPage />} />
             <Route path="add" element={<StoreCratePage />} />

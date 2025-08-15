@@ -106,12 +106,12 @@ const DashboardHome = () => {
   const { data: contentData, isLoading: isLoadingContent } = useAnalyticsQuery("content", period);
   const { data: analyticsData, isLoading: isLoadingAnalytics } = useAnalyticsQuery("analytics");
   const { data: latestsData, isLoading: isLoadingLatests } = useAnalyticsQuery("latests");
-
+  const { data: followersData, isLoading: isLoadingFollowers } = useAnalyticsQuery("followers", period);
   // Memoize processed data to prevent re-renders
   const latestsOrders = useMemo(() => latestsData?.latestsOrders || [], [latestsData]);
 
   // Handle loading state for the entire page
-  if (isLoadingContent || isLoadingAnalytics || isLoadingLatests) {
+  if (isLoadingContent || isLoadingAnalytics || isLoadingLatests || isLoadingFollowers) {
     return (
       <div className="min-h-screen w-full bg-gray-50 flex items-center justify-center">
         <p>Loading Dashboard...</p>
@@ -214,7 +214,7 @@ const DashboardHome = () => {
               data={analyticsData as unknown as MerchantAnalyticsData}
               chartData={(contentData as unknown as MerchantContentAnalytics)?.productsGrowthChart}
             />
-            <FollowersStats data={contentData as unknown as MerchantContentAnalytics} />
+            <FollowersStats data={followersData as unknown as MerchantContentAnalytics} />
           </div>
         </div>
 
@@ -224,7 +224,20 @@ const DashboardHome = () => {
           {/* Most Viewed Products Section */}
           <div className=" w-full col-span-2 bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex items-center gap-2 mb-4">
-              <TrendingUp className="w-5 h-5 text-green-600" />
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M11.2929 4.7929C11.6834 4.40238 12.3165 4.40236 12.7071 4.79289L18.7071 10.7928C19.0976 11.1833 19.0976 11.8165 18.7071 12.207C18.3166 12.5975 17.6834 12.5975 17.2929 12.207L12 6.91421L6.7071 12.2071C6.31658 12.5976 5.68342 12.5976 5.29289 12.2071C4.90237 11.8165 4.90236 11.1834 5.29289 10.7929L11.2929 4.7929Z"
+                  fill="#1FC16B"
+                />
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M11.2929 11.793C11.6834 11.4024 12.3165 11.4024 12.7071 11.7929L18.7071 17.7929C19.0976 18.1834 19.0976 18.8166 18.7071 19.2071C18.3166 19.5976 17.6834 19.5976 17.2929 19.2071L12 13.9143L6.7071 19.2072C6.31658 19.5977 5.68342 19.5977 5.29289 19.2072C4.90237 18.8166 4.90236 18.1835 5.29289 17.793L11.2929 11.793Z"
+                  fill="#1FC16B"
+                />
+              </svg>
               <h2 className="text-lg font-bold text-gray-900">الأكثر مشاهدة</h2>
             </div>
             <p className="text-sm text-gray-600 mb-6">قائمة المنتجات التي حققت أكثر مبيعات</p>
@@ -235,7 +248,7 @@ const DashboardHome = () => {
                   key={product.id}
                   className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  <div className="flex-shrink-0 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-sm font-bold text-gray-700">
+                  <div className="flex-shrink-0rounded-full flex items-center justify-center text-sm font-bold text-gray-700">
                     {index + 1}
                   </div>
                   <div className="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden">
@@ -254,6 +267,15 @@ const DashboardHome = () => {
                       </span>
                     </div>
                   </div>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="19" viewBox="0 0 18 19" fill="none">
+                    <path
+                      d="M11.25 4.25L6 9.5L11.25 14.75"
+                      stroke="black"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
                 </div>
               ))}
             </div>
@@ -269,14 +291,29 @@ const DashboardHome = () => {
           <div className="w-full col-span-4 bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center gap-3">
-                <button
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  title="العودة للصفحة السابقة"
-                  aria-label="العودة للصفحة السابقة"
-                >
-                  <ArrowLeft className="w-5 h-5 text-gray-600" />
-                </button>
-                <h2 className="text-xl font-bold text-gray-900">احدث الطلبات ({latestsOrders.length})</h2>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M13.0261 21.948C12.6888 21.9824 12.3464 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 12.6849 21.9311 13.3538 21.8 14"
+                    stroke="#141B34"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M12 8V12L13.5 13.5"
+                    stroke="#141B34"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M21.9504 18.407C22.0165 18.4457 22.0166 18.5423 21.9505 18.5811L16.1493 21.9861C16.0707 22.0322 15.9774 21.9562 16.0049 21.8686L17.0661 18.494L16.005 15.1315C15.9774 15.044 16.0706 14.9679 16.1492 15.0138L21.9504 18.407Z"
+                    stroke="#141B34"
+                    stroke-width="1.5"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                <h2 className="text-lg font-semibold text-gray-900">احدث الطلبات ({latestsOrders.length})</h2>
               </div>
               <button
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"

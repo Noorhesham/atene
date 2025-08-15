@@ -367,7 +367,7 @@ const VariantsForm = () => {
               setValue("hasVariations", true);
             }}
             style={{
-              backgroundColor: "rgba(91, 135, 185, 0.10)",
+              backgroundColor: "#E8EDF4",
             }}
             className="flex ml-auto border border-main py-2 px-4 rounded-lg items-center gap-2 text-main"
           >
@@ -520,7 +520,6 @@ const VariantsForm = () => {
                               <Switch
                                 checked={field.value}
                                 onCheckedChange={field.onChange}
-                                className="data-[state=checked]:bg-[#395A7D]"
                                 aria-label={`تفعيل/تعطيل المنتج المتغير ${index + 1}`}
                               />
                             )}

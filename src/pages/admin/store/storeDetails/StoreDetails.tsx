@@ -11,7 +11,6 @@ import Actions from "@/components/Actions";
 import { MapPinIcon } from "lucide-react";
 import { InfoItem } from "@/components/InfoItem";
 
-
 interface SocialLinkProps {
   icon: React.ReactNode;
   label: string;
@@ -141,7 +140,6 @@ const StoreDetails = ({ store, onStoreDeleted }: { store: ApiStore; onStoreDelet
         {/* Store Header */}
         <Card className="p-0   px-6 py-3 overflow-hidden rounded-lg">
           <div className=" ">
-            {" "}
             <div className="relative h-[98px] bg-gray-200 rounded-lg">
               <img
                 src={store.cover_url?.[0] || "/placeholder-cover.png"}
@@ -156,18 +154,7 @@ const StoreDetails = ({ store, onStoreDeleted }: { store: ApiStore; onStoreDelet
                 />
               </div>
             </div>
-            {/* Price and Status Section */}
-            <div className="flex items-center justify-between mt-4 mb-6">
-              <div className="flex flex-col items-start">
-                <p className="text-2xl font-bold text-gray-800">₪ 927.00</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <p className="text-sm text-gray-500">{store.status === "active" ? "مفعل" : "معطل"}</p>
-                  <div
-                    className={`w-2 h-2 rounded-full ${store.status === "active" ? "bg-green-500" : "bg-red-500"}`}
-                  ></div>
-                </div>
-              </div>
-            </div>
+
             <h3 className="text-lg text-right font-bold mb-8 mt-9 text-black">البيانات الاساسيه للمتجر</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8" dir="rtl">
               {/* Right Column */}

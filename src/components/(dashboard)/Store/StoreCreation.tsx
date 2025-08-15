@@ -5,7 +5,6 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { MinusCircle, PlusCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -20,6 +19,7 @@ import StoreSpecifications from "./StoreSpecifications";
 import { ApiStore } from "@/types";
 import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
 import { useAuth } from "@/context/AuthContext";
+import MaxWidthDashboard from "../components/MaxWidthDashboard";
 
 type StoreFormData = z.infer<typeof storeSchema>;
 
@@ -43,14 +43,31 @@ const AccordionStep = ({
 }) => (
   <div
     className={`border rounded-lg bg-white transition-all duration-300 ${
-      isOpen ? "border-blue-500 shadow-md" : "border-gray-200"
+      isOpen ? "border-main shadow-md" : "border-gray-200"
     }`}
   >
     <button type="button" onClick={onToggle} className="w-full flex justify-between items-center p-4 text-right">
-      <h3 className={`text-lg font-bold ${isCompleted && !isOpen ? "text-gray-900" : "text-gray-600"}`}>{title}</h3>
-      {isOpen ? <MinusCircle className="w-6 h-6 text-gray-500" /> : <PlusCircle className="w-6 h-6 text-gray-500" />}
+      <h3 className={`text-lg font-bold ${isCompleted && !isOpen ? "text-black" : "text-gray-600"}`}>{title}</h3>
+      <div className=" p-3 rounded-full border-main border">
+        {" "}
+        {isOpen ? (
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M4 12H20" stroke="#406896" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="25" viewBox="0 0 24 25" fill="none">
+            <path
+              d="M12 4.60742V20.6074M4 12.6074H20"
+              stroke="#406896"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        )}
+      </div>
     </button>
-    {isOpen && <div className="p-6 border-t border-gray-200">{children}</div>}
+    {isOpen && <div className="p-6">{children}</div>}
   </div>
 );
 
@@ -88,9 +105,7 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
       tiktok: null,
       youtube: null,
       instagram: null,
-      twitter: null,
-      linkedin: null,
-      pinterest: null,
+
       open_status: "open_with_working_times",
       workingtimes: [],
       managers: [],
@@ -121,9 +136,7 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
         tiktok: store.tiktok || null,
         youtube: store.youtube || null,
         instagram: store.instagram || null,
-        twitter: store.twitter || null,
-        linkedin: store.linkedin || null,
-        pinterest: store.pinterest || null,
+
         open_status:
           (store.open_status as
             | "open_without_working_times"
@@ -154,26 +167,23 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
         "lat",
 
         "currency_id",
-        "phone",
       ] as Array<keyof StoreFormData>,
     },
     {
       id: 2,
       title: "الاتصال والسوشيل",
       component: <StoreContactInfo />,
-      fields: ["whats_app", "facebook", "tiktok", "youtube", "instagram", "twitter", "linkedin", "pinterest"] as Array<
-        keyof StoreFormData
-      >,
+      fields: ["phone", "whats_app", "facebook", "tiktok", "youtube", "instagram"] as Array<keyof StoreFormData>,
     },
     {
       id: 3,
-      title: "فريق العمل",
+      title: " موظفين المتجر",
       component: <StoreEmployeeManagement />,
       fields: ["managers"] as Array<keyof StoreFormData>,
     },
     {
       id: 4,
-      title: "أوقات العمل و الطلبات",
+      title: "اوقات العمل و العطلات",
       component: <StoreWorkingHours />,
       fields: ["open_status", "workingtimes"] as Array<keyof StoreFormData>,
     },
@@ -233,10 +243,7 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
         tiktok: data.tiktok || null,
         facebook: data.facebook || null,
         instagram: data.instagram || null,
-        twitter: data.twitter || null,
         youtube: data.youtube || null,
-        linkedin: data.linkedin || null,
-        pinterest: data.pinterest || null,
         open_status: data.open_status,
         workingtimes: data.workingtimes.map((wt) => ({
           day: wt.day,
@@ -289,7 +296,7 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
     <section className="w-full bg-gray-50 ">
       <FormProvider {...form}>
         <form onSubmit={handleSubmit}>
-          <div className="mx-auto w-full p-4 sm:p-6 lg:p-8 min-h-screen" dir="rtl">
+          <MaxWidthDashboard className="mx-auto w-full p-4 sm:p-6 lg:p-8 min-h-screen" dir="rtl">
             <div className="flex flex-col gap-8">
               <div className="flex flex-col gap-6">
                 <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -343,7 +350,7 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
                 <StorePreview />
               </div>
             </div>
-          </div>
+          </MaxWidthDashboard>
 
           <div className="sticky bottom-0 w-full bg-white border-t border-gray-200 py-4 px-8 shadow-[0px_-4px_12px_0px_rgba(0,0,0,0.04)]">
             <div className="flex items-center justify-between max-w-[1440px] mx-auto">

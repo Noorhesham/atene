@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { ReactNode, useState } from "react";
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -56,6 +56,7 @@ interface FormInputProps {
   maxFiles?: number;
   mainCoverField?: string; // Field name for the main cover
   grid?: number;
+  iconNotLable?: ReactNode;
 }
 
 const FormInput = ({
@@ -89,6 +90,7 @@ const FormInput = ({
   maxFiles = 10,
   mainCoverField,
   grid = 5,
+  iconNotLable,
 }: FormInputProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isMediaCenterOpen, setIsMediaCenterOpen] = useState(false);
@@ -371,7 +373,7 @@ const FormInput = ({
                               ) : (
                                 <div
                                   className="flex flex-col items-center justify-center w-full 
-                                h-40 bg-[#F8F8F8]  rounded-lg hover:border-primary"
+                                  h-40 bg-[#F8F8F8]  w-full rounded-lg hover:border-primary"
                                 >
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -409,13 +411,13 @@ const FormInput = ({
                                   : ""
                               }
                               alt="Selected media"
-                              className="w-56 h-32 object-cover rounded-lg  border object-top
+                              className="w-full  max-w-72  h-32 object-cover  rounded-lg  border object-top
                                border-gray-300 hover:border-primary"
                             />
                           )
                         ) : (
                           <div
-                            className="w-56 h-40
+                            className="w-full max-w-72 h-40
                            bg-[#F8F8F8]  rounded-lg flex items-center justify-center hover:border-primary"
                           >
                             <div className="text-center flex flex-col items-center justify-center">
@@ -470,10 +472,18 @@ const FormInput = ({
                 </div>
               ) : select && options ? (
                 <Select value={field.value as string} onValueChange={field.onChange}>
-                  <SelectTrigger className=" w-full">
-                    <SelectValue className="text-right" placeholder="اختر..." />
+                  <SelectTrigger className="w-full pr-8 text-right">
+                    {" "}
+                    {/* space for icon */}
+                    <SelectValue placeholder="اختر..." />
                   </SelectTrigger>
-                  <SelectContent className=" w-full">
+
+                  {iconNotLable &&
+                    React.cloneElement(iconNotLable as React.ReactElement, {
+                      className: "w-4 h-4 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none", // position icon on left for RTL
+                    })}
+
+                  <SelectContent className="w-full">
                     {options.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
@@ -500,6 +510,10 @@ const FormInput = ({
                       </div>
                     </a>
                   )}
+                  {iconNotLable &&
+                    React.cloneElement(iconNotLable as React.ReactElement, {
+                      className: "w-4 h-4 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none", // position icon on left for RTL
+                    })}
                   <Input
                     disabled={disabled}
                     autoComplete={password ? "off" : "on"}
@@ -511,7 +525,7 @@ const FormInput = ({
                         : type || "text"
                     }
                     accept={type === "file" ? "image/*, application/pdf" : undefined}
-                    className={`${!phone && ""} bg-white  rounded-lg  mt-auto shadow-sm w-full ${
+                    className={`${!phone && ""} ${iconNotLable && "pr-8"} bg-white  rounded-lg  mt-auto shadow-sm w-full ${
                       password && formContext.getValues(name) && "pl-8"
                     } ${error ? "border-red-500" : ""}`}
                     placeholder={placeholder}

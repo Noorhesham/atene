@@ -6,7 +6,15 @@ export const useAnalyticsQuery = (endpoint: string, period: string) => {
 
   const fetchData = async () => {
     const token = localStorage.getItem("token");
-    const url = `${API_BASE_URL}/admin/analytics/overview/${endpoint}?period=${period}`;
+    // Support both overview endpoints and direct analytics endpoints.
+    // "stores" should hit /admin/analytics/stores according to requirements.
+    const basePath =
+      endpoint === "stores"
+        ? `${API_BASE_URL}/admin/analytics/stores`
+        : endpoint === "products"
+        ? `${API_BASE_URL}/admin/analytics/products`
+        : `${API_BASE_URL}/admin/analytics/overview/${endpoint}`;
+    const url = `${basePath}?period=${period}`;
 
     console.log(`Fetching from: ${url}`);
 

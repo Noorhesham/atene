@@ -19,7 +19,6 @@ const PhoneNumberInput = ({ name, label, icon }: { name: string; label: string; 
               control={control}
               render={({ field }) => (
                 <PhoneInput
-
                   {...field}
                   country={"eg"}
                   inputClass="!w-full !h-11 !pr-16 !pl-10 !border-gray-300 !rounded-lg"

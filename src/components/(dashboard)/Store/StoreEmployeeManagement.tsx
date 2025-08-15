@@ -97,10 +97,6 @@ const StoreEmployeeManagement = () => {
   const validateEmployee = (data: typeof employeeData) => {
     const errors: Record<string, string> = {};
 
-    if (!data.title || data.title.trim().length < 2) {
-      errors.title = "اسم الموظف يجب أن يكون حرفين على الأقل";
-    }
-
     if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
       errors.email = "البريد الإلكتروني غير صالح";
     }
@@ -205,11 +201,6 @@ const StoreEmployeeManagement = () => {
 
   return (
     <div className="w-full space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-xl font-semibold text-gray-900">موظفين المتجر</h3>
-        <div className="text-sm text-gray-500">الكل ({managers.length})</div>
-      </div>
-
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="employees">جدول الموظفين</TabsTrigger>
@@ -219,11 +210,11 @@ const StoreEmployeeManagement = () => {
         <TabsContent value="employees" className="space-y-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-medium">الموظفين</CardTitle>
-              <Button onClick={handleAddEmployeeClick} className="bg-main hover:bg-main/90" size="sm">
+             { <Button onClick={handleAddEmployeeClick} className="bg-main hover:bg-main/90" size="sm">
                 <Plus className="w-4 h-4 ml-2" />
                 إضافة موظف
-              </Button>
+              </Button>}
+              <CardTitle className="text-lg font-medium">الموظفين</CardTitle>
             </CardHeader>
             <CardContent>
               {managers.length === 0 ? (
@@ -236,31 +227,33 @@ const StoreEmployeeManagement = () => {
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full">
+                  <table dir="rtl" className="w-full">
                     <thead>
-                      <tr className="border-b text-center">
-                        <th className=" p-3 font-medium text-gray-700">اسم الوظيفة</th>
-                        <th className=" p-3 font-medium text-gray-700">حالة الموظف</th>
-                        <th className=" p-3 font-medium text-gray-700">رقم الهاتف</th>
-                        <th className=" p-3 font-medium text-gray-700">الايميل</th>
-                        <th className=" p-3 font-medium text-gray-700">الإجراءات</th>
+                      <tr className="border-b text-main bg-[#F0F7FF] p-4 text-right text-xs font-medium">
+                        <th className=" p-3   ">اسم الموظف</th>
+                        <th className=" p-3  ">حالة الموظف</th>
+                        <th className=" p-3  ">رقم الهاتف</th>
+                        <th className=" p-3  ">الايميل</th>
+                        <th className=" p-3  ">الإجراءات</th>
                       </tr>
                     </thead>
                     <tbody>
                       {managers.map((manager, index: number) => {
                         const emp = manager as unknown as Manager;
                         return (
-                          <tr key={index} className="border-b hover:bg-gray-50">
+                          <tr key={index} className="border-b border-input hover:bg-gray-50">
                             <td className="p-3">
-                              <div className="flex items-center gap-3">
-                                <span className="font-medium">{getJobTitleTranslation(emp.title)}</span>
+                              <div className=" items-start text-right gap-3">
+                                <span className="font-medium text-main text-xs text-right">
+                                  {getJobTitleTranslation(emp.title)}
+                                </span>
                               </div>
                             </td>
                             <td className="p-3">{getStatusBadge(emp.status)}</td>
-                            <td className="p-3 text-gray-600">{emp.phone || "+201289022985"}</td>
-                            <td className="p-3 text-gray-600">{emp.email}</td>
+                            <td className="p-3 text-main text-xs text-right">{emp.phone || "+201289022985"}</td>
+                            <td className="p-3 text-main text-xs text-right">{emp.email}</td>
                             <td className="p-3">
-                              <div className="flex items-center gap-2">
+                              <div className="ml-auto flex items-center gap-2">
                                 <Button
                                   onClick={() => handleEditEmployee(index)}
                                   size="sm"

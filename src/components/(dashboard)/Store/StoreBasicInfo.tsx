@@ -1,8 +1,7 @@
 "use client";
 
 import { useFormContext } from "react-hook-form";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+
 import FormInput from "@/components/inputs/FormInput"; // Your custom component
 
 import { FormField, FormItem, FormLabel } from "@/components/ui/form";
@@ -12,42 +11,64 @@ import { FormMessage } from "@/components/ui/form";
 import MapAddressInput from "./MapAddressInput";
 import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
 import Loader from "@/components/Loader";
-const typeOptions = [{ value: "rings", label: "خواتم" }];
-const mainCategoryOptions = [{ value: "women-fashion", label: "أزياء - موضة نسائية" }];
-const subCategoryOptions = [{ value: "accessories", label: "اكسسوارات - مجوهرات" }];
-const cityOptions = [{ value: "cairo", label: "القاهرة" }];
-const neighborhoodOptions = [{ value: "maadi", label: "المعادي" }];
+import { Currency, Owner } from "@/constants/Icons";
+
 const StoreBasicInfo = () => {
   const {
     control,
     formState: { errors },
+    watch,
   } = useFormContext();
   const { data: currencies } = useAdminEntityQuery("currencies");
   const { data: users, isLoading } = useAdminEntityQuery("users");
-  const userOptions = users?.map((user) => ({ value: user.id.toString(), label: user.first_name + " " + user.last_name }));
+  const userOptions = users?.map((user) => ({
+    value: user.id.toString(),
+    label: user.first_name + " " + user.last_name,
+  }));
   console.log(currencies);
   if (isLoading) return <Loader />;
   return (
-    <Card className="p-6 space-y-3">
-      <h2 className="text-xl font-semibold text-gray-900">البيانات الأساسية</h2>
-
+    <div className="p-6 bg-white space-y-3">
       {/* Store Name */}
-      <FormInput name="name" label="اسم المتجر " placeholder="اسم المتجر" />
-
+      <div className="flex flex-col items-end justify-between">
+        <FormInput
+          iconNotLable={
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M2.96729 10.4961V15.4981C2.96729 18.3281 2.96729 19.7421 3.84529 20.6211C4.72529 21.5011 6.13829 21.5011 8.96729 21.5011H14.9673C17.7953 21.5011 19.2093 21.5011 20.0883 20.6211C20.9673 19.7421 20.9673 18.3271 20.9673 15.4981V10.4961"
+                stroke="black"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M14.967 16.9928C14.283 17.5998 13.194 17.9928 11.967 17.9928C10.74 17.9928 9.65104 17.5998 8.96704 16.9928M10.104 8.41775C9.82204 9.43675 8.79604 11.1938 6.84804 11.4478C5.12804 11.6728 3.82204 10.9218 3.48904 10.6078C3.12204 10.3528 2.28404 9.53775 2.07904 9.02975C1.87404 8.51975 2.11304 7.41675 2.28404 6.96675L2.96704 4.98875C3.13404 4.49175 3.52504 3.31675 3.92504 2.91875C4.32504 2.52075 5.13504 2.50375 5.46904 2.50375H12.475C14.278 2.52975 18.221 2.48775 19 2.50375C19.78 2.51975 20.248 3.17375 20.385 3.45375C21.548 6.26975 22 7.88375 22 8.56975C21.848 9.30375 21.22 10.6858 19 11.2948C16.693 11.9268 15.385 10.6968 14.975 10.2248M9.15504 10.2248C9.48004 10.6238 10.499 11.4268 11.975 11.4468C13.452 11.4668 14.727 10.4368 15.18 9.91975C15.308 9.76675 15.585 9.31375 15.873 8.41675"
+                stroke="black"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          }
+          name="name"
+          label="اسم المتجر "
+          placeholder="اسم المتجر"
+        />
+        <span className="text-xs text-[#686869]">{watch("name")?.length || 0}/50</span>
+      </div>
       {/* Store Identity */}
-      <div className="space-y-3">
-        <h3 className="font-semibold text-gray-800">شعار المتجر</h3>
-        <p className="text-sm text-gray-500">إضافة شعار المتجر</p>
-        <FormInput photo name="logo" />
-      </div>
-      <div className="space-y-3">
-        <h3 className="font-semibold text-gray-800">صورة الغلاف</h3>
-        <p className="text-sm text-gray-500">المقاسات المفضلة 680 X 180</p>
-        <FormInput photo name="cover" multiple mainCoverField="mainCover" maxFiles={10} />
-      </div>
-      <FormInput select name="owner_id" label="المالك" options={userOptions} />
-      {/* Store Description */}
-      {/* <FormInput area name="storeDescription" label="وصف المتجر" placeholder="اكتب وصف متجرك..." /> */}
+      <div className="grid grid-cols-1  items-center mt-4  lg:grid-cols-7 gap-4">
+        <div className="col-span-2 w-full">
+          <h3 className="font-semibold text-gray-800"> هوية متجرك</h3>
+          <p className="text-xs mt-1 text-[#49494A]">ستظهر هوية متجرك في صفحة المتجر</p>
+          <FormInput photo name="logo" />
+        </div>
+        <div className=" w-full col-span-5">
+          <h3 className="font-semibold text-gray-800"> بنر</h3>
+          <p className="text-xs mt-1 text-[#49494A]">ستظهر هوية متجرك في صفحة المتجر</p>
+          <FormInput photo name="cover" multiple mainCoverField="mainCover" maxFiles={10} />
+        </div>
+      </div>{" "}
       <FormField
         name="description"
         control={control}
@@ -61,112 +82,74 @@ const StoreBasicInfo = () => {
               </FormLabel>
             </div>
             <FormControl>
-              <Textarea
-                placeholder="اكتب الوصف  لمتجرك..."
-                {...field}
-                rows={4}
-                className={`${errors.description ? "border-red-500" : ""} h-32`}
-              />
+              <div className="r relative">
+                <svg
+                  className=" absolute top-4 right-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <path
+                    d="M8 5H20M4 5H4.009M4 12H4.009M4 19H4.009M8 12H20M8 19H20"
+                    stroke="black"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>{" "}
+                <Textarea
+                  placeholder="اكتب الوصف  لمتجرك..."
+                  {...field}
+                  rows={4}
+                  className={`${errors.description ? "border-red-500" : ""} pr-12 pt-4 h-32`}
+                />
+              </div>
             </FormControl>
             <FormMessage />{" "}
-            <p className="flex text-main items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="25" viewBox="0 0 24 25" fill="none">
-                <path
-                  d="M12 5.25C11.0479 5.25 10.1052 5.43753 9.22554 5.80187C8.34593 6.16622 7.5467 6.70025 6.87348 7.37348C6.20025 8.0467 5.66622 8.84593 5.30187 9.72554C4.93753 10.6052 4.75 11.5479 4.75 12.5C4.75 13.4521 4.93753 14.3948 5.30187 15.2745C5.66622 16.1541 6.20025 16.9533 6.87348 17.6265C7.5467 18.2997 8.34593 18.8338 9.22554 19.1981C10.1052 19.5625 11.0479 19.75 12 19.75C13.9228 19.75 15.7669 18.9862 17.1265 17.6265C18.4862 16.2669 19.25 14.4228 19.25 12.5C19.25 10.5772 18.4862 8.73311 17.1265 7.37348C15.7669 6.01384 13.9228 5.25 12 5.25ZM3.25 12.5C3.25 10.1794 4.17187 7.95376 5.81282 6.31282C7.45376 4.67187 9.67936 3.75 12 3.75C14.3206 3.75 16.5462 4.67187 18.1872 6.31282C19.8281 7.95376 20.75 10.1794 20.75 12.5C20.75 14.8206 19.8281 17.0462 18.1872 18.6872C16.5462 20.3281 14.3206 21.25 12 21.25C9.67936 21.25 7.45376 20.3281 5.81282 18.6872C4.17187 17.0462 3.25 14.8206 3.25 12.5Z"
-                  fill="#406896"
-                />
-                <path
-                  opacity="0.5"
-                  d="M10.75 10.5C10.75 9.81 11.31 9.25 12 9.25H12.116C12.3475 9.25024 12.5733 9.3213 12.7632 9.45366C12.9531 9.58601 13.098 9.7733 13.1783 9.99039C13.2587 10.2075 13.2707 10.4439 13.2127 10.668C13.1547 10.8921 13.0295 11.0931 12.854 11.244L12.084 11.905C11.8232 12.1296 11.6137 12.4076 11.4698 12.7203C11.3259 13.0329 11.251 13.3728 11.25 13.717V14.25C11.25 14.4489 11.329 14.6397 11.4697 14.7803C11.6103 14.921 11.8011 15 12 15C12.1989 15 12.3897 14.921 12.5303 14.7803C12.671 14.6397 12.75 14.4489 12.75 14.25V13.717C12.75 13.458 12.863 13.212 13.06 13.044L13.83 12.384C14.2387 12.0338 14.5302 11.5668 14.6655 11.0458C14.8007 10.5249 14.7731 9.97503 14.5864 9.47025C14.3997 8.96547 14.0628 8.53 13.6212 8.22244C13.1795 7.91489 12.6542 7.75001 12.116 7.75H12C11.6389 7.75 11.2813 7.82113 10.9476 7.95933C10.614 8.09753 10.3108 8.3001 10.0555 8.55546C9.8001 8.81082 9.59753 9.11398 9.45933 9.44762C9.32113 9.78127 9.25 10.1389 9.25 10.5V10.607C9.25 10.8059 9.32902 10.9967 9.46967 11.1373C9.61032 11.278 9.80109 11.357 10 11.357C10.1989 11.357 10.3897 11.278 10.5303 11.1373C10.671 10.9967 10.75 10.8059 10.75 10.607V10.5ZM12 17.5C12.2652 17.5 12.5196 17.3946 12.7071 17.2071C12.8946 17.0196 13 16.7652 13 16.5C13 16.2348 12.8946 15.9804 12.7071 15.7929C12.5196 15.6054 12.2652 15.5 12 15.5C11.7348 15.5 11.4804 15.6054 11.2929 15.7929C11.1054 15.9804 11 16.2348 11 16.5C11 16.7652 11.1054 17.0196 11.2929 17.2071C11.4804 17.3946 11.7348 17.5 12 17.5Z"
-                  fill="#406896"
-                />
-              </svg>
-              لا بأس إن تجاوز النص 300 كلمة. يسمح بمرونة في عدد الكلمات حسب الحاجة.
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="flex text-[#686869] text-sm items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="19" height="20" viewBox="0 0 19 20" fill="none">
+                  <path
+                    d="M10.1832 6.73805C10.1914 6.3559 9.88385 6.04168 9.50161 6.04168C9.11955 6.04168 8.81207 6.35562 8.82002 6.73761L8.90862 10.9925C8.91532 11.3144 9.17822 11.5719 9.50023 11.5719C9.82209 11.5719 10.0849 11.3146 10.0918 10.9928L10.1832 6.73805Z"
+                    fill="#395A7D"
+                  />
+                  <path
+                    d="M8.93868 13.7136C9.09461 13.8768 9.28173 13.9583 9.50004 13.9583C9.64398 13.9583 9.77472 13.9214 9.89227 13.8474C10.0122 13.7709 10.1082 13.669 10.1802 13.5415C10.2545 13.414 10.2917 13.2725 10.2917 13.117C10.2917 12.8875 10.2125 12.6912 10.0542 12.528C9.89827 12.3648 9.71355 12.2832 9.50004 12.2832C9.28173 12.2832 9.09461 12.3648 8.93868 12.528C8.78514 12.6912 8.70837 12.8875 8.70837 13.117C8.70837 13.3515 8.78514 13.5504 8.93868 13.7136Z"
+                    fill="#395A7D"
+                  />
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M17.4167 10C17.4167 14.3723 13.8723 17.9167 9.50004 17.9167C5.12779 17.9167 1.58337 14.3723 1.58337 10C1.58337 5.62776 5.12779 2.08334 9.50004 2.08334C13.8723 2.08334 17.4167 5.62776 17.4167 10ZM16.2292 10C16.2292 13.7164 13.2165 16.7292 9.50004 16.7292C5.78362 16.7292 2.77087 13.7164 2.77087 10C2.77087 6.28359 5.78362 3.27084 9.50004 3.27084C13.2165 3.27084 16.2292 6.28359 16.2292 10Z"
+                    fill="#395A7D"
+                  />
+                </svg>
+                لا بأس إن تجاوز النص 300 كلمة. يسمح بمرونة في عدد الكلمات حسب الحاجة.
+              </p>
+              <span className="text-xs text-[#686869]">{field.value?.length || 0}/300</span>
+            </div>
           </FormItem>
         )}
       />
-      {/* Email and Address */}
       <FormInput name="email" type="email" label="البريد الالكتروني" placeholder="example@info.com" />
       <MapAddressInput name="address" label="العنوان" />
       {/* Currency, Owner and Phone */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormInput
+          iconNotLable={<Currency />}
           select
           name="currency_id"
           label="عملة المتجر"
           options={currencies?.map((currency) => ({ value: currency.id.toString(), label: currency.name }))}
-        />
-        <FormInput name="phone" label="رقم الهاتف" placeholder="01234567890" />
-      </div>
-
-      <div className="space-y-1 ">
-        <FormLabel className="text-[18px]">مميزات المتجر</FormLabel>
-        <div className="grid px-4 bg-gray-100 grid-cols-1 lg:grid-cols-2 gap-4">
-          <div>
-            <FormInput flex select name="type" className=" " label="النوع" options={typeOptions} placeholder="خواتم" />
-          </div>
-          <FormField
-            control={control}
-            name="hasDelivery"
-            render={({ field }) => (
-              <div className="flex items-center justify-between rounded-lg">
-                <span className="font-medium text-gray-700">هل لديك خدمة توصيل؟</span>
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    onClick={() => field.onChange(false)}
-                    className={`rounded-full px-6 ${!field.value ? "bg-main text-white" : "bg-white text-gray-700"}`}
-                  >
-                    لا
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => field.onChange(true)}
-                    className={`rounded-full px-6 ${field.value ? "bg-main text-white" : "bg-white text-gray-700"}`}
-                  >
-                    نعم
-                  </Button>
-                </div>
-              </div>
-            )}
-          />
-        </div>
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 px-4">
-        <FormInput
-          select
-          flex
-          name="mainCategory"
-          label="القسم الرئيسي"
-          options={mainCategoryOptions}
-          placeholder="أزياء - موضة نسائية"
         />{" "}
-        <FormInput
-          select
-          flex
-          name="subCategory"
-          label="القسم الفرعي"
-          options={subCategoryOptions}
-          placeholder="اكسسوارات - مجوهرات"
-          className="col-span-2"
-        />
-      </div>
-      {/* Categories Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4  px-4 rounded-lg">
-        <FormInput flex select name="city" label="المدينة" options={cityOptions} placeholder="القاهرة" />
-
-        <FormInput
-          select
-          flex
-          name="neighborhood"
-          label="الحي / المنطقة"
-          options={neighborhoodOptions}
-          placeholder="المعادي"
-        />
-      </div>
-    </Card>
+        <FormInput iconNotLable={<Owner />} select name="owner_id" label="المالك" options={userOptions} />
+      </div>{" "}
+    </div>
   );
 };
 
 export default StoreBasicInfo;
+
+   

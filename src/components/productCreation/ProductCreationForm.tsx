@@ -5,7 +5,6 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, ChevronLeft, MinusCircle, PlusCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -21,6 +20,7 @@ import ProgressSteps from "./steps/ProgressSteps";
 import UpSell from "./steps/UpSell";
 import { useAuth } from "@/context/AuthContext";
 import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
+import AccordionStep from "../AccordionStep";
 
 // Define variant type for dynamic attributes
 type VariantData = {
@@ -44,11 +44,10 @@ const variantSchema = z
 
 const productFormSchema = z.object({
   // First form fields
-  productName: z.string().min(3, "اسم المنتج يجب أن يكون 3 أحرف على الأقل"),
+  productName: z.string().min(3, "اسم المنتج يجب أن يكون 3 أحرف على الأقل").max(50, "اسم المنتج يجب أن يكون 50 حرف على الأقل"),
   price: z.union([z.string().min(1, "السعر يجب أن يكون أكبر من 0"), z.number().min(1, "السعر يجب أن يكون أكبر من 0")]),
   section_id: z.string().min(1, "يجب اختيار قسم واحد على الأقل"),
   category_id: z.string().min(1, "يجب اختيار فئة واحدة على الأقل"),
-  client_id: z.string().optional(),
   status: z
     .enum(["not-active", "active"], {
       errorMap: () => ({ message: "يرجى اختيار حالة صحيحة للمنتج" }),
@@ -59,7 +58,7 @@ const productFormSchema = z.object({
   }),
   shortDescription: z.string().min(10, "الوصف الموجز يجب أن يكون 10 أحرف على الأقل"),
   description: z.string().min(20, "الوصف الكامل يجب أن يكون 20 حرف على الأقل"),
-  cover: z.string().min(1, "صورة الغلاف مطلوبة"),
+  cover: z.string().optional(), // Cover is now optional since it's auto-set from images
   images: z.array(z.string()).min(1, "يجب إضافة صورة واحدة على الأقل"),
 
   // Second form fields with clearer messages
@@ -130,59 +129,6 @@ interface StepConfig {
   fields: Array<keyof ProductFormData>;
 }
 
-const AccordionStep = ({
-  title,
-  isOpen,
-  onToggle,
-  children,
-  isCompleted,
-  hasErrors,
-}: {
-  title: string;
-  isOpen: boolean;
-  onToggle: () => void;
-  children: React.ReactNode;
-  isCompleted: boolean;
-  hasErrors: boolean;
-}) => (
-  <div
-    className={`border rounded-lg bg-white transition-all duration-300 ${
-      isOpen ? "border-blue-500 shadow-md" : hasErrors ? "border-red-500" : "border-gray-200"
-    }`}
-  >
-    <button type="button" onClick={onToggle} className="w-full flex justify-between items-center p-4 text-right">
-      <h3
-        className={`text-lg font-bold ${isCompleted && !isOpen ? "text-gray-900" : "text-gray-600"} ${
-          hasErrors ? "text-red-600" : ""
-        }`}
-      >
-        {title}
-        {hasErrors && <span className="text-red-500 ml-2">⚠️</span>}
-      </h3>
-      {isOpen ? (
-        <div className=" p-2 rounded-full border border-main flex items-center justify-center">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M20 12H4" stroke="#406896" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </div>
-      ) : (
-        <div className=" p-2 rounded-full border border-main flex items-center justify-center">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M12 4V20M4 12H20"
-              stroke="#406896"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </div>
-      )}
-    </button>
-    {isOpen && <div className="p-6 border-t border-gray-200">{children}</div>}
-  </div>
-);
-
 const ProductCreationForm = ({
   product,
   disableCreate,
@@ -218,7 +164,6 @@ const ProductCreationForm = ({
       price: "",
       section_id: sectionIdFromParams || "1",
       category_id: "",
-      client_id: isAdmin ? "" : user?.user?.id?.toString() || "",
       status: user?.user?.user_type === "admin" ? "active" : "not-active", // Set default status based on user type
       condition: "new",
       shortDescription: "",
@@ -256,6 +201,10 @@ const ProductCreationForm = ({
         attributeOptions: product.variations?.[0]?.attributeOptions,
       });
 
+      // Get images array and set cover as first image
+      const images = product.gallary || [];
+      const cover = images.length > 0 ? images[0] : "";
+
       form.reset({
         productName: product.name || "",
         price: product.price?.toString() || "",
@@ -266,10 +215,9 @@ const ProductCreationForm = ({
         description: product.description || "",
         specifications: product.specifications || [],
         tags: product.tags?.map((tag: string) => ({ value: tag })) || [],
-        cover: product.cover || "",
-        images: product.gallary || [],
+        cover: cover, // Set cover as first image
+        images: images, // Set all images
         store_id: product.store_id?.toString() || "",
-        client_id: product.client_id?.toString() || "",
         status: product.status === "active" ? "active" : "not-active",
         hasVariations: product.type === "variation",
         cross_sells_price: product.cross_sells_price?.toString() || "",
@@ -347,30 +295,22 @@ const ProductCreationForm = ({
     }
   }, [isEditMode, product, form, sectionIdFromParams]);
 
-  const nextStep = async () => {
-    const stepFields = steps[currentStep - 1].fields;
-    const isValid = await form.trigger(stepFields);
-
-    if (!isValid) {
-      const errorMessages = Object.values(form.formState.errors)
-        .map((error) => error?.message)
-        .filter(Boolean)
-        .join("\n");
-      console.log(form.formState.errors);
-      toast.error(errorMessages || "يرجى تصحيح جميع الأخطاء قبل الانتقال للخطوة التالية");
-      return;
+  // Watch for changes in images array and automatically update cover
+  const watchedImages = form.watch("images");
+  useEffect(() => {
+    if (watchedImages && Array.isArray(watchedImages) && watchedImages.length > 0) {
+      // Set the first image as cover
+      const firstImage = watchedImages[0];
+      if (firstImage !== form.getValues("cover")) {
+        form.setValue("cover", firstImage, { shouldValidate: true });
+      }
+    } else if (watchedImages && (!Array.isArray(watchedImages) || watchedImages.length === 0)) {
+      // Clear cover if no images
+      if (form.getValues("cover")) {
+        form.setValue("cover", "", { shouldValidate: true });
+      }
     }
-
-    if (currentStep < steps.length) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
+  }, [watchedImages, form]);
 
   const handleStepClick = async (stepId: number) => {
     // If trying to navigate to a step ahead of current step, validate current step first
@@ -425,13 +365,17 @@ const ProductCreationForm = ({
         review_count?: number;
       };
 
+      // Ensure cover is set from first image if available
+      const images = data.images || [];
+      const cover = images.length > 0 ? images[0] : data.cover || "";
+
       const apiPayload = {
         sku: isEditMode ? productData?.sku : `SKU${Date.now()}`, // Generate SKU for new products
         name: data.productName,
         short_description: data.shortDescription,
         description: data.description,
-        cover: data.cover?.startsWith("http") ? data.cover : `${data.cover || ""}`, // Cover image
-        gallary: data.images || [], // All images as gallery
+        cover: cover?.startsWith("http") ? cover : `${cover || ""}`, // Cover image (first from images array)
+        gallary: images || [], // All images as gallery
         type: data.hasVariations ? ("variation" as const) : ("simple" as const),
         condition: data.condition,
         category_id: data.category_id.toString(),
@@ -541,10 +485,8 @@ const ProductCreationForm = ({
             "condition",
             "shortDescription",
             "description",
-            "cover",
             "images",
             "status",
-            "client_id",
           ]
         : [
             "productName",
@@ -554,7 +496,6 @@ const ProductCreationForm = ({
             "condition",
             "shortDescription",
             "description",
-            "cover",
             "images",
           ],
     },
@@ -586,7 +527,7 @@ const ProductCreationForm = ({
   return (
     <section className="w-full">
       {" "}
-      <div className="mx-auto w-full p-4 sm:p-6 lg:p-8  min-h-screen" dir="rtl">
+      <div className="mx-auto w-full p-4 sm:p-6 lg:p-8   min-h-screen" dir="rtl">
         {!disableCreate ? (
           <div className="flex flex-col gap-8">
             <div className="flex flex-col gap-6">
@@ -601,24 +542,6 @@ const ProductCreationForm = ({
         ) : null}
         <FormProvider {...form}>
           <form onSubmit={handleSubmit}>
-            {" "}
-            {/* <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-semibold text-gray-900">
-                {title ? title : isEditMode ? "تعديل المنتج" : "إنشاء منتج جديد"}
-              </h1>
-              {!disableCreate && (
-                <Button
-                  onClick={() => {
-                    handleSubmit();
-                  }}
-                  type="submit"
-                  className="bg-[#2E5DB0] hover:bg-[#264B8B] text-white h-11 px-4 py-2.5 text-sm font-medium"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "جاري الحفظ..." : isEditMode ? "تحديث المنتج" : "حفظ المنتج"}
-                </Button>
-              )}
-            </div> */}
             <div
               className={`grid grid-cols-1 ${
                 disableCreate ? "lg:grid-cols-1" : "lg:grid-cols-3"
@@ -652,7 +575,7 @@ const ProductCreationForm = ({
               {/* Preview Column */}
               {!disableCreate && (
                 <div className="lg:col-span-1 lg:sticky top-6">
-                  <ProductPreview />
+                  <ProductPreview productId={product?.id} isdefaultproduct={isEditMode} />
                 </div>
               )}
             </div>

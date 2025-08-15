@@ -30,7 +30,7 @@ const ProgressSteps = ({ currentStep, steps }: { currentStep: number; steps: any
 
           return (
             // The background is changed here to 'bg-white' to match the card background
-            <div key={step.id} className="flex flex-col items-center  text-center z-10 bg-gray-50 px-2">
+            <div key={step.id} className="flex flex-col items-center  text-center z-10 bg-[#F5F5F5] px-2">
               <div className={circleClasses}>
                 {isCompleted ? (
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
