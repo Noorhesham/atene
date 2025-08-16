@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { ApiRole, ApiPermission } from "@/hooks/useUsers";
 import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
 import Actions from "@/components/Actions";
-
+import { PageHeader } from "../PageHeader";
+import { Link } from "react-router-dom";
 // Simple interfaces
 interface RolesSidebarProps {
   roles: ApiRole[];
@@ -171,6 +172,7 @@ const PermissionsForm = ({ selectedRole, allPermissions, rolesMutation, onRoleUp
 
   return (
     <div className="flex-1">
+      {" "}
       <Card className="p-6">
         {/* Role Name Input */}
         <div className="mb-6">
@@ -313,48 +315,51 @@ const RolesAndPermissionsPage = () => {
   }
 
   return (
-    <div className="p-8" dir="rtl">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <p className="text-base text-gray-500">المستخدمين / الأدوار والصلاحيات</p>
+    <>
+      <PageHeader
+        navLinks={[
+          { label: "المستخدمين", href: "/admin/users" },
+          { label: "الأدوار والصلاحيات", href: "/admin/roles", isActive: true },
+        ]}
+      />{" "}
+      <div className="p-8" dir="rtl">
+        {/* Actions Component for Role Deletion */}
+        {selectedRole && (
+          <Actions
+            title="إجراءات الدور"
+            entity={selectedRole}
+            entityType="roles"
+            deleteMessage={`هل أنت متأكد من حذف الدور "${selectedRole.name}"؟`}
+            onDeleteSuccess={() => {
+              setSelectedRoleId(roles.length > 1 ? roles.find((r) => r.id !== selectedRole.id)?.id || null : null);
+            }}
+            className="mb-6"
+          />
+        )}
+
+        {/* Main Content */}
+        {isLoading ? (
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+          </div>
+        ) : (
+          <div className="flex gap-6">
+            <RolesSidebar
+              roles={roles}
+              selectedRoleId={selectedRoleId}
+              onSelectRole={setSelectedRoleId}
+              isLoading={rolesLoading}
+            />
+            <PermissionsForm
+              selectedRole={selectedRole}
+              allPermissions={permissions}
+              rolesMutation={rolesMutation}
+              onRoleUpdated={handleRoleUpdated}
+            />
+          </div>
+        )}
       </div>
-
-      {/* Actions Component for Role Deletion */}
-      {selectedRole && (
-        <Actions
-          title="إجراءات الدور"
-          entity={selectedRole}
-          entityType="roles"
-          deleteMessage={`هل أنت متأكد من حذف الدور "${selectedRole.name}"؟`}
-          onDeleteSuccess={() => {
-            setSelectedRoleId(roles.length > 1 ? roles.find((r) => r.id !== selectedRole.id)?.id || null : null);
-          }}
-          className="mb-6"
-        />
-      )}
-
-      {/* Main Content */}
-      {isLoading ? (
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-        </div>
-      ) : (
-        <div className="flex gap-6">
-          <RolesSidebar
-            roles={roles}
-            selectedRoleId={selectedRoleId}
-            onSelectRole={setSelectedRoleId}
-            isLoading={rolesLoading}
-          />
-          <PermissionsForm
-            selectedRole={selectedRole}
-            allPermissions={permissions}
-            rolesMutation={rolesMutation}
-            onRoleUpdated={handleRoleUpdated}
-          />
-        </div>
-      )}
-    </div>
+    </>
   );
 };
 
