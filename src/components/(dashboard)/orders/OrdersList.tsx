@@ -195,7 +195,7 @@ export const OrderDetails = ({ order, onEdit }: { order: ApiOrder; onEdit: (orde
       />
       <div className="flex items-center  justify-between p-3 bg-[#F8F8F8] py-5 my-3 px-10 rounded-xl border border-input mb-4">
         <div className="flex items-center gap-3">
-          <img src={order.client.avatar_url} alt={order.name} className="w-12 h-12 rounded-full" />
+          <img src={order.client?.avatar_url} alt={order.name} className="w-12 h-12 rounded-full" />
           <div>
             <p className="font-bold text-gray-900">{order.name}</p>
             <p className="text-sm text-gray-500">{order.status}</p>

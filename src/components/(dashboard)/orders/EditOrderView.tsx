@@ -25,7 +25,8 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
   const [customerSearch, setCustomerSearch] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "paid">("cash");
   const [couponCode, setCouponCode] = useState("");
-
+  const [orderStatus, setOrderStatus] = useState<"pending" | "delivery" | "finished">("pending");
+  console.log(orderToEdit);
   useEffect(() => {
     // Prefill cart with existing order items so they are visible/editable
     setCartItems(orderToEdit?.items || []);
@@ -178,7 +179,7 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
     });
 
     const updatedOrderData = {
-      status: orderToEdit?.status,
+      status: orderToEdit?.id ? orderToEdit?.status : orderStatus,
       client_id: selectedCustomer?.id,
       name: orderToEdit?.name,
       email: orderToEdit?.email,
@@ -192,7 +193,11 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
       items: itemsPayload,
     } as unknown as Partial<ApiOrder>;
 
-    orderToEdit?.id ? update(orderToEdit.id, updatedOrderData) : create(updatedOrderData);
+    if (orderToEdit?.id) {
+      update(orderToEdit.id, updatedOrderData);
+    } else {
+      create(updatedOrderData);
+    }
     onBack();
   };
 
@@ -394,6 +399,28 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Order Status Section - Only show in create mode */}
+            {!orderToEdit?.id && (
+              <div>
+                <label className="block font-semibold text-gray-800 mb-2">
+                  حالة الطلب <span className="text-red-500">*</span>
+                </label>
+                <Select
+                  value={orderStatus}
+                  onValueChange={(value) => setOrderStatus(value as "pending" | "delivery" | "finished")}
+                >
+                  <SelectTrigger className="w-full bg-white text-right pr-4 pl-10 py-5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <SelectValue placeholder="اختر حالة الطلب" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">قيد الانتظار</SelectItem>
+                    <SelectItem value="delivery">قيد التوصيل</SelectItem>
+                    <SelectItem value="finished">مكتمل</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {/* Payment Section */}
             <div>
