@@ -69,11 +69,15 @@ const StoreSelector = ({ trigger, onlystores = false }: { trigger: React.ReactNo
       icon: <Settings size={20} className="text-gray-500" />,
       link: isAdmin ? "/admin/stores" : "/dashboard/stores",
     },
-    isAdmin && {
-      label: "الادوار الوظيفية",
-      icon: <Users size={20} className="text-gray-500" />,
-      link: "/admin/roles",
-    },
+    ...(isAdmin
+      ? [
+          {
+            label: "الادوار الوظيفية",
+            icon: <Users size={20} className="text-gray-500" />,
+            link: "/admin/roles",
+          },
+        ]
+      : []),
   ];
   if (isLoading) return <Loader className="w-8 animate-spin h-8" />;
   return (
@@ -87,32 +91,34 @@ const StoreSelector = ({ trigger, onlystores = false }: { trigger: React.ReactNo
           >
             {selectedStore?.logo_url ? (
               <img src={selectedStore.logo_url} alt="Store Logo" className="w-full h-full object-cover rounded-lg" />
-            ) :  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path
-              d="M2.47217 8.74658V12.9149C2.47217 15.2732 2.47217 16.4516 3.20383 17.1841C3.93717 17.9174 5.11467 17.9174 7.47217 17.9174H12.4722C14.8288 17.9174 16.0072 17.9174 16.7397 17.1841C17.4722 16.4516 17.4722 15.2724 17.4722 12.9149V8.74658"
-              stroke="#393939"
-              strokeWidth="1.25"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M12.4724 14.1608C11.9024 14.6666 10.9949 14.9941 9.97237 14.9941C8.94987 14.9941 8.04237 14.6666 7.47237 14.1608M8.41987 7.01496C8.18487 7.86412 7.32987 9.32829 5.70654 9.53996C4.2732 9.72746 3.18487 9.10162 2.90737 8.83996C2.60154 8.62746 1.9032 7.94829 1.73237 7.52495C1.56154 7.09995 1.7607 6.18079 1.9032 5.80579L2.47237 4.15745C2.61154 3.74329 2.93737 2.76412 3.2707 2.43245C3.60404 2.10079 4.27904 2.08662 4.55737 2.08662H10.3957C11.8982 2.10829 15.184 2.07329 15.8332 2.08662C16.4832 2.09995 16.8732 2.64495 16.9874 2.87829C17.9565 5.22495 18.3332 6.56995 18.3332 7.14162C18.2065 7.75329 17.6832 8.90496 15.8332 9.41246C13.9107 9.93912 12.8207 8.91412 12.479 8.52079M7.62904 8.52079C7.89987 8.85329 8.74904 9.52245 9.97904 9.53912C11.2099 9.55579 12.2724 8.69745 12.6499 8.26662C12.7565 8.13912 12.9874 7.76162 13.2274 7.01412"
-              stroke="#393939"
-              strokeWidth="1.25"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          المتجر
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M18 9C18 9 13.581 15 12 15C10.419 15 6 9 6 9"
-              stroke="black"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-                </svg>}
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path
+                  d="M2.47217 8.74658V12.9149C2.47217 15.2732 2.47217 16.4516 3.20383 17.1841C3.93717 17.9174 5.11467 17.9174 7.47217 17.9174H12.4722C14.8288 17.9174 16.0072 17.9174 16.7397 17.1841C17.4722 16.4516 17.4722 15.2724 17.4722 12.9149V8.74658"
+                  stroke="#393939"
+                  strokeWidth="1.25"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M12.4724 14.1608C11.9024 14.6666 10.9949 14.9941 9.97237 14.9941C8.94987 14.9941 8.04237 14.6666 7.47237 14.1608M8.41987 7.01496C8.18487 7.86412 7.32987 9.32829 5.70654 9.53996C4.2732 9.72746 3.18487 9.10162 2.90737 8.83996C2.60154 8.62746 1.9032 7.94829 1.73237 7.52495C1.56154 7.09995 1.7607 6.18079 1.9032 5.80579L2.47237 4.15745C2.61154 3.74329 2.93737 2.76412 3.2707 2.43245C3.60404 2.10079 4.27904 2.08662 4.55737 2.08662H10.3957C11.8982 2.10829 15.184 2.07329 15.8332 2.08662C16.4832 2.09995 16.8732 2.64495 16.9874 2.87829C17.9565 5.22495 18.3332 6.56995 18.3332 7.14162C18.2065 7.75329 17.6832 8.90496 15.8332 9.41246C13.9107 9.93912 12.8207 8.91412 12.479 8.52079M7.62904 8.52079C7.89987 8.85329 8.74904 9.52245 9.97904 9.53912C11.2099 9.55579 12.2724 8.69745 12.6499 8.26662C12.7565 8.13912 12.9874 7.76162 13.2274 7.01412"
+                  stroke="#393939"
+                  strokeWidth="1.25"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
+            {selectedStore?.name ? selectedStore.name : "المتجر"}
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M18 9C18 9 13.581 15 12 15C10.419 15 6 9 6 9"
+                stroke="black"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </Button>
         ) : (
           <Button variant="ghost" className="flex items-center gap-2 bg-white rounded-lg px-4 py-2 h-auto">
@@ -125,7 +131,7 @@ const StoreSelector = ({ trigger, onlystores = false }: { trigger: React.ReactNo
             </div>
             <div className="flex flex-col items-start">
               <span className="text-sm font-bold text-[#2D496A]">{selectedStore?.name || "اختر متجر"}</span>
-              <span className="text-xs text-gray-500">متجر</span>
+              <span className="text-xs text-gray-500">متجر </span>
             </div>
           </Button>
         )}
