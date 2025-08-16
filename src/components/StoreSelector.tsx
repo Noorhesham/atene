@@ -28,12 +28,12 @@ const StoreSelector = ({ trigger, onlystores = false }: { trigger: React.ReactNo
     if (storedId && stores) {
       const store = stores.find((s) => s.id === parseInt(storedId));
       if (store) setSelectedStore(store);
-    } else if (stores?.length > 0) {
-      // If no stored ID, select first store
+    } else if (stores?.length > 0 && !isAdmin) {
+      // If no stored ID and not admin, select first store
       setSelectedStore(stores[0]);
       localStorage.setItem("storeId", stores?.[0]?.id.toString() || "");
     }
-  }, [stores]);
+  }, [stores, isAdmin]);
 
   const handleStoreSelect = (store: ApiStore) => {
     setSelectedStore(store);
@@ -209,15 +209,17 @@ const StoreSelector = ({ trigger, onlystores = false }: { trigger: React.ReactNo
         </div>
 
         {/* Logout Section */}
-        <div className="border-t p-2">
-          <DropdownMenuItem
-            onClick={() => logout()}
-            className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 focus:bg-red-50 focus:text-red-600 cursor-pointer"
-          >
-            <LogOut size={16} />
-            <span>تسجيل الخروج</span>
-          </DropdownMenuItem>
-        </div>
+        {!onlystores && (
+          <div className="border-t p-2">
+            <DropdownMenuItem
+              onClick={() => logout()}
+              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 focus:bg-red-50 focus:text-red-600 cursor-pointer"
+            >
+              <LogOut size={16} />
+              <span>تسجيل الخروج</span>
+            </DropdownMenuItem>
+          </div>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
