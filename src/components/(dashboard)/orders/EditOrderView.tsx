@@ -33,7 +33,21 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
     // Highlight those products in the product grid
     const existingProductIds = new Set((orderToEdit?.items || []).map((item) => item.product_id));
     setSelectedProducts(existingProductIds);
-  }, [orderToEdit?.id, clients]);
+
+    // Set default values for Step 2 when editing an existing order
+    if (orderToEdit?.id && orderToEdit?.client) {
+      setSelectedCustomer({
+        id: orderToEdit.client.id,
+        name: `${orderToEdit.client.first_name} ${orderToEdit.client.last_name}`.trim() || orderToEdit.client.email,
+        phone: orderToEdit.client.phone || "",
+      });
+    }
+
+    // Set default order status if editing
+    if (orderToEdit?.id && orderToEdit?.status) {
+      setOrderStatus(orderToEdit.status as "pending" | "delivery" | "finished");
+    }
+  }, [orderToEdit?.id, orderToEdit?.client, orderToEdit?.status, orderToEdit?.items, clients]);
 
   // Filter products based on category and search
   const filteredProducts = useMemo(() => {
@@ -180,7 +194,7 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
 
     const updatedOrderData = {
       status: orderToEdit?.id ? orderToEdit?.status : orderStatus,
-      client_id: selectedCustomer?.id,
+      client_id: orderToEdit?.id ? orderToEdit?.client_id : selectedCustomer?.id,
       name: orderToEdit?.name,
       email: orderToEdit?.email,
       phone: orderToEdit?.phone,
@@ -370,8 +384,9 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
                 العميل <span className="text-red-500">*</span>
               </label>
               <Select
+                value={selectedCustomer?.id?.toString() || ""}
                 onValueChange={(value) => {
-                  const customer = clients.data.find((c: ApiUser) => c.id === parseInt(value));
+                  const customer = (clients as ApiUser[])?.data?.find((c: ApiUser) => c.id === parseInt(value));
                   if (customer) {
                     setSelectedCustomer({
                       id: customer.id,
@@ -390,7 +405,7 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
                       جاري التحميل...
                     </SelectItem>
                   ) : (
-                    clients.data.map((customer: ApiUser) => (
+                    (clients as ApiUser[])?.data?.map((customer: ApiUser) => (
                       <SelectItem key={customer.id} value={customer.id.toString()}>
                         {`${customer.first_name} ${customer.last_name}`.trim() || customer.email}
                       </SelectItem>
