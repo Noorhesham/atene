@@ -26,8 +26,6 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "paid">("cash");
   const [couponCode, setCouponCode] = useState("");
 
-  // Selected product ids used only for UI highlighting
-
   useEffect(() => {
     // Prefill cart with existing order items so they are visible/editable
     setCartItems(orderToEdit?.items || []);
@@ -54,8 +52,6 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
 
     return filtered;
   }, [products, selectedCategory, searchQuery]);
-
-
 
   const handleAddToCart = (product: ApiProduct) => {
     if (product.type === "variation" && Array.isArray(product.variations) && product.variations.length > 0) {
@@ -368,7 +364,7 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
               <label className="block font-semibold text-gray-800 mb-2">
                 العميل <span className="text-red-500">*</span>
               </label>
-              <Select 
+              <Select
                 onValueChange={(value) => {
                   const customer = clients.data.find((c: ApiUser) => c.id === parseInt(value));
                   if (customer) {
@@ -385,7 +381,9 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
                 </SelectTrigger>
                 <SelectContent>
                   {clientsLoading ? (
-                    <SelectItem value="loading" disabled>جاري التحميل...</SelectItem>
+                    <SelectItem value="loading" disabled>
+                      جاري التحميل...
+                    </SelectItem>
                   ) : (
                     clients.data.map((customer: ApiUser) => (
                       <SelectItem key={customer.id} value={customer.id.toString()}>
@@ -411,7 +409,7 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
                     className="peer sr-only"
                   />
                   <span className="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center peer-checked:border-[#406896] peer-checked:bg-white transition">
-                     <span className="w-2.5 h-2.5 rounded-full bg-[#406896] opacity-0 peer-checked:opacity-100 transition-opacity"></span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#406896] opacity-0 peer-checked:opacity-100 transition-opacity"></span>
                   </span>
                   <span className="text-gray-700">الدفع عند الاستلام</span>
                 </label>
@@ -424,8 +422,8 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
                     onChange={(e) => setPaymentMethod(e.target.value as "cash" | "paid")}
                     className="peer sr-only"
                   />
-                   <span className="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center peer-checked:border-[#406896] peer-checked:bg-white transition">
-                     <span className="w-2.5 h-2.5 rounded-full bg-[#406896] opacity-0 peer-checked:opacity-100 transition-opacity"></span>
+                  <span className="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center peer-checked:border-[#406896] peer-checked:bg-white transition">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#406896] opacity-0 peer-checked:opacity-100 transition-opacity"></span>
                   </span>
                   <span className="text-gray-700">مدفوع</span>
                 </label>
@@ -435,13 +433,15 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
             {/* Discount Coupon Section */}
             <div>
               <h3 className="font-semibold text-gray-800 mb-2">كوبون الخصم</h3>
-               <Select onValueChange={setCouponCode}>
+              <Select onValueChange={setCouponCode}>
                 <SelectTrigger className="w-full bg-white text-right pr-4 pl-10 py-5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500">
                   <SelectValue placeholder="كود الكوبون" />
                 </SelectTrigger>
                 <SelectContent>
-                   {couponsLoading ? (
-                    <SelectItem value="loading" disabled>جاري التحميل...</SelectItem>
+                  {couponsLoading ? (
+                    <SelectItem value="loading" disabled>
+                      جاري التحميل...
+                    </SelectItem>
                   ) : (
                     coupons.map((coupon: any) => (
                       <SelectItem key={coupon.id} value={coupon.code}>
@@ -454,7 +454,7 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
             </div>
           </div>
         </div>
-        
+
         {/* Action Button */}
         <div className="mt-4">
           <button
@@ -463,7 +463,10 @@ const EditOrderView = ({ orderToEdit, onBack }: { orderToEdit: ApiOrder; onBack:
             className="w-full bg-[#406896] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#3A5779] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM8 15L3 10L4.41 8.59L8 12.17L15.59 4.58L17 6L8 15Z" fill="white"/>
+              <path
+                d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM8 15L3 10L4.41 8.59L8 12.17L15.59 4.58L17 6L8 15Z"
+                fill="white"
+              />
             </svg>
             حفظ الطلب
           </button>
