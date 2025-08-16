@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import PeriodSelector from "./PeriodSelector";
 import Card from "@/components/Card";
 import StatsCard from "./StatsCard";
+import { Link } from "react-router-dom";
+import { ChevronLeft } from "lucide-react";
 
 type Period = "current_year" | "current_month" | "last_month" | "current_week" | "last_week" | "current_day";
 
@@ -36,7 +38,7 @@ export default function StoresAnalytics() {
 
   const navLinks = [
     { label: "ملخص المنصة", href: "/admin" },
-    { label: "التقارير", href: "/admin/analytics/stores", isActive: true },
+    { label: "المتاجر", href: "/admin/analytics/stores", isActive: true },
     { label: "المنتجات", href: "/admin/analytics/products" },
   ];
 
@@ -50,16 +52,22 @@ export default function StoresAnalytics() {
       <div className="grid grid-cols-12 gap-4 p-4 sm:p-8">
         {/* Right panel: filters */}
         <div className="col-span-3">
-          <FilterPanel
-            categories={[
-              { name: "التجار", value: "merchants", count: data?.totalStores },
-              { name: "المنتجات", value: "products" },
-              { name: "المتاجر", value: "stores", active: true },
-              { name: "العملاء", value: "customers" },
-            ]}
-            activeFilter={"stores"}
-            onFilterChange={() => {}}
-          />
+          {navLinks.slice(1).map((link) => (
+            <Link
+              key={link.label}
+              style={{
+                backgroundColor: link.isActive ? "rgba(91, 136, 186, 0.20)" : "transparent",
+                opacity: link.isActive ? 1 : 0.5,
+              }}
+              to={link.href}
+              className={`w-full text-right px-4 py-4  first:rounded-md text-sm font-medium flex justify-between items-center`}
+            >
+              <div className="flex items-center gap-2">
+                <span className=" text-main">{link.label}</span>
+              </div>
+              {link.isActive && <ChevronLeft size={16} />}
+            </Link>
+          ))}
         </div>
         {/* Main content */}
         <div className="col-span-9 flex flex-col gap-4">
@@ -93,7 +101,6 @@ export default function StoresAnalytics() {
             <div className="flex items-center gap-2">
               {" "}
               <PeriodSelector period={period} setPeriod={setPeriod} />{" "}
-         
             </div>
           </header>
           <div className="p-6">

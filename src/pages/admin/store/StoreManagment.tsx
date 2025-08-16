@@ -10,6 +10,7 @@ import StoreDetails from "./storeDetails/StoreDetails";
 import Order from "@/components/Order";
 import { PageHeader } from "../PageHeader";
 import FilterPanel from "@/components/FilterPanel";
+import { useAuth } from "@/context/AuthContext";
 
 interface FilterCategory {
   name: string;
@@ -142,14 +143,20 @@ export default function StoreManagementPage() {
   };
 
   const { isLoading: storesLoading } = useAdminEntityQuery("stores");
-  if (storesLoading) return <Loader />;
-
+  const { user, isLoading: userLoading } = useAuth();
+  console.log(user);
+  if (storesLoading || userLoading) return <Loader />;
+  const isAdmin = user?.user?.user_type === "admin";
   return (
     <div>
       <div className=" z-10">
         <PageHeader
           navLinks={[{ label: "المتاجر", href: "/admin/stores", isActive: true }]}
-          addButton={{ label: "إضافة متجر", href: "/admin/stores/add" }}
+          addButton={
+            isAdmin
+              ? { label: "إضافة متجر", href: "/admin/stores/add" }
+              : { label: "إضافة متجر", href: "/dashboard/stores/add" }
+          }
           helpButton={{ label: "مساعدة", href: "/help" }}
         />
       </div>

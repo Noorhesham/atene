@@ -246,7 +246,7 @@ export function useAdminEntityQuery<K extends keyof EntityTypeMap>(
       Authorization: `Bearer ${localStorage.getItem("token")}`,
       "Content-Type": "application/json",
       ...(options?.headers || {}),
-      storeId: localStorage.getItem("storeId") || undefined,
+      ...(isAdmin ? {} : { storeId: localStorage.getItem("storeId") || undefined }),
     };
 
     const response = await FetchFunction<ApiResponseWithTotal>(buildUrl(), "GET", null, headers);
@@ -355,8 +355,7 @@ export function useAdminEntityQuery<K extends keyof EntityTypeMap>(
         {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
           "Content-Type": "application/json",
-
-          storeId: localStorage.getItem("storeId") || "",
+          ...(isAdmin ? {} : { storeId: localStorage.getItem("storeId") || "" }),
         }
       );
 
@@ -388,7 +387,7 @@ export function useAdminEntityQuery<K extends keyof EntityTypeMap>(
           Authorization: `Bearer ${localStorage.getItem("token")}`,
           "Content-Type": "application/json",
           ...(options?.headers || {}),
-          storeId: localStorage.getItem("storeId") || "",
+          ...(isAdmin ? {} : { storeId: localStorage.getItem("storeId") || "" }),
         }
       );
 
@@ -443,11 +442,11 @@ export function useAdminEntityQuery<K extends keyof EntityTypeMap>(
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
       const endpoint = getEndpoint(entityName);
-      const response = await FetchFunction<{ status: boolean; message: string }>(`${endpoint}/${id}`, "DELETE", null, {
+      const response = await FetchFunction<{ status: boolean; message: string }>(`${endpoint}/${id}`, "DELETE", null,       {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
         "Content-Type": "application/json",
         ...(options?.headers || {}),
-        storeId: localStorage.getItem("storeId") || "",
+        ...(isAdmin ? {} : { storeId: localStorage.getItem("storeId") || "" }),
       });
 
       if (!response.status) {

@@ -29,7 +29,6 @@ interface Settings {
 
   tiktok?: string;
   snapchat?: string;
-  privacy: string;
 }
 
 const settingsSchema = z.object({
@@ -45,7 +44,6 @@ const settingsSchema = z.object({
   terms: z.string().min(10, "يجب أن يكون النص 10 أحرف على الأقل"),
   policy: z.string().min(10, "يجب أن يكون النص 10 أحرف على الأقل"),
   aboutUs: z.string().min(10, "يجب أن يكون النص 10 أحرف على الأقل"),
-  privacy: z.string().min(10, "يجب أن يكون النص 10 أحرف على الأقل"),
 });
 
 type SettingsFormData = z.infer<typeof settingsSchema>;
@@ -124,8 +122,6 @@ export default function SettingsPage() {
       terms: "",
       policy: "",
       aboutUs: "",
-
-      privacy: "",
     },
     mode: "onChange",
   });
@@ -152,7 +148,6 @@ export default function SettingsPage() {
         terms: settingsData.terms || "",
         policy: settingsData.policy || "",
         aboutUs: settingsData.aboutUs || "",
-        privacy: settingsData.privacy || "",
       };
       form.reset(formData);
     }
@@ -262,11 +257,10 @@ export default function SettingsPage() {
             <FormInput area name="aboutUs" label="معلومات عنا" />
             <FormInput area name="terms" label="الشروط والأحكام" />
             <FormInput area name="policy" label="سياسة الخصوصية" />
-            <FormInput area name="privacy" label="سياسة الخصوصية" />
           </div>
         </div>
       ),
-      fields: ["aboutUs", "terms", "policy", "privacy"],
+      fields: ["aboutUs", "terms", "policy"],
     },
   ];
 

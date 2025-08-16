@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
 import { PageHeader } from "../PageHeader";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ChevronLeft } from "lucide-react";
 import { Package } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import FilterPanel from "@/components/FilterPanel";
@@ -9,6 +9,7 @@ import PeriodSelector from "./PeriodSelector";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
 import StatsCard from "./StatsCard";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const SkeletonLoader = ({ className }: { className?: string }) => (
   <div className={`bg-gray-200 rounded-lg animate-pulse ${className}`} />
@@ -93,7 +94,7 @@ export default function ProductsAnalytics() {
 
   const navLinks = [
     { label: "ملخص المنصة", href: "/admin" },
-    { label: " التقارير", href: "/admin/analytics/stores" },
+    { label: "المتاجر", href: "/admin/analytics/stores" },
     { label: "المنتجات", href: "/admin/analytics/products", isActive: true },
   ];
 
@@ -103,17 +104,23 @@ export default function ProductsAnalytics() {
 
       <div className="grid grid-cols-12 gap-6 p-4 sm:p-8">
         {/* Right panel: filters */}
-        <div className="col-span-12 lg:col-span-3">
-          <FilterPanel
-            categories={[
-              { name: "التجار", value: "merchants" },
-              { name: "المنتجات", value: "products", active: true },
-              { name: "المتاجر", value: "stores" },
-              { name: "العملاء", value: "customers" },
-            ]}
-            activeFilter={"products"}
-            onFilterChange={() => {}}
-          />
+        <div className="col-span-3">
+          {navLinks.slice(1).map((link) => (
+            <Link
+              key={link.label}
+              style={{
+                backgroundColor: link.isActive ? "rgba(91, 136, 186, 0.20)" : "transparent",
+                opacity: link.isActive ? 1 : 0.5,
+              }}
+              to={link.href}
+              className={`w-full text-right px-4 py-4  first:rounded-md text-sm font-medium flex justify-between items-center`}
+            >
+              <div className="flex items-center gap-2">
+                <span className=" text-main">{link.label}</span>
+              </div>
+              {link.isActive && <ChevronLeft size={16} />}
+            </Link>
+          ))}
         </div>
 
         {/* Main content */}
@@ -134,7 +141,6 @@ export default function ProductsAnalytics() {
             <div className="flex items-center gap-2">
               {" "}
               <PeriodSelector period={period} setPeriod={setPeriod} />{" "}
-       
             </div>
           </div>
 

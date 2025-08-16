@@ -181,6 +181,7 @@ export default function ProductsPageDashboard() {
     totalRecords,
     remove: deleteProduct,
     refetch,
+    data,
   } = useAdminEntityQuery("products", {
     initialPerPage: 10,
     queryParams: {
@@ -191,12 +192,12 @@ export default function ProductsPageDashboard() {
       order_dir: orderDir,
     },
   });
-
+  console.log(data);
   // Fetch categories for filter
   const { data: categories = [], isLoading: isLoadingCategories } = useAdminEntityQuery("categories");
   const { data: stores = [], isLoading: isLoadingStores } = useAdminEntityQuery("stores");
   const { user } = useAuth();
-  console.log(stores);
+  console.log(data);
   const [selectedProduct, setSelectedProduct] = useState<ApiProduct | null>(null);
   const [searchInput, setSearchInput] = useState("");
 
@@ -446,10 +447,10 @@ export default function ProductsPageDashboard() {
                 <Order orderDir={orderDir} setOrderDir={handleOrderChange} />
               </div>
               <PaginatedList<ApiProduct>
+                renderItem={renderProductItem}
                 entityName="products"
                 selectedItem={selectedProduct}
                 onSelectItem={setSelectedProduct}
-                renderItem={renderProductItem}
                 searchQuery={searchInput}
                 pageSize={10}
                 queryParams={{

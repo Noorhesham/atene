@@ -48,6 +48,7 @@ const StoreSelector = ({ trigger, onlystores = false }: { trigger: React.ReactNo
     // Invalidate and refetch all queries in the cache
     queryClient.invalidateQueries();
     queryClient.refetchQueries();
+    if (onlystores) return;
     if (isAdmin) {
       navigate("/admin");
     } else {
