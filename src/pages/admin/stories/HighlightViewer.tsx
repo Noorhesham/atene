@@ -44,43 +44,43 @@ const HighlightViewer = ({ stories, onClose, onDelete }: HighlightViewerProps) =
   }
 
   return (
-    <div className="fixed inset-0 story-viewer z-50 flex items-center justify-center" dir="ltr">
-      <div className="absolute top-4 right-4 z-10 flex items-center gap-4">
-        {onDelete && (
+    <div className="fixed inset-0 story-viewer z-50 flex items-center justify-center" dir="ltr" onClick={onClose}>
+      <div className="relative w-full max-w-[400px] aspect-[9/16]" onClick={(e) => e.stopPropagation()}>
+        <div className="absolute top-4 right-4 z-10 flex items-center gap-4">
+          {onDelete && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white hover:text-red-500 hover:bg-white/10"
+              onClick={() => onDelete(stories[activeIndex].id)}
+            >
+              <Trash2 className="w-5 h-5" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
-            className="text-white hover:text-red-500 hover:bg-white/10"
-            onClick={() => onDelete(stories[activeIndex].id)}
+            onClick={onClose}
+            className="text-white hover:text-gray-200 hover:bg-white/10"
+            aria-label="إغلاق"
           >
-            <Trash2 className="w-5 h-5" />
+            <X className="w-5 h-5" />
           </Button>
-        )}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onClose}
-          className="text-white hover:text-gray-200 hover:bg-white/10"
-          aria-label="إغلاق"
-        >
-          <X className="w-5 h-5" />
-        </Button>
-      </div>
+        </div>
 
-      {/* Progress Bar */}
-      <div className="absolute top-0 left-0 right-0 flex gap-1.5 p-4 z-10">
-        {stories.map((_, index) => (
-          <div key={index} className="flex-1 h-1 bg-white/20 rounded-full overflow-hidden">
-            <div
-              className={`h-full bg-white transition-all duration-300 ${
-                index === activeIndex ? "story-progress" : index < activeIndex ? "w-full" : "w-0"
-              }`}
-            />
-          </div>
-        ))}
-      </div>
+        {/* Progress Bar */}
+        <div className="absolute top-0 left-0 right-0 flex gap-1.5 p-4 z-10">
+          {stories.map((_, index) => (
+            <div key={index} className="flex-1 h-1 bg-white/20 rounded-full overflow-hidden">
+              <div
+                className={`h-full bg-white transition-all duration-300 ${
+                  index === activeIndex ? "story-progress" : index < activeIndex ? "w-full" : "w-0"
+                }`}
+              />
+            </div>
+          ))}
+        </div>
 
-      <div className="relative w-full max-w-[400px] aspect-[9/16]">
         <Swiper
           onSwiper={(swiper) => {
             swiperRef.current = swiper;
