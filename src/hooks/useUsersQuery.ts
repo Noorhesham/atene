@@ -132,9 +132,13 @@ const ENTITY_ENDPOINTS: Record<string, EndpointConfig> = {
     admin: `${API_ENDPOINTS.ADMIN}/settings`,
     requiresAuth: true,
   },
-  "prev_participants": {
+  prev_participants: {
     admin: `${API_ENDPOINTS.BASE}/conversations/prev_participants`,
     merchant: `${API_ENDPOINTS.BASE}/conversations/prev_participants`,
+    requiresAuth: true,
+  },
+  "order-clients": {
+    merchant: `${API_ENDPOINTS.BASE}/merchants/orders/clients`,
     requiresAuth: true,
   },
 };
@@ -294,6 +298,14 @@ export function useAdminEntityQuery<K extends keyof EntityTypeMap>(
     if (entityName === "conversations") {
       return {
         data: queryResult.conversations || [],
+        total: queryResult.total || 0,
+        status: queryResult.status,
+        message: queryResult.message || "",
+      } as ApiResponseWithTotal;
+    }
+    if (entityName === "order-clients") {
+      return {
+        data: queryResult.clients || [],
         total: queryResult.total || 0,
         status: queryResult.status,
         message: queryResult.message || "",
