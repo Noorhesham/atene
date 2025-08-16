@@ -150,7 +150,7 @@ const StoreWorkingHours = () => {
       </div>
 
       {/* Working Hours Table - Show when store is open (with or without working times) */}
-      {(openStatus === "open_with_working_times" || openStatus === "open_without_working_times") && (
+      {openStatus === "open_with_working_times" && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg font-medium">جدول أوقات العمل</CardTitle>

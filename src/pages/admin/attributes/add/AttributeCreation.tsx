@@ -9,7 +9,6 @@ import { ApiAttribute, ApiAttributeOption } from "@/types";
 import FormInput from "@/components/inputs/FormInput";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
-import toast from "react-hot-toast";
 
 // Schema for attribute option
 const attributeOptionSchema = z.object({
@@ -21,7 +20,7 @@ const attributeOptionSchema = z.object({
 // Main attribute schema
 const attributeSchema = z.object({
   title: z.string().min(1, "عنوان الخاصية مطلوب"),
-  status: z.enum(["active", "inactive"]),
+  status: z.enum(["active", "not-active"]),
   options: z.array(attributeOptionSchema),
 });
 
@@ -36,7 +35,7 @@ const AttributeCreation: React.FC<AttributeCreationProps> = ({ attribute }) => {
   const { id } = useParams();
   const isEditMode = !!id && !!attribute;
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  console.log(attribute);
   // Hooks for data operations
   const { create: createAttribute, update: updateAttribute } = useAdminEntityQuery("attributes");
 
@@ -63,7 +62,7 @@ const AttributeCreation: React.FC<AttributeCreationProps> = ({ attribute }) => {
     if (isEditMode && attribute) {
       form.reset({
         title: attribute.title,
-        status: attribute.status,
+        status: attribute.status || "active",
         options:
           attribute.options && attribute.options.length > 0
             ? attribute.options.map((option: ApiAttributeOption) => ({
@@ -142,23 +141,15 @@ const AttributeCreation: React.FC<AttributeCreationProps> = ({ attribute }) => {
             <Card className="p-6">
               <h2 className="text-lg font-semibold mb-4">معلومات الخاصية الأساسية</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Attribute Title */}
-                <FormInput
-                  control={form.control as any}
-                  name="title"
-                  label="عنوان الخاصية"
-                  placeholder="مثل: اللون، الحجم، الوزن..."
-                />
+                <FormInput name="title" label="عنوان الخاصية" placeholder="مثل: اللون، الحجم، الوزن..." />
 
-                {/* Status */}
                 <FormInput
-                  control={form.control as any}
                   name="status"
                   label="حالة الخاصية"
                   select
                   options={[
                     { value: "active", label: "نشط" },
-                    { value: "inactive", label: "غير نشط" },
+                    { value: "not-active", label: "غير نشط" },
                   ]}
                 />
               </div>

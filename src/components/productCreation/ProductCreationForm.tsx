@@ -44,7 +44,10 @@ const variantSchema = z
 
 const productFormSchema = z.object({
   // First form fields
-  productName: z.string().min(3, "اسم المنتج يجب أن يكون 3 أحرف على الأقل").max(50, "اسم المنتج يجب أن يكون 50 حرف على الأقل"),
+  productName: z
+    .string()
+    .min(3, "اسم المنتج يجب أن يكون 3 أحرف على الأقل")
+    .max(50, "اسم المنتج يجب أن يكون 50 حرف على الأقل"),
   price: z.union([z.string().min(1, "السعر يجب أن يكون أكبر من 0"), z.number().min(1, "السعر يجب أن يكون أكبر من 0")]),
   section_id: z.string().min(1, "يجب اختيار قسم واحد على الأقل"),
   category_id: z.string().min(1, "يجب اختيار فئة واحدة على الأقل"),
@@ -132,11 +135,11 @@ interface StepConfig {
 const ProductCreationForm = ({
   product,
   disableCreate,
-  title,
+  novalidation = false,
 }: {
   product: ApiProduct | null | undefined;
   disableCreate: boolean;
-  title: string;
+  novalidation?: boolean;
 }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -298,6 +301,7 @@ const ProductCreationForm = ({
   // Watch for changes in images array and automatically update cover
   const watchedImages = form.watch("images");
   useEffect(() => {
+    if (novalidation) return;
     if (watchedImages && Array.isArray(watchedImages) && watchedImages.length > 0) {
       // Set the first image as cover
       const firstImage = watchedImages[0];
@@ -310,11 +314,11 @@ const ProductCreationForm = ({
         form.setValue("cover", "", { shouldValidate: true });
       }
     }
-  }, [watchedImages, form]);
+  }, [watchedImages, form, novalidation]);
 
   const handleStepClick = async (stepId: number) => {
     // If trying to navigate to a step ahead of current step, validate current step first
-    if (stepId > currentStep) {
+    if (stepId > currentStep && !novalidation) {
       const stepFields = steps[currentStep - 1].fields;
       const isValid = await form.trigger(stepFields);
 
@@ -606,13 +610,13 @@ const ProductCreationForm = ({
               )}
             </div> */}
             <div className="flex items-center gap-3">
-              <Button
+              {/* <Button
                 type="button"
                 variant="outline"
                 className="flex items-center gap-2 bg-white border-[#E7EAEE] text-[#101828] h-11 px-4 py-2.5 text-sm font-medium hover:bg-gray-50"
               >
                 حفظ كمسودة
-              </Button>
+              </Button> */}
               <Button
                 onClick={() => {
                   currentStep === steps.length ? handleSubmit() : handleStepClick(currentStep + 1);

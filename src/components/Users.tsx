@@ -117,7 +117,7 @@ export const UserDetails = ({ user }) => {
         </div>
         <div className="mt-6 pt-6 border-t flex justify-between items-center">
           <Button variant="destructive" className="bg-red-50 text-red-600">
-            حذف الموظف
+            حذف المستخدم
           </Button>
           <Button className="bg-gray-100 text-gray-800">حفظ التعديلات وارسال كود التأكيد</Button>
         </div>

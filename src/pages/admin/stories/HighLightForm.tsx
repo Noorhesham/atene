@@ -42,7 +42,7 @@ const HighlightForm = ({ step, stories, selectedStories, onStorySelect, onSubmit
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-4">
             <FormInput name="name" label="عنوان المجموعة" placeholder="مجموعة جديدة" />
             <div className="flex justify-end gap-2">
-              <Button type="submit">التالي</Button>
+              <Button type="submit">حفظ المجموعة</Button>
             </div>
           </form>
         </Form>
@@ -87,7 +87,7 @@ const HighlightForm = ({ step, stories, selectedStories, onStorySelect, onSubmit
                 onSubmit({ name, stories: selectedStories });
               }}
             >
-              تم
+              حفظ المجموعة
             </Button>
           </div>
         </div>

@@ -23,6 +23,7 @@ const ModalCustom = ({
   cancelBtn = false,
   isOpen,
   onOpenChange,
+  className,
 }: {
   btn: React.ReactNode;
   content: React.ReactNode;
@@ -37,15 +38,16 @@ const ModalCustom = ({
   btnStyles?: boolean;
   form?: boolean;
   onOpenChange?: (open: boolean) => void;
+  className?: string;
 }) => {
   const [open, setOpen] = React.useState(isOpen || false);
 
   return (
-    <Dialog  open={isOpen || open} onOpenChange={onOpenChange || setOpen}>
+    <Dialog open={isOpen || open} onOpenChange={onOpenChange || setOpen}>
       <DialogTrigger asChild>{btn}</DialogTrigger>
       <DialogContent
         aria-describedby={desc ? "modal-description" : undefined}
-        className="max-w-4xl min-h-[40vh] z-50 w-[95%] md:w-full overflow-y-auto    max-h-[80vh]  sm:rounded-[1.8rem]"
+        className="!max-w-4xl min-h-[40vh] z-50 w-[95%] md:w-full     max-h-[80vh]  sm:rounded-[1.8rem]"
       >
         {title ? (
           <DialogHeader className="mt-10">

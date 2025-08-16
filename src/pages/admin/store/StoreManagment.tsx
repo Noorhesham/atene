@@ -4,7 +4,6 @@ import { Card } from "@/components/ui/card";
 import { PaginatedList } from "@/components/admin/PaginatedList";
 import { ApiStore } from "@/types";
 import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
-import { useAuth } from "@/context/AuthContext";
 import Loader from "@/components/Loader";
 import StatusIndicator from "@/components/StatusIndicator";
 import StoreDetails from "./storeDetails/StoreDetails";
@@ -35,7 +34,7 @@ const StoreListItem = ({
 }: {
   store: ApiStore;
   isSelected: boolean;
-  onSelect: (store: ApiStore) => void;
+  onSelect: (store: ApiStore | null) => void;
 }) => {
   return (
     <div
@@ -46,7 +45,11 @@ const StoreListItem = ({
         checked={isSelected}
         onChange={(e) => {
           e.stopPropagation(); // Prevent card click when clicking checkbox
-          onSelect(store);
+          if (e.target.checked) {
+            onSelect(store);
+          } else {
+            onSelect(null); // Pass null to deselect when unchecked
+          }
         }}
         type="checkbox"
         className="w-5 h-5 rounded border-2 border-gray-300 text-main focus:ring-2 focus:ring-main focus:ring-offset-2 focus:ring-offset-white cursor-pointer transition-all duration-200 ease-in-out hover:border-main checked:bg-main checked:border-main checked:hover:bg-main/90"
@@ -75,8 +78,10 @@ export default function StoreManagementPage() {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [orderDir, setOrderDir] = useState<"asc" | "desc">("desc");
   const [selectedStoreId, setSelectedStoreId] = useState<number | null>(null);
-  const { user } = useAuth();
-  const { data: stores = [] } = useAdminEntityQuery("stores");
+  const [isFilterApplied, setIsFilterApplied] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const { data: stores = [], refetch } = useAdminEntityQuery("stores");
+
   // Revalidate the currently selected store instance after any list refetch
   // Ensures details panel reflects the latest status immediately after updates
   useEffect(() => {
@@ -95,14 +100,24 @@ export default function StoreManagementPage() {
 
   const handleFilterChange = (filter: string | null) => {
     setStatusFilter(filter);
+    // Force re-render and refetch stores when status filter changes
+    setRefreshKey((prev) => prev + 1);
+    setTimeout(() => refetch(), 100);
   };
 
   const handleOrderChange = (dir: "asc" | "desc") => {
     setOrderDir(dir);
   };
 
-  const handleStoreSelect = (store: ApiStore) => {
-    setSelectedStoreId(selectedStoreId === store.id ? null : store.id);
+  const handleStoreSelect = (store: ApiStore | null) => {
+    if (store) {
+      setSelectedStoreId(store.id);
+      setSelectedStore(store);
+    } else {
+      // Deselect when null is passed (checkbox unchecked)
+      setSelectedStoreId(null);
+      setSelectedStore(null);
+    }
   };
 
   const handleStoreDeleted = () => {
@@ -110,8 +125,25 @@ export default function StoreManagementPage() {
     setSelectedStoreId(null);
   };
 
+  const handleStoreUpdated = () => {
+    // Force refresh of stores list when store status is updated
+    setRefreshKey((prev) => prev + 1);
+    refetch();
+  };
+
+  const handleFilterButtonClick = () => {
+    setIsFilterApplied(true);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    // Reset filter applied state when search changes
+    setIsFilterApplied(false);
+  };
+
   const { isLoading: storesLoading } = useAdminEntityQuery("stores");
   if (storesLoading) return <Loader />;
+
   return (
     <div>
       <div className=" z-10">
@@ -132,14 +164,17 @@ export default function StoreManagementPage() {
               placeholder="ابحث باسم المتجر او المالك"
               className="w-full bg-white py-3 pr-10 pl-4 border border-gray-300 rounded-[4px] focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={handleSearchChange}
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
               <Search size={20} />
             </div>
           </div>{" "}
           <div>
-            <div className="flex text-base bg-white border border-input  py-3 px-4 rounded-[4px] text-[#555] items-center gap-2">
+            <button
+              onClick={handleFilterButtonClick}
+              className="flex text-base bg-white border border-input  py-3 px-4 rounded-[4px] text-[#555] items-center gap-2 hover:bg-gray-50 transition-colors"
+            >
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path
                   d="M5.83325 17.5V15M5.83325 15C5.05659 15 4.66825 15 4.36242 14.8733C4.16007 14.7896 3.97621 14.6668 3.82135 14.5119C3.6665 14.357 3.54368 14.1732 3.45992 13.9708C3.33325 13.665 3.33325 13.2767 3.33325 12.5C3.33325 11.7233 3.33325 11.335 3.45992 11.0292C3.54368 10.8268 3.6665 10.643 3.82135 10.4881C3.97621 10.3332 4.16007 10.2104 4.36242 10.1267C4.66825 10 5.05659 10 5.83325 10C6.60992 10 6.99825 10 7.30409 10.1267C7.50643 10.2104 7.69029 10.3332 7.84515 10.4881C8.00001 10.643 8.12282 10.8268 8.20658 11.0292C8.33325 11.335 8.33325 11.7233 8.33325 12.5C8.33325 13.2767 8.33325 13.665 8.20658 13.9708C8.12282 14.1732 8.00001 14.357 7.84515 14.5119C7.69029 14.6668 7.50643 14.7896 7.30409 14.8733C6.99825 15 6.60992 15 5.83325 15ZM14.1666 17.5V12.5M14.1666 5V2.5M14.1666 5C13.3899 5 13.0016 5 12.6958 5.12667C12.4934 5.21043 12.3095 5.33325 12.1547 5.4881C11.9998 5.64296 11.877 5.82682 11.7933 6.02917C11.6666 6.335 11.6666 6.72333 11.6666 7.5C11.6666 8.27667 11.6666 8.665 11.7933 8.97083C11.877 9.17318 11.9998 9.35704 12.1547 9.5119C12.3095 9.66675 12.4934 9.78957 12.6958 9.87333C13.0016 10 13.3899 10 14.1666 10C14.9433 10 15.3316 10 15.6374 9.87333C15.8398 9.78957 16.0236 9.66675 16.1785 9.5119C16.3333 9.35704 16.4562 9.17318 16.5399 8.97083C16.6666 8.665 16.6666 8.27667 16.6666 7.5C16.6666 6.72333 16.6666 6.335 16.5399 6.02917C16.4562 5.82682 16.3333 5.64296 16.1785 5.4881C16.0236 5.33325 15.8398 5.21043 15.6374 5.12667C15.3316 5 14.9433 5 14.1666 5ZM5.83325 7.5V2.5"
@@ -150,7 +185,7 @@ export default function StoreManagementPage() {
                 />
               </svg>
               <span className="text-sm font-medium">تصفية</span>
-            </div>
+            </button>
           </div>
         </div>
         <div className="grid grid-cols-12 gap-6 items-start">
@@ -175,6 +210,7 @@ export default function StoreManagementPage() {
             </div>
             <Card className="p-0 shadow-sm rounded-lg">
               <PaginatedList<ApiStore>
+                key={`stores-${refreshKey}-${statusFilter}`}
                 entityName="stores"
                 selectedItem={selectedStore}
                 onSelectItem={setSelectedStore}
@@ -191,7 +227,7 @@ export default function StoreManagementPage() {
                     />
                   );
                 }}
-                searchQuery={searchQuery}
+                searchQuery={isFilterApplied ? searchQuery : ""}
                 queryParams={{ orderDir }}
               />
             </Card>
@@ -200,7 +236,11 @@ export default function StoreManagementPage() {
           {/* Left Panel: Store Details */}
           <div className="col-span-12 lg:col-span-7">
             {selectedStore ? (
-              <StoreDetails store={selectedStore} onStoreDeleted={handleStoreDeleted} />
+              <StoreDetails
+                store={selectedStore}
+                onStoreDeleted={handleStoreDeleted}
+                onStoreUpdated={handleStoreUpdated}
+              />
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-gray-500 p-8">
                 <svg xmlns="http://www.w3.org/2000/svg" width="171" height="171" viewBox="0 0 171 171" fill="none">

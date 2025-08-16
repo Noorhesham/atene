@@ -1,12 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { X, Trash2 } from "lucide-react";
-import type { ApiStory } from "@/hooks/useUsersQuery";
+import type { ApiStory } from "@/types";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination } from "swiper/modules";
+import type { Swiper as SwiperType } from "swiper";
 import { Button } from "@/components/ui/button";
 import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
 import "@/styles/stories.css";
 
 interface HighlightViewerProps {
@@ -17,12 +15,25 @@ interface HighlightViewerProps {
 
 const HighlightViewer = ({ stories, onClose, onDelete }: HighlightViewerProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const swiperRef = useRef<SwiperType | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
-      if (e.key === "ArrowLeft") setActiveIndex((prev) => (prev + 1) % stories.length);
-      if (e.key === "ArrowRight") setActiveIndex((prev) => (prev - 1 + stories.length) % stories.length);
+      if (e.key === "ArrowLeft") {
+        if (swiperRef.current) {
+          swiperRef.current.slidePrev();
+        } else {
+          setActiveIndex((prev) => (prev - 1 + stories.length) % stories.length);
+        }
+      }
+      if (e.key === "ArrowRight") {
+        if (swiperRef.current) {
+          swiperRef.current.slideNext();
+        } else {
+          setActiveIndex((prev) => (prev + 1) % stories.length);
+        }
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
@@ -71,18 +82,23 @@ const HighlightViewer = ({ stories, onClose, onDelete }: HighlightViewerProps) =
 
       <div className="relative w-full max-w-[400px] aspect-[9/16]">
         <Swiper
-          modules={[Navigation, Pagination]}
-          navigation={{
-            prevEl: ".swiper-button-prev",
-            nextEl: ".swiper-button-next",
+          onSwiper={(swiper) => {
+            swiperRef.current = swiper;
           }}
-          pagination={{ type: "progressbar" }}
           className="w-full h-full rounded-lg overflow-hidden"
           onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
           grabCursor={true}
           shortSwipes={true}
           touchRatio={1}
           threshold={20}
+          initialSlide={activeIndex}
+          allowTouchMove={true}
+          resistance={true}
+          resistanceRatio={0.85}
+          watchSlidesProgress={true}
+          onSlideChangeTransitionStart={() => {
+            // Optional: Add any transition start logic
+          }}
         >
           {stories.map((story, index) => (
             <SwiperSlide key={story.id}>
@@ -100,16 +116,23 @@ const HighlightViewer = ({ stories, onClose, onDelete }: HighlightViewerProps) =
           ))}
         </Swiper>
 
-        {/* Custom Navigation Buttons */}
+        {/* Single Navigation Button - Previous */}
         <button
-          className="swiper-button-prev absolute left-4 top-1/2 -translate-y-1/2 z-20 story-navigation-button flex items-center justify-center"
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-20 story-navigation-button flex items-center justify-center w-10 h-10 bg-black/30 hover:bg-black/50 rounded-full transition-colors"
           aria-label="السابق"
-          onClick={() => setActiveIndex((prev) => (prev - 1 + stories.length) % stories.length)}
+          onClick={() => {
+            if (swiperRef.current) {
+              swiperRef.current.slidePrev();
+            } else {
+              const newIndex = (activeIndex - 1 + stories.length) % stories.length;
+              setActiveIndex(newIndex);
+            }
+          }}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="none"
             stroke="white"
@@ -120,15 +143,24 @@ const HighlightViewer = ({ stories, onClose, onDelete }: HighlightViewerProps) =
             <path d="m15 18-6-6 6-6" />
           </svg>
         </button>
+
+        {/* Single Navigation Button - Next */}
         <button
-          className="swiper-button-next absolute right-4 top-1/2 -translate-y-1/2 z-20 story-navigation-button flex items-center justify-center"
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-20 story-navigation-button flex items-center justify-center w-10 h-10 bg-black/30 hover:bg-black/50 rounded-full transition-colors"
           aria-label="التالي"
-          onClick={() => setActiveIndex((prev) => (prev + 1) % stories.length)}
+          onClick={() => {
+            if (swiperRef.current) {
+              swiperRef.current.slideNext();
+            } else {
+              const newIndex = (activeIndex + 1) % stories.length;
+              setActiveIndex(newIndex);
+            }
+          }}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="none"
             stroke="white"

@@ -210,10 +210,12 @@ const StoreEmployeeManagement = () => {
         <TabsContent value="employees" className="space-y-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-             { <Button onClick={handleAddEmployeeClick} className="bg-main hover:bg-main/90" size="sm">
-                <Plus className="w-4 h-4 ml-2" />
-                إضافة موظف
-              </Button>}
+              {
+                <Button onClick={handleAddEmployeeClick} className="bg-main hover:bg-main/90" size="sm">
+                  <Plus className="w-4 h-4 ml-2" />
+                  إضافة موظف
+                </Button>
+              }
               <CardTitle className="text-lg font-medium">الموظفين</CardTitle>
             </CardHeader>
             <CardContent>
@@ -230,9 +232,9 @@ const StoreEmployeeManagement = () => {
                   <table dir="rtl" className="w-full">
                     <thead>
                       <tr className="border-b text-main bg-[#F0F7FF] p-4 text-right text-xs font-medium">
-                        <th className=" p-3   ">اسم الموظف</th>
+                        {<th className=" p-3   ">اسم الموظف</th>}
                         <th className=" p-3  ">حالة الموظف</th>
-                        <th className=" p-3  ">رقم الهاتف</th>
+                        {/* <th className=" p-3  ">رقم الهاتف</th> */}
                         <th className=" p-3  ">الايميل</th>
                         <th className=" p-3  ">الإجراءات</th>
                       </tr>

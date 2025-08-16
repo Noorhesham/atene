@@ -157,16 +157,15 @@ const BasicInformation = () => {
         </div>
         <FormInput className="" placeholder="اكتب السعر" label="السعر" name="price" type="number" />
       </div>
+      <FormInput
+        select
+        placeholder="اختر الفئة"
+        label="الفئة"
+        name="category_id"
+        options={categoryOptions}
+        error={errors.category_id?.message as string}
+      />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FormInput
-          select
-          placeholder="اختر الفئة"
-          label="الفئة"
-          name="category_id"
-          options={categoryOptions}
-          error={errors.category_id?.message as string}
-        />
-
         {isAdmin && (
           <FormInput
             select
@@ -227,7 +226,6 @@ const BasicInformation = () => {
         placeholder="اكتب وصف المنتج..."
         className="w-full"
       />{" "}
- 
     </div>
   );
 };

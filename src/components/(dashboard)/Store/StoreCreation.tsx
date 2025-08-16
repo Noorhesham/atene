@@ -20,6 +20,7 @@ import { ApiStore } from "@/types";
 import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
 import { useAuth } from "@/context/AuthContext";
 import MaxWidthDashboard from "../components/MaxWidthDashboard";
+import { Link } from "react-router-dom";
 
 type StoreFormData = z.infer<typeof storeSchema>;
 
@@ -300,7 +301,7 @@ const StoreCreationForm: React.FC<StoreCreationFormProps> = ({ store }) => {
             <div className="flex flex-col gap-8">
               <div className="flex flex-col gap-6">
                 <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <span>المتاجر</span>
+                  <Link to={user?.user?.user_type === "admin" ? "/admin/stores" : "/dashboard/stores"}>المتاجر</Link>
                   <span>/</span>
                   <span className="text-gray-900">{isEditMode ? "تعديل المتجر" : "إنشاء متجر جديد"}</span>
                 </div>

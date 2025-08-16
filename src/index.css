@@ -111,6 +111,12 @@ body {
 .sub-heading {
   @apply lg:text-[22px]  text-[#2D2D2D] text-lg font-normal;
 }
+input[type="checkbox"] {
+  accent-color: #395a7d;
+}
+input[type="radio"] {
+  accent-color: #395a7d;
+}
 radio {
   margin: 0.5rem;
   input[type="radio"] {

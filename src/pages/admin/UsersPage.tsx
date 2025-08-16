@@ -32,7 +32,7 @@ const UserListItem = ({
 }) => {
   console.log(user);
   return (
-    <div className="flex items-center gap-4 p-4 border-b">
+    <div className="flex items-center gap-4 p-4 border-input border-b">
       <input
         checked={isSelected}
         onChange={(e) => {
@@ -153,7 +153,7 @@ const UsersPage = () => {
       <div className="w-full min-h-screen p-4 sm:p-6 lg:p-8 bg-gray-50" dir="rtl">
         {
           <>
-            <p className="text-gray-500 mb-1">المستخدمين / موظف رقم ١</p>
+            <p className="text-gray-500 mb-1">المستخدمين / {selectedUser?.first_name} {selectedUser?.last_name}</p>
             <div className="flex justify-between items-center">
               <div className="w-full items-center flex gap-2">
                 <div className="p-4 flex justify-between w-full">

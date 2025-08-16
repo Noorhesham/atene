@@ -178,7 +178,6 @@ export default function ProductsPageDashboard() {
 
   // Fetch products with filters including store ID
   const {
-    data: products,
     totalRecords,
     remove: deleteProduct,
     refetch,
@@ -201,13 +200,6 @@ export default function ProductsPageDashboard() {
   const [selectedProduct, setSelectedProduct] = useState<ApiProduct | null>(null);
   const [searchInput, setSearchInput] = useState("");
 
-  // Set the first product as selected by default once data loads
-  useEffect(() => {
-    if (products.length > 0 && !selectedProduct) {
-      setSelectedProduct(products[0]);
-    }
-  }, [products, selectedProduct]);
-
   // Handle search input change with debouncing
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -224,10 +216,7 @@ export default function ProductsPageDashboard() {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput(e.target.value);
-
-    if (e.target.value.trim() !== "") {
-      setSelectedProduct(null);
-    }
+    // Don't automatically select products when searching
   };
 
   // Function to update product status
@@ -274,11 +263,24 @@ export default function ProductsPageDashboard() {
     const currentPrice = product.sale_price || product.price;
     console.log(product);
     return (
-      <div className="flex items-center gap-3 p-3 border-b border-input">
+      <div
+        style={{
+          backgroundColor: selectedProduct?.id === product.id ? "rgba(91, 136, 186, 0.20)" : "transparent",
+        }}
+        className="flex items-center gap-3 p-3 border-b border-input cursor-pointer hover:bg-gray-50 transition-colors duration-200"
+        onClick={() => setSelectedProduct(product)}
+      >
         {/* Middle: Product Info */}
         <input
           checked={selectedProduct?.id === product.id}
-          onChange={() => setSelectedProduct(product)}
+          onChange={(e) => {
+            e.stopPropagation(); // Prevent card click when clicking checkbox
+            if (e.target.checked) {
+              setSelectedProduct(product);
+            } else {
+              setSelectedProduct(null); // Deselect when unchecked
+            }
+          }}
           type="checkbox"
           className="w-5 h-5 rounded border-1 border-input text-main focus:ring-2 focus:ring-main focus:ring-offset-2 focus:ring-offset-white cursor-pointer transition-all duration-200 ease-in-out hover:border-main checked:bg-main checked:border-main checked:hover:bg-main/90"
           aria-label={`اختر المنتج ${product.name}`}
@@ -360,44 +362,47 @@ export default function ProductsPageDashboard() {
               <Search size={20} />
             </div>
           </div>{" "}
-          <div className="flex items-center gap-2">
-            <StoreSelector
-              trigger={
-                <Button
-                  size={"lg"}
-                  variant="ghost"
-                  className="flex items-center gap-2 px-4 !py-3  rounded-[4px] bg-white border-input  border"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path
-                      d="M2.47217 8.74658V12.9149C2.47217 15.2732 2.47217 16.4516 3.20383 17.1841C3.93717 17.9174 5.11467 17.9174 7.47217 17.9174H12.4722C14.8288 17.9174 16.0072 17.9174 16.7397 17.1841C17.4722 16.4516 17.4722 15.2724 17.4722 12.9149V8.74658"
-                      stroke="#393939"
-                      strokeWidth="1.25"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M12.4724 14.1608C11.9024 14.6666 10.9949 14.9941 9.97237 14.9941C8.94987 14.9941 8.04237 14.6666 7.47237 14.1608M8.41987 7.01496C8.18487 7.86412 7.32987 9.32829 5.70654 9.53996C4.2732 9.72746 3.18487 9.10162 2.90737 8.83996C2.60154 8.62746 1.9032 7.94829 1.73237 7.52495C1.56154 7.09995 1.7607 6.18079 1.9032 5.80579L2.47237 4.15745C2.61154 3.74329 2.93737 2.76412 3.2707 2.43245C3.60404 2.10079 4.27904 2.08662 4.55737 2.08662H10.3957C11.8982 2.10829 15.184 2.07329 15.8332 2.08662C16.4832 2.09995 16.8732 2.64495 16.9874 2.87829C17.9565 5.22495 18.3332 6.56995 18.3332 7.14162C18.2065 7.75329 17.6832 8.90496 15.8332 9.41246C13.9107 9.93912 12.8207 8.91412 12.479 8.52079M7.62904 8.52079C7.89987 8.85329 8.74904 9.52245 9.97904 9.53912C11.2099 9.55579 12.2724 8.69745 12.6499 8.26662C12.7565 8.13912 12.9874 7.76162 13.2274 7.01412"
-                      stroke="#393939"
-                      strokeWidth="1.25"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  المتجر
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M18 9C18 9 13.581 15 12 15C10.419 15 6 9 6 9"
-                      stroke="black"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </Button>
-              }
-            />
-          </div>
+          {user?.user?.user_type === "admin" && (
+            <div className="flex items-center gap-2">
+              <StoreSelector
+                onlystores
+                trigger={
+                  <Button
+                    size={"lg"}
+                    variant="ghost"
+                    className="flex items-center gap-2 px-4 !py-3  rounded-[4px] bg-white border-input  border"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path
+                        d="M2.47217 8.74658V12.9149C2.47217 15.2732 2.47217 16.4516 3.20383 17.1841C3.93717 17.9174 5.11467 17.9174 7.47217 17.9174H12.4722C14.8288 17.9174 16.0072 17.9174 16.7397 17.1841C17.4722 16.4516 17.4722 15.2724 17.4722 12.9149V8.74658"
+                        stroke="#393939"
+                        strokeWidth="1.25"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M12.4724 14.1608C11.9024 14.6666 10.9949 14.9941 9.97237 14.9941C8.94987 14.9941 8.04237 14.6666 7.47237 14.1608M8.41987 7.01496C8.18487 7.86412 7.32987 9.32829 5.70654 9.53996C4.2732 9.72746 3.18487 9.10162 2.90737 8.83996C2.60154 8.62746 1.9032 7.94829 1.73237 7.52495C1.56154 7.09995 1.7607 6.18079 1.9032 5.80579L2.47237 4.15745C2.61154 3.74329 2.93737 2.76412 3.2707 2.43245C3.60404 2.10079 4.27904 2.08662 4.55737 2.08662H10.3957C11.8982 2.10829 15.184 2.07329 15.8332 2.08662C16.4832 2.09995 16.8732 2.64495 16.9874 2.87829C17.9565 5.22495 18.3332 6.56995 18.3332 7.14162C18.2065 7.75329 17.6832 8.90496 15.8332 9.41246C13.9107 9.93912 12.8207 8.91412 12.479 8.52079M7.62904 8.52079C7.89987 8.85329 8.74904 9.52245 9.97904 9.53912C11.2099 9.55579 12.2724 8.69745 12.6499 8.26662C12.7565 8.13912 12.9874 7.76162 13.2274 7.01412"
+                        stroke="#393939"
+                        strokeWidth="1.25"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    المتجر
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M18 9C18 9 13.581 15 12 15C10.419 15 6 9 6 9"
+                        stroke="black"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </Button>
+                }
+              />
+            </div>
+          )}
           <div>
             <div className="flex text-base bg-white border border-input  py-3 px-4 rounded-[4px] text-[#555] items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -482,7 +487,7 @@ export default function ProductsPageDashboard() {
                   }}
                   isUpdating={isDeleting}
                 />
-                <ProductCreationForm title=" " product={selectedProduct} disableCreate={true} />
+                <ProductCreationForm novalidation title=" " product={selectedProduct} disableCreate={true} />
 
                 {/* Delete Confirmation Modal */}
                 <ModalCustom
@@ -541,10 +546,8 @@ export default function ProductsPageDashboard() {
                 />
               </>
             ) : (
-              <Card className="p-8 h-full">
-                <div className="h-full flex items-center justify-center text-gray-500">
-                  <p>الرجاء تحديد منتج لعرض التفاصيل</p>
-                </div>
+              <Card className="p-8 h-full flex flex-col items-center justify-center ">
+                <img className=" w-80 h-80" src="/emptyp.svg" alt="" />
               </Card>
             )}
           </div>

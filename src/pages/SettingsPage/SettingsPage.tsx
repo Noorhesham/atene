@@ -25,8 +25,6 @@ interface Settings {
   twitter?: string;
   youtube?: string;
   instagram?: string;
-  android_link?: string;
-  ios_link?: string;
   aboutUs: string;
 
   tiktok?: string;
@@ -41,13 +39,9 @@ const settingsSchema = z.object({
   phone: z.string().or(z.literal("")),
   whatsapp: z.string().or(z.literal("")),
   facebook: z.string().url("رابط فيسبوك غير صالح").or(z.literal("")).optional(),
-  twitter: z.string().url("رابط تويتر غير صالح").or(z.literal("")).optional(),
   youtube: z.string().url("رابط يوتيوب غير صالح").or(z.literal("")).optional(),
   instagram: z.string().url("رابط انستغرام غير صالح").or(z.literal("")).optional(),
   tiktok: z.string().url("رابط تيك توك غير صالح").or(z.literal("")).optional(),
-  snapchat: z.string().url("رابط سناب شات غير صالح").or(z.literal("")).optional(),
-  android_link: z.string().url("رابط تطبيق أندرويد غير صالح").or(z.literal("")).optional(),
-  ios_link: z.string().url("رابط تطبيق آيفون غير صالح").or(z.literal("")).optional(),
   terms: z.string().min(10, "يجب أن يكون النص 10 أحرف على الأقل"),
   policy: z.string().min(10, "يجب أن يكون النص 10 أحرف على الأقل"),
   aboutUs: z.string().min(10, "يجب أن يكون النص 10 أحرف على الأقل"),
@@ -122,13 +116,11 @@ export default function SettingsPage() {
       phone: "",
       whatsapp: "",
       facebook: "",
-      twitter: "",
+
       youtube: "",
       instagram: "",
       tiktok: "",
-      snapchat: "",
-      android_link: "",
-      ios_link: "",
+
       terms: "",
       policy: "",
       aboutUs: "",
@@ -154,13 +146,9 @@ export default function SettingsPage() {
         phone: settingsData.phone || "",
         whatsapp: settingsData.whatsapp || "",
         facebook: settingsData.facebook || "",
-        twitter: settingsData.twitter || "",
         youtube: settingsData.youtube || "",
         instagram: settingsData.instagram || "",
         tiktok: settingsData.tiktok || "",
-        snapchat: settingsData.snapchat || "",
-        android_link: settingsData.android_link || "",
-        ios_link: settingsData.ios_link || "",
         terms: settingsData.terms || "",
         policy: settingsData.policy || "",
         aboutUs: settingsData.aboutUs || "",
@@ -263,7 +251,7 @@ export default function SettingsPage() {
       id: 2,
       title: "وسائل التواصل الاجتماعي",
       component: <StoreContactInfo />,
-      fields: ["facebook", "instagram", "tiktok", "snapchat", "twitter", "youtube", "android_link", "ios_link"],
+      fields: ["facebook", "instagram", "tiktok", "youtube"],
     },
     {
       id: 3,

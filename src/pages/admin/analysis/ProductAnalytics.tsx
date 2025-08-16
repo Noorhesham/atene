@@ -92,18 +92,14 @@ export default function ProductsAnalytics() {
   }, [data]);
 
   const navLinks = [
-    { label: "ملخص المنصة", href: "/admin/dashboard" },
+    { label: "ملخص المنصة", href: "/admin" },
     { label: " التقارير", href: "/admin/analytics/stores" },
     { label: "المنتجات", href: "/admin/analytics/products", isActive: true },
   ];
 
   return (
     <div className="bg-gray-50 w-full min-h-screen" dir="rtl">
-      <PageHeader
-        navLinks={navLinks}
-        addButton={{ label: "تصدير", href: "#" }}
-        helpButton={{ label: "مساعدة", href: "#" }}
-      />
+      <PageHeader navLinks={navLinks} helpButton={{ label: "مساعدة", href: "#" }} />
 
       <div className="grid grid-cols-12 gap-6 p-4 sm:p-8">
         {/* Right panel: filters */}
@@ -138,18 +134,7 @@ export default function ProductsAnalytics() {
             <div className="flex items-center gap-2">
               {" "}
               <PeriodSelector period={period} setPeriod={setPeriod} />{" "}
-              <Button className="flex items-center bg-main gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 25 25" fill="none">
-                  <path
-                    d="M12.391 15V5M12.391 15C11.691 15 10.383 13.006 9.89099 12.5M12.391 15C13.091 15 14.399 13.006 14.891 12.5M20.391 17C20.391 19.482 19.873 20 17.391 20H7.39099C4.90899 20 4.39099 19.482 4.39099 17"
-                    stroke="#F5F5F5"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-                تصدير
-              </Button>
+       
             </div>
           </div>
 

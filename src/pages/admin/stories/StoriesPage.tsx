@@ -43,7 +43,9 @@ const StoriesPage = () => {
     try {
       console.log(data);
       const storyData: Partial<ApiStory> =
-        storyType === "media" ? { image: data.image || null } : { text: data.text, color: data.color || "#000000" };
+        storyType === "media"
+          ? { image: data.image || undefined }
+          : { text: data.text, color: data.color || "#000000" };
 
       await createStory(storyData);
       setIsAddStoryModalOpen(false);
@@ -172,7 +174,10 @@ const StoriesPage = () => {
               }
             />
             {highlights?.map((highlight) => {
-              const highlightStories = stories.filter((story) => highlight.stories.includes(story.id));
+              // Get stories for this highlight - assuming highlights.stories contains story IDs
+              const highlightStories = highlight.stories || [];
+              const imageFirst = highlightStories.find((story) => story.image);
+              console.log(imageFirst);
               return (
                 <div
                   key={highlight.id}
@@ -180,14 +185,8 @@ const StoriesPage = () => {
                   onClick={() => setViewingHighlight({ stories: highlightStories, name: highlight.name })}
                 >
                   <div className="w-20 h-20 rounded-full border-2 border-gray-300 overflow-hidden">
-                    {highlight.thumbnail ? (
-                      <img src={highlight.thumbnail} alt={highlight.name} className="w-full h-full object-cover" />
-                    ) : highlightStories[0]?.image ? (
-                      <img
-                        src={highlightStories[0].image}
-                        alt={highlight.name}
-                        className="w-full h-full object-cover"
-                      />
+                    {imageFirst ? (
+                      <img src={imageFirst.image || ""} alt={highlight.name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full bg-gray-100 flex items-center justify-center">
                         <span className="text-gray-400">No Image</span>
@@ -271,7 +270,11 @@ const StoriesPage = () => {
                 </div>
                 <ModalCustom
                   isOpen={showDeleteConfirm === story.id}
-                  onOpenChange={(isOpen) => !isOpen && setShowDeleteConfirm(null)}
+                  onOpenChange={(isOpen) => {
+                    if (!isOpen) {
+                      setShowDeleteConfirm(null);
+                    }
+                  }}
                   btn={
                     <button
                       onClick={() => setShowDeleteConfirm(story.id)}
@@ -281,9 +284,12 @@ const StoriesPage = () => {
                       <Trash2 />
                     </button>
                   }
-                  title="تأكيد الحذف"
+                  title="تأكيد حذف القصة"
                   content={
-                    <p className="text-center">هل أنت متأكد أنك تريد حذف هذه القصة؟ لا يمكن التراجع عن هذا الإجراء.</p>
+                    <div className="text-center">
+                      <p className="mb-4">هل أنت متأكد أنك تريد حذف هذه القصة؟</p>
+                      <p className="text-sm text-gray-600">لا يمكن التراجع عن هذا الإجراء.</p>
+                    </div>
                   }
                   functionalbtn={
                     <div className="flex gap-2 w-full justify-end">
@@ -318,8 +324,14 @@ const StoriesPage = () => {
 
       {/* Story Viewer Modal */}
       {viewingStory && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-          <div className="relative w-full max-w-md h-[80vh] bg-white rounded-lg overflow-hidden">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
+          onClick={() => setViewingStory(null)}
+        >
+          <div
+            className="relative w-full max-w-md h-[80vh] bg-white rounded-lg overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Close button */}
             <button
               onClick={() => setViewingStory(null)}
@@ -349,7 +361,7 @@ const StoriesPage = () => {
               className="absolute bottom-4 left-4 z-10 text-white bg-red-500 rounded-full p-2 hover:bg-red-600"
               title="حذف القصة"
             >
-              <Trash2 size={20} />
+              <Trash2 />
             </button>
           </div>
         </div>

@@ -168,7 +168,7 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
                 disabled={isLoading}
               >
                 <Trash2 size={16} />
-                حذف الموظف
+                حذف المستخدم
               </Button>
             </div>
           </form>

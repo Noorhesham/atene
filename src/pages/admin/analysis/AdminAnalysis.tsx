@@ -876,7 +876,6 @@ export default function AnalyticsDashboard() {
       {" "}
       <PageHeader
         navLinks={navLinks}
-        addButton={{ label: "تصدير", href: "#" }}
         helpButton={{ label: "مساعدة", href: "#" }}
       />
       <div className="bg-gray-50 w-full min-h-screen p-4 sm:p-8" dir="rtl">

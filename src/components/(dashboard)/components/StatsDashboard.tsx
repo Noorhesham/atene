@@ -86,12 +86,7 @@ const StatsDashboard = ({ data }: StatsDashboardProps) => {
             value={data?.totalChats?.toString() || "0"} // Placeholder
             iconBg="bg-gray-200"
           />
-          <StatCard
-            icon={<Phone className="w-6 h-6 text-sky-500" />}
-            title="المكالمات"
-            value={data?.totalCalls?.toString() || "0"} // Placeholder
-            iconBg="bg-sky-100"
-          />
+
           <ProgressCard title="طلبات مرفوضة" percentage={canceledPercentage} color="bg-red-500" />
         </div>
       </div>

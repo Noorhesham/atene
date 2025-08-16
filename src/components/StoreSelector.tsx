@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
-import { LogOut, Search, Settings, Users, Coins, Store } from "lucide-react";
+import { LogOut, Search, Settings, Users, Coins, Store, Loader } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,18 +11,16 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { ApiStore } from "@/types";
+import { useNavigate } from "react-router-dom";
 
-const StoreSelector = ({ trigger }: { trigger: React.ReactNode }) => {
+const StoreSelector = ({ trigger, onlystores = false }: { trigger: React.ReactNode; onlystores?: boolean }) => {
   const [selectedStore, setSelectedStore] = useState<ApiStore | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const { logout } = useAuth();
+  const navigate = useNavigate();
+  const { logout, user } = useAuth();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
-  const { data: stores, isLoading } = useAdminEntityQuery(
-    "stores",
-    {},
-    user?.user.user_type === "admin" ? "admin" : "merchant"
-  );
+  const isAdmin = user?.user.user_type === "admin";
+  const { data: stores, isLoading } = useAdminEntityQuery("stores", {}, isAdmin ? "admin" : "merchant");
 
   useEffect(() => {
     // Set initial selected store from localStorage
@@ -46,20 +44,37 @@ const StoreSelector = ({ trigger }: { trigger: React.ReactNode }) => {
       detail: { storeId: store.id.toString() },
     });
     window.dispatchEvent(storeChangeEvent);
-
+    console.log(isAdmin);
     // Invalidate and refetch all queries in the cache
     queryClient.invalidateQueries();
     queryClient.refetchQueries();
+    if (isAdmin) {
+      navigate("/admin");
+    } else {
+      navigate("/dashboard");
+    }
   };
 
   const filteredStores = stores?.filter((store) => store.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   const menuItems = [
-    { label: "النقاط", icon: <Coins size={20} className="text-gray-500" /> },
-    { label: "ادارة المتاجر", icon: <Settings size={20} className="text-gray-500" /> },
-    { label: "الادوار الوظيفية", icon: <Users size={20} className="text-gray-500" /> },
+    {
+      label: "النقاط",
+      icon: <Coins size={20} className="text-gray-500" />,
+      link: isAdmin ? "/admin/points" : "/points",
+    },
+    {
+      label: "ادارة المتاجر",
+      icon: <Settings size={20} className="text-gray-500" />,
+      link: isAdmin ? "/admin/stores" : "/dashboard/stores",
+    },
+    isAdmin && {
+      label: "الادوار الوظيفية",
+      icon: <Users size={20} className="text-gray-500" />,
+      link: "/admin/roles",
+    },
   ];
-
+  if (isLoading) return <Loader className="w-8 animate-spin h-8" />;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -83,32 +98,37 @@ const StoreSelector = ({ trigger }: { trigger: React.ReactNode }) => {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-[320px] p-0" align="end" dir="rtl">
         {/* Header Section */}
-        <div className="px-4 py-3 border-b">
-          <div className="flex items-center gap-3">
-            <img
-              src={selectedStore?.logo_url || "https://i.imgur.com/Jt5g2S6.png"}
-              alt={selectedStore?.name}
-              className="w-10 h-10 rounded-full object-cover"
-            />
-            <div className="flex flex-col items-start">
-              <span className="text-base font-bold text-gray-800">{selectedStore?.name || "متجر الافضل"}</span>
-              <span className="text-xs text-gray-500 border border-gray-300 rounded-full px-2 py-0.5">متجر</span>
+        {!onlystores && (
+          <div className="px-4 py-3 border-b">
+            <div className="flex items-center gap-3">
+              <img
+                src={selectedStore?.logo_url || "https://i.imgur.com/Jt5g2S6.png"}
+                alt={selectedStore?.name}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+              <div className="flex flex-col items-start">
+                <span className="text-base font-bold text-gray-800">{selectedStore?.name || "متجر الافضل"}</span>
+                <span className="text-xs text-gray-500 border border-gray-300 rounded-full px-2 py-0.5">متجر</span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Menu Items Section */}
-        <div className="py-2 border-b">
-          {menuItems.map((item) => (
-            <DropdownMenuItem
-              key={item.label}
-              className="flex items-center gap-3 px-4 py-2.5 text-gray-700 text-base font-medium cursor-pointer"
-            >
-              {item.icon}
-              <span>{item.label}</span>
-            </DropdownMenuItem>
-          ))}
-        </div>
+        {!onlystores && (
+          <div className="py-2 border-b">
+            {menuItems.map((item) => (
+              <DropdownMenuItem
+                key={item.label}
+                className="flex items-center gap-3 px-4 py-2.5 text-gray-700 text-base font-medium cursor-pointer"
+                onClick={() => navigate(item.link)}
+              >
+                {item.icon}
+                <span>{item.label}</span>
+              </DropdownMenuItem>
+            ))}
+          </div>
+        )}
 
         {/* Store Selection Section */}
         <div className="p-3">

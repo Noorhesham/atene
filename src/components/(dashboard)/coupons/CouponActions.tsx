@@ -31,7 +31,7 @@ export const CouponActions = ({ coupon, onDeleteSuccess, editLink }: CouponActio
     <>
       <div className="flex items-center gap-2">
         {editLink && (
-          <ModalCustom
+          <ModalCustom 
             btn={
               <Button variant="ghost" size="icon" className="w-8 h-8 text-main bg-blue-50 hover:bg-blue-100">
                 <svg
@@ -51,7 +51,7 @@ export const CouponActions = ({ coupon, onDeleteSuccess, editLink }: CouponActio
               </Button>
             }
             content={
-              <AddCouponForm
+              <AddCouponForm 
                 closeModal={() => setShowDeleteModal(false)}
                 editingCoupon={{
                   id: coupon.id,

@@ -1,6 +1,7 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import { useAdminEntityQuery, ApiAttribute } from "@/hooks/useUsersQuery";
+import { useAdminEntityQuery } from "@/hooks/useUsersQuery";
+import { ApiAttribute } from "@/types";
 import AttributeCreation from "./AttributeCreation";
 
 const AttributeCreatPage: React.FC = () => {

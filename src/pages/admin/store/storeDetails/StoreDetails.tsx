@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import Actions from "@/components/Actions";
 import { MapPinIcon } from "lucide-react";
 import { InfoItem } from "@/components/InfoItem";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface SocialLinkProps {
   icon: React.ReactNode;
@@ -17,8 +18,17 @@ interface SocialLinkProps {
   value: string | null;
 }
 
-const StoreDetails = ({ store, onStoreDeleted }: { store: ApiStore; onStoreDeleted: () => void }) => {
+const StoreDetails = ({
+  store,
+  onStoreDeleted,
+  onStoreUpdated,
+}: {
+  store: ApiStore;
+  onStoreDeleted: () => void;
+  onStoreUpdated?: () => void;
+}) => {
   const storeQuery = useAdminEntityQuery("stores");
+  const queryClient = useQueryClient();
   const [collapsed, setCollapsed] = useState(true);
 
   const token = localStorage.getItem("token");
@@ -86,8 +96,37 @@ const StoreDetails = ({ store, onStoreDeleted }: { store: ApiStore; onStoreDelet
       if (!res.ok) {
         throw new Error("Failed to update store status");
       }
+
       toast.success("تم تحديث حالة المتجر");
+
+      // Invalidate all admin stores queries to ensure UI updates
+      // Query key structure: ["admin", "stores", { page, per_page, name, ...queryParams }]
+      await queryClient.invalidateQueries({
+        queryKey: ["admin", "stores"],
+        exact: false,
+      });
+
+      // Also invalidate any stores queries with different parameters
+      await queryClient.invalidateQueries({
+        queryKey: ["stores"],
+        exact: false,
+      });
+
+      // Invalidate any queries that might contain "stores" in the key
+      await queryClient.invalidateQueries({
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return Array.isArray(queryKey) && queryKey.some((key) => typeof key === "string" && key.includes("stores"));
+        },
+      });
+
+      // Refetch the current stores query
       await storeQuery.refetch();
+
+      // Notify parent component to refresh its data
+      if (onStoreUpdated) {
+        onStoreUpdated();
+      }
     } catch (error) {
       console.error("Failed to update store status:", error);
       toast.error("فشل تفعيل المتجر");
